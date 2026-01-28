@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Universo Paralelo</title>
+  <link rel="stylesheet" href="../public/css/style(OFC).css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ESTILOS ESPECÍFICOS PARA ADMIN */
+    .admin-login {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #2b0045, #050008);
+      padding: 20px;
+    }
+
+    .login-container {
+      background: linear-gradient(135deg, rgba(26, 0, 43, 0.95), rgba(11, 0, 21, 0.98));
+      border-radius: 20px;
+      border: 2px solid rgba(124, 58, 237, 0.3);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(223, 56, 255, 0.1), transparent 50%);
+      z-index: 1;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-logo {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #DF38FF, #7C3AED);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .login-title {
+      color: #fff;
+      font-size: 22px;
+      margin-bottom: 5px;
+    }
+
+    .login-subtitle {
+      color: #C084FC;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #C084FC;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 45px 14px 15px;
+      background: #1a002b;
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #DF38FF;
+      box-shadow: 0 0 0 3px rgba(223, 56, 255, 0.1);
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 15px;
+      top: 40px;
+      background: none;
+      border: none;
+      color: #C084FC;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #DF38FF, #7C3AED);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(223, 56, 255, 0.4);
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer-text {
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    .error-message {
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: #f44336;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #C084FC;
+      text-decoration: none;
+      font-size: 14px;
+      margin-top: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .back-home:hover {
+      color: #DF38FF;
+      gap: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="admin-login">
+    <div class="login-container">
+      <div class="login-header">
+        <div class="login-logo">UNIVERSO PARALELO</div>
+        <h1 class="login-title">Painel Administrativo</h1>
+        <p class="login-subtitle">Acesso restrito à equipe</p>
+      </div>
+
+      <div class="error-message" id="errorMessage">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Credenciais inválidas. Tente novamente.</span>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">E-mail</label>
+          <input type="email" class="form-input" placeholder="admin@universoparalelo.com" id="email" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <input type="password" class="form-input" placeholder="••••••••" id="password" required>
+          <button type="button" class="password-toggle" id="togglePassword">
+            <i class="far fa-eye"></i>
+          </button>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <i class="fas fa-sign-in-alt"></i>
+          Entrar no Painel
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <p class="footer-text">© 2023 Universo Paralelo Store</p>
+        <p class="footer-text">Acesso exclusivo para administradores</p>
+        <a href="../home.html" class="back-home">
+          <i class="fas fa-arrow-left"></i>
+          Voltar para a loja
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const loginForm = document.getElementById('loginForm');
+      const togglePassword = document.getElementById('togglePassword');
+      const passwordInput = document.getElementById('password');
+      const errorMessage = document.getElementById('errorMessage');
+
+      // Alternar visibilidade da senha
+      togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="far fa-eye"></i>' : '<i class="far fa-eye-slash"></i>';
+      });
+
+      // Validação de login
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        // Credenciais padrão (em produção, isso seria no backend)
+        const adminEmail = 'admin@universoparalelo.com';
+        const adminPassword = 'admin123';
+
+        if (email === adminEmail && password === adminPassword) {
+          // Simular login bem-sucedido
+          const btn = loginForm.querySelector('.btn-login');
+          const originalText = btn.innerHTML;
+
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+          btn.disabled = true;
+
+          setTimeout(() => {
+            // Salvar estado de login
+            localStorage.setItem('adminLoggedIn', 'true');
+            localStorage.setItem('adminEmail', email);
+
+            // Redirecionar para dashboard
+            window.location.href = 'dashboard.html';
+          }, 1500);
+        } else {
+          // Mostrar erro
+          errorMessage.classList.add('show');
+          loginForm.classList.add('shake');
+
+          setTimeout(() => {
+            loginForm.classList.remove('shake');
+          }, 500);
+        }
+      });
+
+      // Verificar se já está logado
+      if (localStorage.getItem('adminLoggedIn') === 'true') {
+        window.location.href = 'dashboard.html';
+      }
+
+      // Adicionar animação de shake
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+          animation: shake 0.5s ease;
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  </script>
+</body>
+
+</html>

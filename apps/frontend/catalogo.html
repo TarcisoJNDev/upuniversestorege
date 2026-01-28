@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universo Paralelo Store | Catálogo 3D</title>
+  <link rel="stylesheet" href="public/css/style(OFC).css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="public/js/api.js"></script>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="main-header">
+    <nav class="container nav-container">
+      <a href="home.html" class="logo" aria-label="Home Universo Paralelo">UNIVERSO PARALELO</a>
+
+      <ul class="nav-menu">
+        <li><a href="home.html">Início</a></li>
+        <li><a href="catalogo.html" class="active">Catálogo 3D</a></li>
+        <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="#footer">Contato</a></li>
+      </ul>
+
+    <div class="header-actions">
+      <a href="carrinho.html" class="cart-icon">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count">0</span>
+      </a>
+    </div>
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container">
+
+    <!-- BREADCRUMB -->
+    <nav class="breadcrumb reveal">
+      <a href="home.html">Início</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Catálogo de Produtos</span>
+    </nav>
+
+    <!-- INTRO -->
+    <header class="catalog-intro reveal">
+      <h1>CATÁLOGO DE PRODUTOS 3D</h1>
+      <p class="catalog-subtitle">Explore nossa coleção de produtos impressos em 3D com qualidade premium e designs
+        exclusivos</p>
+
+      <!-- TOOLBAR AVANÇADA -->
+      <section class="toolbar-advanced">
+        <div class="toolbar-left">
+          <div class="filter-section">
+            <button class="filter-toggle">
+              <i class="fas fa-filter"></i> Filtros
+            </button>
+
+            <div class="filter-dropdown">
+              <div class="filter-group">
+                <h4><i class="fas fa-tags"></i> Categorias</h4>
+                <div class="filter-options">
+                  <label class="filter-checkbox">
+                    <input type="checkbox" checked>
+                    <span class="checkmark"></span>
+                    Todos os produtos
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                    Decoração
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                    Escritório
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                    Gamer
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                    Personalizados
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                    Presentes
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                    Esculturas
+                  </label>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <h4><i class="fas fa-dollar-sign"></i> Faixa de Preço</h4>
+                <div class="price-range">
+                  <input type="range" min="0" max="500" value="250" class="price-slider">
+                  <div class="price-values">
+                    <span>R$ 0</span>
+                    <span>R$ 250</span>
+                    <span>R$ 500+</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <h4><i class="fas fa-sort-amount-down"></i> Ordenar por</h4>
+                <select class="sort-select">
+                  <option>Mais Relevantes</option>
+                  <option>Preço: Menor para Maior</option>
+                  <option>Preço: Maior para Menor</option>
+                  <option>Mais Populares</option>
+                  <option>Mais Novos</option>
+                </select>
+              </div>
+
+              <button class="apply-filters">Aplicar Filtros</button>
+              <button class="clear-filters">Limpar Filtros</button>
+            </div>
+          </div>
+
+          <div class="view-controls">
+            <button class="view-btn active" data-view="grid">
+              <i class="fas fa-th-large"></i>
+            </button>
+            <button class="view-btn" data-view="list">
+              <i class="fas fa-list"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="search" placeholder="Buscar produtos..." class="search-input">
+          </div>
+
+          <div class="results-info">
+            <span class="product-count">36 produtos encontrados</span>
+          </div>
+        </div>
+      </section>
+    </header>
+
+    <!-- GRID DE PRODUTOS COM PAGINAÇÃO -->
+    <section class="catalog-content">
+      <!-- FILTROS RÁPIDOS -->
+      <div class="quick-filters reveal">
+        <button class="quick-filter active">Todos</button>
+        <button class="quick-filter">
+          <i class="fas fa-skull"></i> Esculturas
+        </button>
+        <button class="quick-filter">
+          <i class="fas fa-trophy"></i> Troféus
+        </button>
+        <button class="quick-filter">
+          <i class="fas fa-gamepad"></i> Gamer
+        </button>
+        <button class="quick-filter">
+          <i class="fas fa-home"></i> Decoração
+        </button>
+        <button class="quick-filter">
+          <i class="fas fa-briefcase"></i> Escritório
+        </button>
+        <button class="quick-filter">
+          <i class="fas fa-gem"></i> Premium
+        </button>
+        <button class="quick-filter">
+          <i class="fas fa-bolt"></i> Novidades
+        </button>
+      </div>
+
+      <!-- PRODUTOS -->
+      <div class="products-grid catalog-grid" id="productsGrid">
+        <!-- Produtos serão inseridos aqui via JavaScript -->
+      </div>
+
+      <!-- PAGINAÇÃO -->
+      <div class="pagination reveal">
+        <button class="page-btn prev-btn">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+
+        <div class="page-numbers">
+          <button class="page-number active">1</button>
+          <button class="page-number">2</button>
+          <button class="page-number">3</button>
+          <button class="page-number">4</button>
+          <button class="page-number">5</button>
+          <span class="page-dots">...</span>
+          <button class="page-number">10</button>
+        </div>
+
+        <button class="page-btn next-btn">
+          Próxima <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <div class="page-info">
+          <span>Página <span id="currentPage">1</span> de <span id="totalPages">6</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIAS DESTAQUE -->
+    <section class="catalog-categories reveal">
+      <h2 class="section-title">NAVEGUE POR CATEGORIAS</h2>
+      <p class="section-subtitle">Encontre exatamente o que você precisa</p>
+
+      <div class="categories-grid">
+        <a href="#" class="category-card">
+          <div class="category-image">
+            <img
+              src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+              alt="Esculturas 3D">
+          </div>
+          <div class="category-content">
+            <h3>Esculturas 3D</h3>
+            <p>Mais de 50 modelos</p>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-image">
+            <img
+              src="https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+              alt="Decoração">
+          </div>
+          <div class="category-content">
+            <h3>Decoração</h3>
+            <p>Itens para sua casa</p>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-image">
+            <img
+              src="https://images.unsplash.com/photo-1532464564361-898e8d8d5e4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+              alt="Acessórios Gamer">
+          </div>
+          <div class="category-content">
+            <h3>Acessórios Gamer</h3>
+            <p>Para o seu setup</p>
+          </div>
+        </a>
+
+        <a href="#" class="category-card">
+          <div class="category-image">
+            <img
+              src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+              alt="Personalizados">
+          </div>
+          <div class="category-content">
+            <h3>Personalizados</h3>
+            <p>Feitos sob medida</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- CTA CATÁLOGO -->
+    <section class="catalog-cta reveal">
+      <div class="cta-content">
+        <i class="fas fa-lightbulb cta-icon"></i>
+        <h2>NÃO ENCONTROU O QUE PROCURAVA?</h2>
+        <p>Temos um serviço de criação personalizada! Envie sua ideia e nós a transformaremos em realidade.</p>
+        <a href="servicos.html" class="btn-hero">Solicitar Orçamento Personalizado</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="main-footer" id="footer">
+    <div class="container footer-grid">
+
+      <section class="footer-brand">
+        <span class="logo">UNIVERSO PARALELO</span>
+        <p>Transformando ideias em objetos através da impressão 3D com qualidade e criatividade.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a>
+          <a href="#"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </section>
+
+      <section>
+        <h4>LINKS RÁPIDOS</h4>
+        <ul class="footer-links">
+          <li><a href="home.html">Início</a></li>
+          <li><a href="catalogo.html">Catálogo 3D</a></li>
+          <li><a href="servicos.html">Serviços</a></li>
+          <li><a href="sobre.html">Sobre Nós</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h4>CONTATO</h4>
+        <p><i class="fas fa-phone"></i> +55 21 99999-9999</p>
+        <p><i class="fas fa-envelope"></i> universoparalelostore@gmail.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Rio de Janeiro, Brasil</p>
+      </section>
+
+      <section>
+        <h4>NEWSLETTER</h4>
+        <p>Inscreva-se para receber novidades e promoções</p>
+        <form class="newsletter-form">
+          <input type="email" placeholder="Seu e-mail" required>
+          <button type="submit"><i class="fas fa-paper-plane"></i></button>
+        </form>
+      </section>
+    </div>
+
+    <div class="footer-bottom">
+      <p>Universo Paralelo Store © 2023 - Todos os direitos reservados</p>
+    </div>
+  </footer>
+
+  <!-- PRODUTOS SAMPLE DATA -->
+  <script>
+    
+    const productsData = [
+      { id: 1, name: "Crânio T-Rex 3D", category: "Esculturas", price: 120, badge: "Mais Vendido", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 2, name: "Troféu Personalizado", category: "Troféus", price: 95, badge: "Novidade", image: "https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 3, name: "Suporte para Headphone", category: "Gamer", price: 65, badge: "Oferta", image: "https://images.unsplash.com/photo-1532464564361-898e8d8d5e4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 4, name: "Estatueta Gamer", category: "Gamer", price: 150, badge: "", image: "https://images.unsplash.com/photo-1572635148813-8667b61d5b63?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 5, name: "Vaso Geométrico", category: "Decoração", price: 80, badge: "Popular", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 6, name: "Porta-Canetas Astronauta", category: "Escritório", price: 45, badge: "", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 7, name: "Luminária Lunar", category: "Decoração", price: 180, badge: "Premium", image: "https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 8, name: "Suporte para Celular", category: "Acessórios", price: 35, badge: "", image: "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 9, name: "Dragão Alado", category: "Esculturas", price: 220, badge: "Exclusivo", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 10, name: "Chaveiro Personalizado", category: "Personalizados", price: 25, badge: "", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 11, name: "Miniatura de Castelo", category: "Decoração", price: 160, badge: "Destaque", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 12, name: "Organizador de Mesa", category: "Escritório", price: 75, badge: "", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 13, name: "Robô Futurista", category: "Esculturas", price: 140, badge: "Novidade", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 14, name: "Suporte para Controle", category: "Gamer", price: 55, badge: "", image: "https://images.unsplash.com/photo-1532464564361-898e8d8d5e4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 15, name: "Estatueta de Fênix", category: "Esculturas", price: 195, badge: "Premium", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 16, name: "Porta-Jóias", category: "Decoração", price: 110, badge: "", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 17, name: "Troféu de Campeonato", category: "Troféus", price: 130, badge: "", image: "https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 18, name: "Miniatura de Nave Espacial", category: "Decoração", price: 90, badge: "Novidade", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 19, name: "Organizador de Cabos", category: "Escritório", price: 40, badge: "", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 20, name: "Estatueta de Samurai", category: "Esculturas", price: 175, badge: "Exclusivo", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 21, name: "Luminária de Mesa", category: "Decoração", price: 125, badge: "", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 22, name: "Porta-Cartões", category: "Acessórios", price: 30, badge: "", image: "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 23, name: "Dragão de Resina", category: "Esculturas", price: 210, badge: "Premium", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 24, name: "Mini Estante", category: "Escritório", price: 65, badge: "", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 25, name: "Estatueta de Cavaleiro", category: "Esculturas", price: 155, badge: "Novidade", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 26, name: "Porta-Retratos", category: "Decoração", price: 50, badge: "", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 27, name: "Suporte para Livros", category: "Escritório", price: 85, badge: "", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 28, name: "Miniatura de Dinossauro", category: "Decoração", price: 75, badge: "", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 29, name: "Organizador de Maquiagem", category: "Decoração", price: 95, badge: "Popular", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 30, name: "Suporte para Tablet", category: "Acessórios", price: 60, badge: "", image: "https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 31, name: "Estatueta de Robô", category: "Esculturas", price: 135, badge: "", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 32, name: "Porta-Velas", category: "Decoração", price: 70, badge: "", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 33, name: "Organizador de Ferramentas", category: "Utilidades", price: 105, badge: "", image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 34, name: "Miniatura de Carro", category: "Decoração", price: 55, badge: "", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 35, name: "Suporte para Planta", category: "Decoração", price: 45, badge: "", image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" },
+      { id: 36, name: "Estatueta de Anjo", category: "Esculturas", price: 165, badge: "Premium", image: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    // Configurações de paginação
+    const productsPerPage = 6;
+    let currentPage = 1;
+    let filteredProducts = [...productsData];
+
+    // Inicializar página
+    document.addEventListener('DOMContentLoaded', function () {
+      renderProducts();
+      setupPagination();
+      setupEventListeners();
+      setupScrollAnimation();
+      updateProductCount();
+    });
+
+    // Renderizar produtos
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+
+      // Calcular produtos para a página atual
+      const startIndex = (currentPage - 1) * productsPerPage;
+      const endIndex = startIndex + productsPerPage;
+      const pageProducts = filteredProducts.slice(startIndex, endIndex);
+
+      // Renderizar cada produto
+      pageProducts.forEach(product => {
+        const productCard = createProductCard(product);
+        grid.appendChild(productCard);
+      });
+
+      // Atualizar paginação
+      updatePagination();
+    }
+
+    // Criar card de produto
+    function createProductCard(product) {
+      const li = document.createElement('li');
+      li.className = 'product-item reveal';
+
+      const badgeHTML = product.badge ? `<span class="badge">${product.badge}</span>` : '';
+
+      li.innerHTML = `
+        <article class="product-card">
+          ${badgeHTML}
+          <figure class="product-image">
+            <img src="${product.image}" alt="${product.name}">
+          </figure>
+          <section class="product-details">
+            <div class="product-category">${product.category}</div>
+            <h3>${product.name}</h3>
+            <p class="price">R$ ${product.price.toFixed(2)}</p>
+            <footer class="card-actions">
+              <button class="btn-primary" data-id="${product.id}">
+                <i class="fas fa-shopping-cart"></i> Comprar
+              </button>
+              <button class="btn-secondary" data - id="${product.id}" onclick = "viewProductDetails(${product.id})" >
+        <i class="fas fa-eye"></i> Detalhes
+</button>
+            </footer>
+          </section>
+        </article>
+      `;
+
+      return li;
+    }
+
+    function viewProductDetails(productId) {
+        // Redirecionar para a página de detalhes
+        window.location.href = `detalhes-produto.html?id=${productId}`;
+      }
+
+      // E no início do script, adicione a criação de event listener para os botões de detalhes:
+      document.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-secondary')) {
+          const productId = e.target.closest('.btn-secondary').dataset.id;
+          viewProductDetails(productId);
+        }
+      });
+
+    // Configurar paginação
+    function setupPagination() {
+      const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+      document.getElementById('totalPages').textContent = totalPages;
+
+      // Gerar números de página
+      const pageNumbers = document.querySelector('.page-numbers');
+      pageNumbers.innerHTML = '';
+
+      for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+        const button = document.createElement('button');
+        button.className = `page-number ${i === 1 ? 'active' : ''}`;
+        button.textContent = i;
+        button.addEventListener('click', () => goToPage(i));
+        pageNumbers.appendChild(button);
+      }
+
+      if (totalPages > 5) {
+        const dots = document.createElement('span');
+        dots.className = 'page-dots';
+        dots.textContent = '...';
+        pageNumbers.appendChild(dots);
+
+        const lastButton = document.createElement('button');
+        lastButton.className = 'page-number';
+        lastButton.textContent = totalPages;
+        lastButton.addEventListener('click', () => goToPage(totalPages));
+        pageNumbers.appendChild(lastButton);
+      }
+    }
+
+    // Ir para página específica
+    function goToPage(page) {
+      currentPage = page;
+      document.getElementById('currentPage').textContent = page;
+
+      // Atualizar botões ativos
+      document.querySelectorAll('.page-number').forEach((btn, index) => {
+        btn.classList.remove('active');
+        if (btn.textContent == page) btn.classList.add('active');
+      });
+
+      renderProducts();
+      window.scrollTo({ top: document.querySelector('.catalog-content').offsetTop - 100, behavior: 'smooth' });
+    }
+
+    // Atualizar paginação
+    function updatePagination() {
+      const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+      const prevBtn = document.querySelector('.prev-btn');
+      const nextBtn = document.querySelector('.next-btn');
+
+      // Habilitar/desabilitar botões
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages;
+
+      // Atualizar contador
+      document.querySelector('.product-count').textContent =
+        `${filteredProducts.length} produtos encontrados`;
+    }
+
+    // Configurar event listeners
+    function setupEventListeners() {
+      // Botões de paginação
+      document.querySelector('.prev-btn').addEventListener('click', () => {
+        if (currentPage > 1) goToPage(currentPage - 1);
+      });
+
+      document.querySelector('.next-btn').addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+        if (currentPage < totalPages) goToPage(currentPage + 1);
+      });
+
+      // Filtros rápidos
+      document.querySelectorAll('.quick-filter').forEach(btn => {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.quick-filter').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+
+          const filter = this.textContent.toLowerCase().trim();
+          if (filter === 'todos') {
+            filteredProducts = [...productsData];
+          } else {
+            filteredProducts = productsData.filter(p =>
+              p.category.toLowerCase().includes(filter) ||
+              p.name.toLowerCase().includes(filter) ||
+              p.badge.toLowerCase().includes(filter)
+            );
+          }
+
+          currentPage = 1;
+          renderProducts();
+          setupPagination();
+        });
+      });
+
+      // Controles de visualização
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+
+          const view = this.dataset.view;
+          const grid = document.getElementById('productsGrid');
+          grid.className = `products-grid ${view}-view`;
+        });
+      });
+
+      // Toggle de filtros
+      document.querySelector('.filter-toggle').addEventListener('click', function () {
+        document.querySelector('.filter-dropdown').classList.toggle('active');
+      });
+
+      // Aplicar filtros
+      document.querySelector('.apply-filters').addEventListener('click', function () {
+        // Aqui você implementaria a lógica de filtragem real
+        document.querySelector('.filter-dropdown').classList.remove('active');
+        filteredProducts = [...productsData]; // Reset por enquanto
+        currentPage = 1;
+        renderProducts();
+        setupPagination();
+      });
+
+      // Limpar filtros
+      document.querySelector('.clear-filters').addEventListener('click', function () {
+        document.querySelectorAll('.filter-checkbox input').forEach(cb => cb.checked = false);
+        document.querySelector('.filter-checkbox input').checked = true; // Marcar "Todos"
+        document.querySelector('.price-slider').value = 250;
+        document.querySelector('.sort-select').selectedIndex = 0;
+        filteredProducts = [...productsData];
+        currentPage = 1;
+        renderProducts();
+        setupPagination();
+      });
+
+      // Busca
+      document.querySelector('.search-input').addEventListener('input', function (e) {
+        const searchTerm = e.target.value.toLowerCase();
+        if (searchTerm.length > 2) {
+          filteredProducts = productsData.filter(p =>
+            p.name.toLowerCase().includes(searchTerm) ||
+            p.category.toLowerCase().includes(searchTerm)
+          );
+        } else {
+          filteredProducts = [...productsData];
+        }
+
+        currentPage = 1;
+        renderProducts();
+        setupPagination();
+      });
+
+      // Adicionar ao carrinho
+      document.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-primary')) {
+          const productId = e.target.closest('.btn-primary').dataset.id;
+          addToCart(productId);
+        }
+      });
+    }
+
+    // Adicionar ao carrinho
+    function addToCart(productId) {
+      const cartCount = document.querySelector('.cart-count');
+      let count = parseInt(cartCount.textContent) || 0;
+      count++;
+      cartCount.textContent = count;
+      cartCount.classList.add('pulse');
+
+      setTimeout(() => {
+        cartCount.classList.remove('pulse');
+      }, 300);
+
+      // Feedback visual
+      const button = document.querySelector(`.btn-primary[data-id="${productId}"]`);
+      const originalHTML = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
+      button.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+
+      setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.style.background = '';
+      }, 1500);
+    }
+
+    // Animação de scroll
+    function setupScrollAnimation() {
+      const revealElements = document.querySelectorAll('.reveal');
+
+      function revealOnScroll() {
+        const windowHeight = window.innerHeight;
+        const revealPoint = 100;
+
+        revealElements.forEach(element => {
+          const revealTop = element.getBoundingClientRect().top;
+
+          if (revealTop < windowHeight - revealPoint) {
+            element.classList.add('active');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', revealOnScroll);
+      revealOnScroll();
+    }
+
+    // Atualizar contador de produtos
+    function updateProductCount() {
+      const count = productsData.length;
+      document.querySelector('.product-count').textContent = `${count} produtos encontrados`;
+    }
+  </script>
+
+</body>
+
+</html>

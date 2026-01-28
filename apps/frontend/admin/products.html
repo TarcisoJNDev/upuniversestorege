@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produtos - Admin</title>
+  <link rel="stylesheet" href="../public/css/style(OFC).css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="products.css">
+  <script src="../public/js/api.js"></script>
+</head>
+
+<body>
+  <div class="admin-wrapper">
+    <!-- Sidebar (simplificada) -->
+    <aside class="admin-sidebar" style="width: 70px;">
+      <!-- Sidebar minimalista -->
+      <nav style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 30px;">
+        <a href="dashboard.html" style="color: #C084FC; font-size: 20px;">
+          <i class="fas fa-tachometer-alt"></i>
+        </a>
+        <a href="products.html" style="color: #DF38FF; font-size: 20px;">
+          <i class="fas fa-cube"></i>
+        </a>
+        <a href="categories.html" style="color: #C084FC; font-size: 20px;">
+          <i class="fas fa-tags"></i>
+        </a>
+        <a href="product-form.html" style="color: #C084FC; font-size: 20px;">
+          <i class="fas fa-plus-circle"></i>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="products-header">
+        <div class="header-title">
+          <h1>Gerenciar Produtos</h1>
+          <p>Gerencie todos os produtos da sua loja</p>
+        </div>
+        <div class="products-toolbar">
+          <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Buscar produtos..." id="searchInput">
+          </div>
+          <a href="product-form.html" class="btn-new-product">
+            <i class="fas fa-plus"></i>
+            Novo Produto
+          </a>
+        </div>
+      </header>
+
+      <!-- Filtros -->
+      <div class="products-filters">
+        <select class="filter-select" id="categoryFilter">
+          <option value="">Todas as categorias</option>
+          <option value="esculturas">Esculturas 3D</option>
+          <option value="decoracao">Decoração</option>
+          <option value="utilitarios">Utilitários</option>
+          <option value="prototipos">Protótipos</option>
+          <option value="brinquedos">Brinquedos</option>
+        </select>
+
+        <select class="filter-select" id="statusFilter">
+          <option value="">Todos os status</option>
+          <option value="active">Ativo</option>
+          <option value="inactive">Inativo</option>
+          <option value="out_of_stock">Esgotado</option>
+        </select>
+
+        <select class="filter-select" id="sortFilter">
+          <option value="newest">Ordenar por: Mais recentes</option>
+          <option value="name_asc">Ordenar por: Nome (A-Z)</option>
+          <option value="name_desc">Ordenar por: Nome (Z-A)</option>
+          <option value="price_asc">Ordenar por: Preço (menor)</option>
+          <option value="price_desc">Ordenar por: Preço (maior)</option>
+        </select>
+
+        <button class="btn-action btn-view" style="padding: 12px 25px;" id="applyFiltersBtn">
+          <i class="fas fa-filter"></i>
+          Aplicar Filtros
+        </button>
+
+        <button class="btn-action btn-view" style="padding: 12px 25px; background: #4CAF50;" id="refreshBtn">
+          <i class="fas fa-sync-alt"></i>
+          Atualizar
+        </button>
+      </div>
+
+      <!-- Tabela de Produtos -->
+      <div class="products-table-container">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">
+                <input type="checkbox" id="selectAll">
+              </th>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Preço</th>
+              <th>Estoque</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <!-- Os produtos serão carregados aqui dinamicamente -->
+            <tr id="loadingRow">
+              <td colspan="7" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
+                <p style="margin-top: 10px;">Carregando produtos...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginação -->
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfo">
+          Carregando...
+        </div>
+        <div class="pagination-controls">
+          <button class="btn-pagination" id="prevPageBtn" disabled>
+            <i class="fas fa-chevron-left"></i>
+            Anterior
+          </button>
+          <div class="page-numbers" id="pageNumbers">
+            <span class="page-number active">1</span>
+          </div>
+          <button class="btn-pagination" id="nextPageBtn">
+            Próxima
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Ações em massa -->
+      <div id="bulkActions"
+        style="display: none; margin-top: 30px; padding: 20px; background: rgba(26, 0, 43, 0.7); border-radius: 12px; border: 1px solid rgba(124, 58, 237, 0.2); display: flex; gap: 15px; align-items: center;">
+        <span style="color: #aaa; font-size: 14px;">Com <strong id="selectedCount">0</strong> selecionados:</span>
+        <select id="bulkActionSelect"
+          style="padding: 10px 15px; background: rgba(11, 0, 21, 0.8); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 8px; color: #fff; font-size: 13px;">
+          <option value="">Ações em massa...</option>
+          <option value="activate">Ativar selecionados</option>
+          <option value="deactivate">Desativar selecionados</option>
+          <option value="delete">Excluir selecionados</option>
+        </select>
+        <button id="applyBulkActionBtn"
+          style="padding: 10px 20px; background: linear-gradient(135deg, #DF38FF, #7C3AED); border: none; border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.3s ease;">
+          Aplicar
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de Confirmação -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeDeleteModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      <h2 class="modal-title">Excluir Produto</h2>
+      <p class="modal-text" id="deleteModalText">
+        Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-modal cancel" onclick="closeDeleteModal()">
+          Cancelar
+        </button>
+        <button class="btn-modal delete" onclick="confirmDelete()">
+          Sim, excluir
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log("📦 Iniciando página de produtos...");
+
+      // Verificar login
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Variáveis globais
+      let allProducts = [];
+      let filteredProducts = [];
+      let currentPage = 1;
+      const productsPerPage = 10;
+      let productToDelete = null;
+
+      // Elementos DOM
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const statusFilter = document.getElementById('statusFilter');
+      const sortFilter = document.getElementById('sortFilter');
+      const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const productsTableBody = document.getElementById('productsTableBody');
+      const paginationInfo = document.getElementById('paginationInfo');
+      const prevPageBtn = document.getElementById('prevPageBtn');
+      const nextPageBtn = document.getElementById('nextPageBtn');
+      const pageNumbers = document.getElementById('pageNumbers');
+      const bulkActions = document.getElementById('bulkActions');
+      const selectedCount = document.getElementById('selectedCount');
+      const bulkActionSelect = document.getElementById('bulkActionSelect');
+      const applyBulkActionBtn = document.getElementById('applyBulkActionBtn');
+      const selectAll = document.getElementById('selectAll');
+
+      // === FUNÇÕES PRINCIPAIS ===
+
+      // Carregar produtos da API
+      async function loadProducts() {
+        try {
+          console.log("📥 Carregando produtos da API...");
+
+          // Mostrar loading
+          productsTableBody.innerHTML = `
+            <tr id="loadingRow">
+              <td colspan="7" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
+                <p style="margin-top: 10px;">Carregando produtos...</p>
+              </td>
+            </tr>
+          `;
+
+          // Buscar produtos
+          allProducts = await ProductAPI.getAllProducts();
+          console.log(`✅ ${allProducts.length} produtos carregados`);
+
+          // Aplicar filtros iniciais
+          applyFilters();
+
+        } catch (error) {
+          console.error("❌ Erro ao carregar produtos:", error);
+          showNotification('Erro ao carregar produtos', 'error');
+
+          productsTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px; color: #f44336;">
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                <p style="margin-top: 10px;">Erro ao carregar produtos</p>
+                <button onclick="loadProducts()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                  Tentar novamente
+                </button>
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      // Aplicar filtros
+      function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const category = categoryFilter.value;
+        const status = statusFilter.value;
+        const sortBy = sortFilter.value;
+
+        console.log("🔍 Aplicando filtros:", { searchTerm, category, status, sortBy });
+
+        // Filtrar produtos
+        filteredProducts = allProducts.filter(product => {
+          // Busca por texto
+          const matchesSearch = !searchTerm ||
+            product.name.toLowerCase().includes(searchTerm) ||
+            (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+            (product.sku && product.sku.toLowerCase().includes(searchTerm));
+
+          // Filtro por categoria
+          const matchesCategory = !category || product.category === category;
+
+          // Filtro por status
+          const matchesStatus = !status || product.status === status;
+
+          return matchesSearch && matchesCategory && matchesStatus;
+        });
+
+        // Ordenar produtos
+        filteredProducts.sort((a, b) => {
+          switch (sortBy) {
+            case 'name_asc':
+              return a.name.localeCompare(b.name);
+            case 'name_desc':
+              return b.name.localeCompare(a.name);
+            case 'price_asc':
+              return a.price - b.price;
+            case 'price_desc':
+              return b.price - a.price;
+            case 'newest':
+            default:
+              return new Date(b.created_at) - new Date(a.created_at);
+          }
+        });
+
+        console.log(`📊 ${filteredProducts.length} produtos após filtragem`);
+
+        // Atualizar exibição
+        currentPage = 1;
+        updateTable();
+        updatePagination();
+      }
+
+      // Atualizar tabela
+      function updateTable() {
+        const startIndex = (currentPage - 1) * productsPerPage;
+        const endIndex = startIndex + productsPerPage;
+        const pageProducts = filteredProducts.slice(startIndex, endIndex);
+
+        if (pageProducts.length === 0) {
+          productsTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px;">
+                <i class="fas fa-box-open fa-2x" style="color: #7C3AED; opacity: 0.5;"></i>
+                <p style="margin-top: 10px; color: #aaa;">Nenhum produto encontrado</p>
+                ${filteredProducts.length === 0 && allProducts.length > 0 ?
+              '<p style="color: #888; font-size: 14px;">Tente ajustar os filtros</p>' :
+              '<a href="product-form.html" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; text-decoration: none; border-radius: 5px;">Criar primeiro produto</a>'}
+              </td>
+            </tr>
+          `;
+          bulkActions.style.display = 'none';
+          return;
+        }
+
+        // Gerar linhas da tabela
+        let tableHTML = '';
+
+        pageProducts.forEach((product, index) => {
+          const isFeatured = product.featured ? '<span style="margin-left: 5px; color: #FFD700;"><i class="fas fa-star"></i></span>' : '';
+
+          // Determinar status do estoque
+          let stockStatusClass = '';
+          let stockStatusIcon = '';
+          let stockStatusText = '';
+
+          if (product.status === 'inactive') {
+            stockStatusClass = 'stock-out';
+            stockStatusIcon = 'fas fa-ban';
+            stockStatusText = 'Inativo';
+          } else if (product.stock === 0) {
+            stockStatusClass = 'stock-out';
+            stockStatusIcon = 'fas fa-times-circle';
+            stockStatusText = 'Esgotado';
+          } else if (product.stock <= 5) {
+            stockStatusClass = 'stock-low';
+            stockStatusIcon = 'fas fa-exclamation-triangle';
+            stockStatusText = 'Estoque baixo';
+          } else {
+            stockStatusClass = 'stock-in';
+            stockStatusIcon = 'fas fa-check-circle';
+            stockStatusText = 'Em estoque';
+          }
+
+          // Imagem do produto (se houver)
+          let imageUrl = product.image_url ||
+            'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
+
+          // Se for base64, usar diretamente
+          if (product.image_url && product.image_url.startsWith('data:image')) {
+            imageUrl = product.image_url;
+          }
+
+          // Formatar preço
+          const formattedPrice = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+          }).format(product.price);
+
+          // SKU ou ID
+          const productId = product.sku || `PROD-${String(product.id).padStart(3, '0')}`;
+
+          tableHTML += `
+            <tr data-product-id="${product.id}">
+              <td>
+                <input type="checkbox" class="product-checkbox" data-product-id="${product.id}">
+              </td>
+              <td>
+                <div class="product-cell">
+                  <div class="product-image">
+                    <img src="${imageUrl}" alt="${product.name}" 
+                         onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'">
+                  </div>
+                  <div class="product-info">
+                    <h4>${product.name} ${isFeatured}</h4>
+                    <p>ID: ${productId}</p>
+                  </div>
+                </div>
+              </td>
+              <td>${product.category || 'Não categorizado'}</td>
+              <td>
+                <strong style="color: #C084FC;">${formattedPrice}</strong>
+              </td>
+              <td>${product.stock} unidades</td>
+              <td>
+                <span class="stock-status ${stockStatusClass}">
+                  <i class="${stockStatusIcon}"></i>
+                  ${stockStatusText}
+                </span>
+              </td>
+              <td>
+                <div class="actions-cell">
+                  <button class="btn-action btn-view" onclick="viewProduct(${product.id})">
+                    <i class="far fa-eye"></i>
+                    Ver
+                  </button>
+                  <button class="btn-action btn-edit" onclick="editProduct(${product.id})">
+                    <i class="far fa-edit"></i>
+                    Editar
+                  </button>
+                  <button class="btn-action btn-delete" onclick="showDeleteModal(${product.id}, '${product.name}')">
+                    <i class="far fa-trash-alt"></i>
+                    Excluir
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+
+        productsTableBody.innerHTML = tableHTML;
+        updateBulkActions();
+      }
+
+      // Atualizar paginação
+      function updatePagination() {
+        const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+        // Atualizar informações
+        const startProduct = (currentPage - 1) * productsPerPage + 1;
+        const endProduct = Math.min(currentPage * productsPerPage, filteredProducts.length);
+
+        paginationInfo.innerHTML = filteredProducts.length > 0 ?
+          `Mostrando <strong>${startProduct}-${endProduct}</strong> de <strong>${filteredProducts.length}</strong> produtos` :
+          'Nenhum produto encontrado';
+
+        // Atualizar botões
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+        // Atualizar números de página
+        let pageNumbersHTML = '';
+        const maxPagesToShow = 5;
+
+        if (totalPages <= maxPagesToShow) {
+          for (let i = 1; i <= totalPages; i++) {
+            pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
+          }
+        } else {
+          // Lógica para mostrar páginas com "..." quando há muitas
+          if (currentPage <= 3) {
+            for (let i = 1; i <= 4; i++) {
+              pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
+            }
+            pageNumbersHTML += '<span class="page-dots">...</span>';
+            pageNumbersHTML += `<span class="page-number" onclick="goToPage(${totalPages})">${totalPages}</span>`;
+          } else if (currentPage >= totalPages - 2) {
+            pageNumbersHTML += `<span class="page-number" onclick="goToPage(1)">1</span>`;
+            pageNumbersHTML += '<span class="page-dots">...</span>';
+            for (let i = totalPages - 3; i <= totalPages; i++) {
+              pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
+            }
+          } else {
+            pageNumbersHTML += `<span class="page-number" onclick="goToPage(1)">1</span>`;
+            pageNumbersHTML += '<span class="page-dots">...</span>';
+            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+              pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
+            }
+            pageNumbersHTML += '<span class="page-dots">...</span>';
+            pageNumbersHTML += `<span class="page-number" onclick="goToPage(${totalPages})">${totalPages}</span>`;
+          }
+        }
+
+        pageNumbers.innerHTML = pageNumbersHTML;
+      }
+
+      // Atualizar ações em massa
+      function updateBulkActions() {
+        const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+        const selectedCountValue = selectedCheckboxes.length;
+
+        if (selectedCountValue > 0) {
+          bulkActions.style.display = 'flex';
+          selectedCount.textContent = selectedCountValue;
+        } else {
+          bulkActions.style.display = 'none';
+        }
+      }
+
+      // === FUNÇÕES DE NAVEGAÇÃO ===
+      window.goToPage = function (page) {
+        if (page < 1 || page > Math.ceil(filteredProducts.length / productsPerPage)) return;
+        currentPage = page;
+        updateTable();
+        updatePagination();
+      }
+
+      window.viewProduct = function (productId) {
+        // Implementar visualização detalhada do produto
+        console.log("👁️ Visualizando produto:", productId);
+        // Aqui você pode abrir um modal ou redirecionar para uma página de detalhes
+        showNotification(`Visualizando produto ID: ${productId}`, 'info');
+      }
+
+      window.editProduct = function (productId) {
+        console.log("✏️ Editando produto:", productId);
+        // Redirecionar para página de edição
+        window.location.href = `product-form.html?edit=${productId}`;
+      }
+
+      // === FUNÇÕES DO MODAL DE EXCLUSÃO ===
+      window.showDeleteModal = function (productId, productName) {
+        productToDelete = productId;
+        const modal = document.getElementById('deleteModal');
+        modal.classList.add('show');
+
+        document.getElementById('deleteModalText').textContent =
+          `Tem certeza que deseja excluir o produto "${productName}"? Esta ação não pode ser desfeita.`;
+      }
+
+      window.closeDeleteModal = function () {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('show');
+        productToDelete = null;
+      }
+
+      window.confirmDelete = async function () {
+        if (!productToDelete) return;
+
+        try {
+          console.log(`🗑️ Excluindo produto ${productToDelete}...`);
+
+          const result = await ProductAPI.deleteProduct(productToDelete);
+
+          if (result.success) {
+            showNotification('Produto excluído com sucesso!', 'success');
+
+            // Remover produto da lista local
+            allProducts = allProducts.filter(p => p.id !== productToDelete);
+            filteredProducts = filteredProducts.filter(p => p.id !== productToDelete);
+
+            // Atualizar exibição
+            updateTable();
+            updatePagination();
+          } else {
+            showNotification(`Erro: ${result.error || 'Não foi possível excluir o produto'}`, 'error');
+          }
+        } catch (error) {
+          console.error("❌ Erro ao excluir produto:", error);
+          showNotification('Erro ao excluir produto', 'error');
+        }
+
+        closeDeleteModal();
+      }
+
+      // === FUNÇÕES DE AÇÕES EM MASSA ===
+      async function applyBulkAction() {
+        const action = bulkActionSelect.value;
+        const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+
+        if (!action || selectedCheckboxes.length === 0) {
+          showNotification('Selecione uma ação e pelo menos um produto', 'warning');
+          return;
+        }
+
+        const productIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.productId));
+
+        try {
+          let successCount = 0;
+          let errorCount = 0;
+
+          for (const productId of productIds) {
+            try {
+              let result;
+
+              switch (action) {
+                case 'activate':
+                  result = await ProductAPI.updateProduct(productId, { status: 'active' });
+                  break;
+                case 'deactivate':
+                  result = await ProductAPI.updateProduct(productId, { status: 'inactive' });
+                  break;
+                case 'delete':
+                  result = await ProductAPI.deleteProduct(productId);
+                  break;
+              }
+
+              if (result && result.success) {
+                successCount++;
+              } else {
+                errorCount++;
+              }
+            } catch (error) {
+              errorCount++;
+              console.error(`Erro processando produto ${productId}:`, error);
+            }
+          }
+
+          // Recarregar produtos
+          await loadProducts();
+
+          // Mostrar resultado
+          if (errorCount === 0) {
+            showNotification(`${successCount} produto(s) ${getActionText(action)} com sucesso!`, 'success');
+          } else {
+            showNotification(`${successCount} sucesso(s), ${errorCount} erro(s)`, 'warning');
+          }
+
+          // Resetar seleção
+          selectAll.checked = false;
+          document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = false);
+          updateBulkActions();
+
+        } catch (error) {
+          console.error("❌ Erro nas ações em massa:", error);
+          showNotification('Erro ao processar ações em massa', 'error');
+        }
+      }
+
+      function getActionText(action) {
+        switch (action) {
+          case 'activate': return 'ativado(s)';
+          case 'deactivate': return 'desativado(s)';
+          case 'delete': return 'excluído(s)';
+          default: return 'processado(s)';
+        }
+      }
+
+      // === EVENT LISTENERS ===
+      // Selecionar todos
+      selectAll.addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = this.checked;
+        });
+        updateBulkActions();
+      });
+
+      // Atualizar contagem quando checkboxes mudam
+      document.addEventListener('change', function (e) {
+        if (e.target.classList.contains('product-checkbox')) {
+          updateBulkActions();
+        }
+      });
+
+      // Busca em tempo real
+      searchInput.addEventListener('input', function () {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+          applyFilters();
+        }, 500);
+      });
+
+      // Filtros
+      categoryFilter.addEventListener('change', applyFilters);
+      statusFilter.addEventListener('change', applyFilters);
+      sortFilter.addEventListener('change', applyFilters);
+      applyFiltersBtn.addEventListener('click', applyFilters);
+
+      // Botão de atualizar
+      refreshBtn.addEventListener('click', function () {
+        loadProducts();
+        showNotification('Produtos atualizados!', 'info');
+      });
+
+      // Botões de paginação
+      prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+      nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
+
+      // Ações em massa
+      applyBulkActionBtn.addEventListener('click', applyBulkAction);
+
+      // Carregar produtos inicialmente
+      loadProducts();
+    });
+
+    // === FUNÇÃO DE NOTIFICAÇÃO ===
+    function showNotification(message, type = 'info') {
+      console.log(`📢 Notificação [${type}]: ${message}`);
+
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #1a002b, #0b0015);
+        border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        max-width: 400px;
+      `;
+
+      const icon = type === 'success' ? 'check-circle' :
+        type === 'error' ? 'exclamation-circle' :
+          type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
+      notification.innerHTML = `
+        <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
+        <span>${message}</span>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 4000);
+    }
+
+    // === ANIMAÇÕES CSS ===
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(100%); }
+      }
+      
+      .page-dots {
+        color: #888;
+        padding: 5px 10px;
+      }
+      
+      .page-number {
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      
+      .page-number:hover {
+        background: rgba(124, 58, 237, 0.2);
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+
+</html>

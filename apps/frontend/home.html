@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universo Paralelo Store | Home</title>
+  <!-- Em todas as páginas -->
+  <link rel="stylesheet" href="public/css/style(OFC).css">
+  
+  
+  <!-- Se quiser carregar CSS específico só quando necessário -->
+  <!--<link rel="stylesheet" href="public/css/base.css">-->
+  <!--<link rel="stylesheet" href="public/css/components.css">-->
+  <!--<link rel="stylesheet" href="public/css/layout.css">-->
+  <!-- E depois o CSS específico da página -->
+  <!--<link rel="stylesheet" href="public/css/pages/home.css">-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+  <header class="main-header">
+    <nav class="container nav-container">
+      <a href="home.html" class="logo">UNIVERSO PARALELO</a>
+      <ul class="nav-menu">
+        <li><a href="home.html" class="active">Início</a></li>
+        <li><a href="catalogo.html">Catálogo 3D</a></li>
+        <li><a href="servicos.html">Serviços</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="#footer">Contato</a></li>
+      </ul>
+      <div class="header-actions">
+        <a href="carrinho.html" class="cart-icon">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero Carousel -->
+    <section class="hero-carousel reveal">
+      <div class="carousel-container">
+        <div class="carousel-slide active">
+          <div class="carousel-content">
+            <h1 class="carousel-title">IMPRESSÃO 3D COM IDENTIDADE</h1>
+            <p class="carousel-text">Produtos exclusivos, personalizados e impressos em 3D com qualidade premium. Do
+              conceito ao objeto físico.</p>
+            <a href="catalogo.html" class="btn-hero">Explorar Catálogo</a>
+          </div>
+          <div class="carousel-image">
+            <img
+              src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80"
+              alt="Impressora 3D em ação">
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <div class="carousel-content">
+            <h1 class="carousel-title">PERSONALIZAÇÃO TOTAL</h1>
+            <p class="carousel-text">Crie produtos únicos com suas ideias. Oferecemos suporte completo para
+              desenvolvimento de projetos personalizados.</p>
+            <a href="servicos.html" class="btn-hero">Conhecer Serviços</a>
+          </div>
+          <div class="carousel-image">
+            <img
+              src="https://images.unsplash.com/photo-1542744095-fcf48d80b0fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80"
+              alt="Objetos 3D personalizados">
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <div class="carousel-content">
+            <h1 class="carousel-title">MATERIAIS DE ALTA QUALIDADE</h1>
+            <p class="carousel-text">Utilizamos filamentos premium para garantir durabilidade, acabamento perfeito e
+              cores vibrantes em todas as peças.</p>
+            <a href="catalogo.html" class="btn-hero">Ver Materiais</a>
+          </div>
+          <div class="carousel-image">
+            <img
+              src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80"
+              alt="Filamentos 3D coloridos">
+          </div>
+        </div>
+
+        <button class="carousel-btn prev-btn">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="carousel-btn next-btn">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <div class="carousel-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Destaques -->
+    <section class="featured-section reveal">
+      <div class="section-header">
+        <h2 class="section-title">PRODUTOS EM DESTAQUE</h2>
+        <p class="section-subtitle">As peças mais populares da nossa coleção</p>
+      </div>
+
+      <ul class="products-grid">
+        <li class="product-item">
+          <article class="product-card">
+            <span class="badge">Mais Vendido</span>
+            <figure class="product-image">
+              <img src="public/images/osman-talha-dikyar-DAN_8SELMB8-unsplash.jpg" alt="Crânio T-Rex 3D">
+            </figure>
+            <section class="product-details">
+              <h3>Crânio T-Rex 3D</h3>
+              <small>Escultura decorativa - 18cm</small>
+              <p class="price">R$ 120,00</p>
+              <footer class="card-actions">
+                <button class="btn-primary">Comprar Agora</button>
+                <button class="btn-secondary">Detalhes</button>
+              </footer>
+            </section>
+          </article>
+        </li>
+
+        <li class="product-item">
+          <article class="product-card">
+            <span class="badge">Novidade</span>
+            <figure class="product-image">
+              <img
+                src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Troféu Personalizado">
+            </figure>
+            <section class="product-details">
+              <h3>Trofeu Personalizado</h3>
+              <small>Com nome e logo - 25cm</small>
+              <p class="price">R$ 95,00</p>
+              <footer class="card-actions">
+                <button class="btn-primary">Comprar Agora</button>
+                <button class="btn-secondary">Detalhes</button>
+              </footer>
+            </section>
+          </article>
+        </li>
+
+        <li class="product-item">
+          <article class="product-card">
+            <span class="badge">Oferta</span>
+            <figure class="product-image">
+              <img
+                src="https://images.unsplash.com/photo-1532464564361-898e8d8d5e4e?ixlib=rb-4.0.3&auto=format&fit=crop&w-800&q=80"
+                alt="Suporte para Headphone">
+            </figure>
+            <section class="product-details">
+              <h3>Suporte para Headphone</h3>
+              <small>Design ergonômico - 3 cores</small>
+              <p class="price">R$ 65,00</p>
+              <footer class="card-actions">
+                <button class="btn-primary">Comprar Agora</button>
+                <button class="btn-secondary">Detalhes</button>
+              </footer>
+            </section>
+          </article>
+        </li>
+
+        <li class="product-item">
+          <article class="product-card">
+            <figure class="product-image">
+              <img
+                src="https://images.unsplash.com/photo-1572635148813-8667b61d5b63?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Estatueta Gamer">
+            </figure>
+            <section class="product-details">
+              <h3>Estatueta Gamer</h3>
+              <small>Personagem personalizável</small>
+              <p class="price">R$ 150,00</p>
+              <footer class="card-actions">
+                <button class="btn-primary">Comprar Agora</button>
+                <button class="btn-secondary">Detalhes</button>
+              </footer>
+            </section>
+          </article>
+        </li>
+      </ul>
+
+      <div class="section-footer">
+        <a href="catalogo.html" class="btn-view-all">Ver todos os produtos <i class="fas fa-arrow-right"></i></a>
+      </div>
+    </section>
+
+    <!-- Categorias -->
+    <section class="categories-section reveal">
+      <div class="section-header">
+        <h2 class="section-title">CATEGORIAS</h2>
+        <p class="section-subtitle">Navegue por nossas principais categorias de produtos</p>
+      </div>
+
+      <div class="categories-grid">
+        <a href="catalogo.html?categoria=decoracao" class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-palette"></i>
+          </div>
+          <h3>Decoração</h3>
+          <p>Peças para deixar seu ambiente único</p>
+        </a>
+
+        <a href="catalogo.html?categoria=escritorio" class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-briefcase"></i>
+          </div>
+          <h3>Escritório</h3>
+          <p>Organizadores e acessórios para trabalho</p>
+        </a>
+
+        <a href="catalogo.html?categoria=gamer" class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-gamepad"></i>
+          </div>
+          <h3>Gamer</h3>
+          <p>Acessórios e decoração para gamers</p>
+        </a>
+
+        <a href="catalogo.html?categoria=personalizado" class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-user-astronaut"></i>
+          </div>
+          <h3>Personalizados</h3>
+          <p>Criados especialmente para você</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Sobre a loja -->
+    <section class="about-section reveal">
+      <div class="about-content">
+        <h2>PORQUE ESCOLHER A UNIVERSO PARALELO?</h2>
+        <p>Somos especialistas em transformar ideias em objetos físicos através da impressão 3D. Combinamos tecnologia
+          de ponta com design criativo para oferecer produtos únicos e personalizados.</p>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <i class="fas fa-shipping-fast"></i>
+            <h4>Entrega Rápida</h4>
+            <p>Enviamos para todo Brasil em até 10 dias úteis</p>
+          </div>
+
+          <div class="feature-item">
+            <i class="fas fa-medal"></i>
+            <h4>Qualidade Garantida</h4>
+            <p>Utilizamos apenas materiais de alta qualidade</p>
+          </div>
+
+          <div class="feature-item">
+            <i class="fas fa-paint-brush"></i>
+            <h4>Personalização Total</h4>
+            <p>Criamos produtos sob medida para suas necessidades</p>
+          </div>
+
+          <div class="feature-item">
+            <i class="fas fa-headset"></i>
+            <h4>Suporte Especializado</h4>
+            <p>Equipe técnica para tirar todas as suas dúvidas</p>
+          </div>
+        </div>
+      </div>
+      <div class="about-image">
+        <img
+          src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80"
+          alt="Processo de impressão 3D">
+      </div>
+    </section>
+
+    <!-- Chamada para ação -->
+    <section class="cta-section reveal">
+      <div class="cta-content">
+        <h2>PRONTO PARA CRIAR ALGO INCRÍVEL?</h2>
+        <p>Tem uma ideia para um produto personalizado? Entre em contato conosco e vamos transformá-la em realidade!</p>
+        <div class="cta-buttons">
+          <a href="#footer" class="btn-primary">Fale Conosco</a>
+          <a href="servicos.html" class="btn-secondary">Ver Serviços</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="main-footer" id="footer">
+    <div class="container footer-grid">
+      <section class="footer-brand">
+        <span class="logo">UNIVERSO PARALELO</span>
+        <p>Transformando ideias em objetos através da impressão 3D com qualidade e criatividade.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a>
+          <a href="#"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </section>
+
+      <section>
+        <h4>LINKS RÁPIDOS</h4>
+        <ul class="footer-links">
+          <li><a href="home.html">Início</a></li>
+          <li><a href="catalogo.html">Catálogo 3D</a></li>
+          <li><a href="servicos.html">Serviços</a></li>
+          <li><a href="sobre.html">Sobre Nós</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h4>CONTATO</h4>
+        <p><i class="fas fa-phone"></i> +55 21 99999-9999</p>
+        <p><i class="fas fa-envelope"></i> universoparalelostore@gmail.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Rio de Janeiro, Brasil</p>
+      </section>
+
+      <section>
+        <h4>NEWSLETTER</h4>
+        <p>Inscreva-se para receber novidades e promoções</p>
+        <form class="newsletter-form">
+          <input type="email" placeholder="Seu e-mail" required>
+          <button type="submit"><i class="fas fa-paper-plane"></i></button>
+        </form>
+      </section>
+    </div>
+
+    <div class="footer-bottom">
+      <p>Universo Paralelo Store © 2023 - Todos os direitos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    // Carousel functionality
+    document.addEventListener('DOMContentLoaded', function () {
+      // Carousel
+      const slides = document.querySelectorAll('.carousel-slide');
+      const dots = document.querySelectorAll('.dot');
+      const prevBtn = document.querySelector('.prev-btn');
+      const nextBtn = document.querySelector('.next-btn');
+      let currentSlide = 0;
+      let slideInterval;
+
+      // Função para mostrar slide específico
+      function showSlide(n) {
+        // Remove active class de todos os slides e dots
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+
+        // Atualiza índice atual
+        currentSlide = (n + slides.length) % slides.length;
+
+        // Adiciona active class ao slide e dot atual
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+      }
+
+      // Próximo slide
+      function nextSlide() {
+        showSlide(currentSlide + 1);
+      }
+
+      // Slide anterior
+      function prevSlide() {
+        showSlide(currentSlide - 1);
+      }
+
+      // Inicia carousel automático
+      function startCarousel() {
+        slideInterval = setInterval(nextSlide, 5000);
+      }
+
+      // Pára carousel automático
+      function stopCarousel() {
+        clearInterval(slideInterval);
+      }
+
+      // Event listeners
+      prevBtn.addEventListener('click', () => {
+        prevSlide();
+        stopCarousel();
+        startCarousel();
+      });
+
+      nextBtn.addEventListener('click', () => {
+        nextSlide();
+        stopCarousel();
+        startCarousel();
+      });
+
+      // Event listeners para dots
+      dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+          showSlide(index);
+          stopCarousel();
+          startCarousel();
+        });
+      });
+
+      // Pausar carousel quando o mouse estiver sobre ele
+      const carouselContainer = document.querySelector('.carousel-container');
+      carouselContainer.addEventListener('mouseenter', stopCarousel);
+      carouselContainer.addEventListener('mouseleave', startCarousel);
+
+      // Inicia o carousel
+      startCarousel();
+
+      // Scroll reveal animation
+      const revealElements = document.querySelectorAll('.reveal');
+
+      function revealOnScroll() {
+        const windowHeight = window.innerHeight;
+        const revealPoint = 150;
+
+        revealElements.forEach(element => {
+          const revealTop = element.getBoundingClientRect().top;
+
+          if (revealTop < windowHeight - revealPoint) {
+            element.classList.add('active');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', revealOnScroll);
+      // Chama uma vez para verificar elementos visíveis no carregamento
+      revealOnScroll();
+
+      // Simulação de adicionar ao carrinho
+      const buyButtons = document.querySelectorAll('.btn-primary');
+      const cartCount = document.querySelector('.cart-count');
+      let cartItems = 0;
+
+      buyButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+          e.preventDefault();
+          cartItems++;
+          cartCount.textContent = cartItems;
+          cartCount.classList.add('pulse');
+
+          // Animação de feedback
+          button.textContent = 'Adicionado!';
+          button.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+
+          setTimeout(() => {
+            button.textContent = 'Comprar Agora';
+            button.style.background = 'radial-gradient(circle at top, #B236CA, #2E134A)';
+          }, 1500);
+
+          // Remove classe de animação após completar
+          setTimeout(() => {
+            cartCount.classList.remove('pulse');
+          }, 300);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

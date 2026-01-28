@@ -1,0 +1,276 @@
+/* =========================
+   UTILITIES
+========================= */
+
+/* Display Utilities */
+.d-block {
+  display: block;
+}
+
+.d-inline {
+  display: inline;
+}
+
+.d-inline-block {
+  display: inline-block;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.d-grid {
+  display: grid;
+}
+
+.d-none {
+  display: none;
+}
+
+/* Position Utilities */
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.position-fixed {
+  position: fixed;
+}
+
+.position-sticky {
+  position: sticky;
+}
+
+/* Text Utilities */
+.text-white {
+  color: white;
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-primary-light {
+  color: var(--color-primary-light);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.text-gray {
+  color: var(--color-gray);
+}
+
+.text-bold {
+  font-weight: 700;
+}
+
+.text-semibold {
+  font-weight: 600;
+}
+
+.text-medium {
+  font-weight: 500;
+}
+
+.text-normal {
+  font-weight: 400;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.text-lowercase {
+  text-transform: lowercase;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+/* Background Utilities */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-primary-light {
+  background-color: var(--color-primary-light);
+}
+
+.bg-dark {
+  background-color: var(--color-dark);
+}
+
+.bg-darker {
+  background-color: var(--color-darker);
+}
+
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.bg-gradient-dark {
+  background: var(--gradient-dark);
+}
+
+/* Opacity Utilities */
+.opacity-0 {
+  opacity: 0;
+}
+
+.opacity-25 {
+  opacity: 0.25;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.opacity-75 {
+  opacity: 0.75;
+}
+
+.opacity-100 {
+  opacity: 1;
+}
+
+/* Overflow Utilities */
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.overflow-scroll {
+  overflow: scroll;
+}
+
+.overflow-visible {
+  overflow: visible;
+}
+
+/* Z-index Utilities */
+.z-0 {
+  z-index: 0;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.z-20 {
+  z-index: 20;
+}
+
+.z-30 {
+  z-index: 30;
+}
+
+.z-40 {
+  z-index: 40;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+.z-auto {
+  z-index: auto;
+}
+
+/* Width Utilities */
+.w-25 {
+  width: 25%;
+}
+
+.w-50 {
+  width: 50%;
+}
+
+.w-75 {
+  width: 75%;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.w-auto {
+  width: auto;
+}
+
+/* Height Utilities */
+.h-25 {
+  height: 25%;
+}
+
+.h-50 {
+  height: 50%;
+}
+
+.h-75 {
+  height: 75%;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.h-auto {
+  height: auto;
+}
+
+/* Object Fit */
+.object-cover {
+  object-fit: cover;
+}
+
+.object-contain {
+  object-fit: contain;
+}
+
+.object-fill {
+  object-fit: fill;
+}
+
+/* Cursor */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-default {
+  cursor: default;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+
+/* Transition */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+.transition-opacity {
+  transition: opacity 0.3s ease;
+}
+
+/* Visibility */
+.visible {
+  visibility: visible;
+}
+
+.invisible {
+  visibility: hidden;
+}

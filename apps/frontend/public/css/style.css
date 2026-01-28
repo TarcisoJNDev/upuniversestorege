@@ -1,0 +1,102 @@
+/* =========================
+   IMPORTS
+========================= */
+
+/* Base */
+@import url('base.css');
+
+/* Components */
+@import url('components.css');
+
+/* Layout */
+@import url('layout.css');
+
+/* Utilities */
+@import url('utilities.css');
+
+/* Pages */
+@import url('pages/home.css');
+@import url('pages/catalogo.css');
+@import url('pages/servicos.css');
+@import url('pages/sobre.css');
+@import url('pages/carrinho.css');
+
+/* =========================
+   RESPONSIVIDADE GLOBAL
+========================= */
+@media (max-width: 1200px) {
+  .container {
+    max-width: 960px;
+  }
+}
+
+@media (max-width: 992px) {
+  .container {
+    max-width: 720px;
+  }
+
+  .nav-menu {
+    gap: var(--space-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    max-width: 540px;
+    padding: 0 15px;
+  }
+
+  .nav-menu {
+    gap: var(--space-sm);
+    font-size: var(--font-size-xs);
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .flex-row {
+    flex-direction: column;
+  }
+
+  .section-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .section-subtitle {
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 10px;
+  }
+
+  .nav-container {
+    flex-direction: column;
+    height: auto;
+    padding: var(--space-sm) 0;
+  }
+
+  .nav-menu {
+    margin-top: var(--space-sm);
+  }
+
+  .btn-lg {
+    padding: var(--space-md) var(--space-lg);
+    font-size: var(--font-size-md);
+  }
+
+  .section {
+    margin: var(--space-xl) 0;
+  }
+}

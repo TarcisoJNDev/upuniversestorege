@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universo Paralelo Store | Serviços Personalizados 3D</title>
+  <link rel="stylesheet" href="public/css/style(OFC).css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+  <header class="main-header">
+    <nav class="container nav-container">
+      <a href="home.html" class="logo">UNIVERSO PARALELO</a>
+      <ul class="nav-menu">
+        <li><a href="home.html">Início</a></li>
+        <li><a href="catalogo.html">Catálogo 3D</a></li>
+        <li><a href="servicos.html" class="active">Serviços</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="#footer">Contato</a></li>
+      </ul>
+      <div class="header-actions">
+        <a href="carrinho.html" class="cart-icon">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb reveal">
+      <a href="home.html">Início</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Serviços Personalizados</span>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="services-hero reveal">
+      <div class="hero-content">
+        <h1 class="hero-title">CRIAÇÃO PERSONALIZADA 3D</h1>
+        <p class="hero-subtitle">Transformamos suas ideias em objetos físicos com qualidade premium</p>
+        <p class="hero-description">
+          Precisa de algo exclusivo que não existe no mercado? Desenvolvemos objetos 3D sob medida,
+          desde a concepção da ideia até a entrega do produto final. Trabalhamos com você em cada
+          etapa do processo para garantir que o resultado final seja exatamente como imaginou.
+        </p>
+        <a href="#process" class="btn-hero">Conheça nosso processo</a>
+      </div>
+      <div class="hero-image">
+        <img
+          src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80"
+          alt="Processo de criação 3D">
+      </div>
+    </section>
+
+    <!-- Serviços Principais -->
+    <section class="services-main reveal">
+      <div class="section-header">
+        <h2 class="section-title">NOSSOS SERVIÇOS</h2>
+        <p class="section-subtitle">Soluções completas para suas necessidades em impressão 3D</p>
+      </div>
+
+      <div class="services-grid">
+        <article class="service-card">
+          <div class="service-icon">
+            <i class="fas fa-cube"></i>
+          </div>
+          <h3>Modelagem 3D Personalizada</h3>
+          <p>Criamos modelos 3D do zero com base na sua ideia, referência ou rascunho.
+            Nossa equipe de designers transforma conceitos em modelos digitais prontos para impressão.</p>
+          <div class="service-features">
+            <span><i class="fas fa-check"></i> Design exclusivo</span>
+            <span><i class="fas fa-check"></i> Revisões ilimitadas</span>
+            <span><i class="fas fa-check"></i> Formatos compatíveis</span>
+          </div>
+          <div class="service-price">
+            <span class="price-label">A partir de</span>
+            <span class="price-value">R$ 150,00</span>
+          </div>
+          <button class="btn-service">Solicitar Orçamento</button>
+        </article>
+
+        <article class="service-card featured">
+          <div class="service-badge">Mais Popular</div>
+          <div class="service-icon">
+            <i class="fas fa-print"></i>
+          </div>
+          <h3>Impressão Sob Demanda</h3>
+          <p>Impressão de peças exclusivas fora do catálogo, com diferentes tamanhos, cores e acabamentos.
+            Utilizamos os melhores materiais do mercado para garantir qualidade premium.</p>
+          <div class="service-features">
+            <span><i class="fas fa-check"></i> Multi-materiais</span>
+            <span><i class="fas fa-check"></i> Acabamento profissional</span>
+            <span><i class="fas fa-check"></i> Entrega rápida</span>
+          </div>
+          <div class="service-price">
+            <span class="price-label">A partir de</span>
+            <span class="price-value">R$ 80,00</span>
+          </div>
+          <button class="btn-service">Solicitar Impressão</button>
+        </article>
+
+        <article class="service-card">
+          <div class="service-icon">
+            <i class="fas fa-project-diagram"></i>
+          </div>
+          <h3>Projetos Especiais</h3>
+          <p>Soluções completas para troféus, brindes corporativos, peças decorativas, protótipos
+            funcionais e peças técnicas. Desenvolvimento ponta a ponta com suporte especializado.</p>
+          <div class="service-features">
+            <span><i class="fas fa-check"></i> Consultoria especializada</span>
+            <span><i class="fas fa-check"></i> Projeto completo</span>
+            <span><i class="fas fa-check"></i> Suporte técnico</span>
+          </div>
+          <div class="service-price">
+            <span class="price-label">Sob consulta</span>
+            <span class="price-value">Orçamento</span>
+          </div>
+          <button class="btn-service">Falar com Especialista</button>
+        </article>
+      </div>
+    </section>
+
+    <!-- Processo de Criação -->
+    <section class="process-section reveal" id="process">
+      <div class="section-header">
+        <h2 class="section-title">COMO FUNCIONA</h2>
+        <p class="section-subtitle">Nosso processo em 5 etapas simples</p>
+      </div>
+
+      <div class="process-timeline">
+        <div class="process-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3><i class="fas fa-lightbulb"></i> Ideação</h3>
+            <p>Você compartilha sua ideia conosco através de referências, esboços ou descrições detalhadas.</p>
+          </div>
+        </div>
+
+        <div class="process-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3><i class="fas fa-pencil-ruler"></i> Modelagem 3D</h3>
+            <p>Nossos designers criam o modelo digital em 3D e enviam para sua aprovação.</p>
+          </div>
+        </div>
+
+        <div class="process-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3><i class="fas fa-clipboard-check"></i> Aprovação</h3>
+            <p>Você revisa o modelo, sugere alterações e aprova o design final.</p>
+          </div>
+        </div>
+
+        <div class="process-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3><i class="fas fa-print"></i> Impressão</h3>
+            <p>Imprimimos seu objeto com os melhores materiais e tecnologia disponível.</p>
+          </div>
+        </div>
+
+        <div class="process-step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <h3><i class="fas fa-shipping-fast"></i> Entrega</h3>
+            <p>Realizamos o acabamento final e enviamos seu produto com segurança.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Materiais Disponíveis -->
+    <section class="materials-section reveal">
+      <div class="section-header">
+        <h2 class="section-title">MATERIAIS DISPONÍVEIS</h2>
+        <p class="section-subtitle">Escolha o material ideal para o seu projeto</p>
+      </div>
+
+      <div class="materials-grid">
+        <div class="material-card">
+          <div class="material-color" style="background: #ffffff;"></div>
+          <h3>PLA Standard</h3>
+          <p>Material biodegradável, cores vibrantes, ótimo para decoração e protótipos.</p>
+          <div class="material-specs">
+            <span><strong>Acabamento:</strong> Liso</span>
+            <span><strong>Durabilidade:</strong> Alta</span>
+            <span><strong>Preço:</strong> Econômico</span>
+          </div>
+        </div>
+
+        <div class="material-card">
+          <div class="material-color" style="background: #2c3e50;"></div>
+          <h3>ABS Premium</h3>
+          <p>Maior resistência e durabilidade, ideal para peças funcionais e utilitárias.</p>
+          <div class="material-specs">
+            <span><strong>Acabamento:</strong> Semi-brilho</span>
+            <span><strong>Durabilidade:</strong> Muito Alta</span>
+            <span><strong>Preço:</strong> Moderado</span>
+          </div>
+        </div>
+
+        <div class="material-card">
+          <div class="material-color" style="background: linear-gradient(45deg, #e74c3c, #f1c40f);"></div>
+          <h3>PETG Flex</h3>
+          <p>Flexibilidade controlada, resistente a impactos, perfeito para peças que exigem elasticidade.</p>
+          <div class="material-specs">
+            <span><strong>Acabamento:</strong> Brilhante</span>
+            <span><strong>Durabilidade:</strong> Média</span>
+            <span><strong>Preço:</strong> Moderado</span>
+          </div>
+        </div>
+
+        <div class="material-card">
+          <div class="material-color" style="background: linear-gradient(45deg, #9b59b6, #3498db);"></div>
+          <h3>Resina UV</h3>
+          <p>Alta precisão e detalhamento, acabamento profissional, ideal para miniaturas e joias.</p>
+          <div class="material-specs">
+            <span><strong>Acabamento:</strong> Perfeito</span>
+            <span><strong>Durabilidade:</strong> Alta</span>
+            <span><strong>Preço:</strong> Premium</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calculadora de Orçamento -->
+    <section class="calculator-section reveal">
+      <div class="calculator-container">
+        <div class="calculator-header">
+          <h2><i class="fas fa-calculator"></i> CALCULADORA DE ORÇAMENTO</h2>
+          <p>Estime o valor aproximado do seu projeto personalizado</p>
+        </div>
+
+        <div class="calculator-form">
+          <div class="form-group">
+            <label for="serviceType">Tipo de Serviço</label>
+            <select id="serviceType">
+              <option value="modeling">Modelagem 3D</option>
+              <option value="printing">Impressão Simples</option>
+              <option value="full">Projeto Completo</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="complexity">Complexidade do Modelo</label>
+            <div class="complexity-options">
+              <button class="complexity-btn" data-level="simple">Simples</button>
+              <button class="complexity-btn active" data-level="medium">Média</button>
+              <button class="complexity-btn" data-level="complex">Complexa</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="materialType">Material</label>
+            <select id="materialType">
+              <option value="pla">PLA Standard (R$ 0,50/cm³)</option>
+              <option value="abs">ABS Premium (R$ 0,80/cm³)</option>
+              <option value="petg">PETG Flex (R$ 0,90/cm³)</option>
+              <option value="resin">Resina UV (R$ 2,50/cm³)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="volume">Volume Aproximado (cm³)</label>
+            <input type="range" id="volume" min="10" max="1000" value="100">
+            <div class="volume-display">
+              <span id="volumeValue">100 cm³</span>
+              <small>(Tamanho médio de um objeto 5x5x4cm)</small>
+            </div>
+          </div>
+
+          <div class="calculator-result">
+            <div class="result-label">ORÇAMENTO APROXIMADO</div>
+            <div class="result-value" id="estimateValue">R$ 150,00</div>
+            <small>* Valor estimado. Orçamento final após análise do projeto.</small>
+          </div>
+
+          <button class="btn-calculator">
+            <i class="fas fa-paper-plane"></i> Solicitar Orçamento Detalhado
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section reveal">
+      <div class="section-header">
+        <h2 class="section-title">PERGUNTAS FREQUENTES</h2>
+        <p class="section-subtitle">Tire suas dúvidas sobre nossos serviços</p>
+      </div>
+
+      <div class="faq-container">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Quanto tempo leva para criar um projeto personalizado?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>O tempo varia conforme a complexidade do projeto. Modelagens simples levam 2-3 dias úteis,
+              enquanto projetos complexos podem levar 1-2 semanas. Após a aprovação do modelo, a impressão
+              leva 1-3 dias dependendo do tamanho.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Como envio minha ideia para vocês?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Você pode enviar referências por email, WhatsApp ou através do nosso formulário de contato.
+              Aceitamos imagens, desenhos, descrições detalhadas ou até mesmo esboços feitos à mão.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>É possível fazer alterações no modelo depois de aprovado?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Sim! Oferecemos até 3 rodadas de revisões gratuitas durante a fase de modelagem.
+              Alterações após a aprovação final podem ter custos adicionais, dependendo da complexidade.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Vocês enviam para todo o Brasil?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Sim! Realizamos entregas para todo o território nacional através de transportadoras
+              confiáveis. O prazo de entrega varia de 3 a 10 dias úteis dependendo da localidade.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Quais as formas de pagamento aceitas?</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Aceitamos cartões de crédito (até 12x), débito, PIX, boleto bancário e transferência.
+              Para projetos de alto valor, oferecemos parcelamento especial mediante análise.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="services-cta reveal">
+      <div class="cta-content">
+        <h2>PRONTO PARA CRIAR SEU PROJETO EXCLUSIVO?</h2>
+        <p>Entre em contato agora mesmo e vamos transformar sua ideia em realidade!</p>
+        <div class="cta-buttons">
+          <a href="#footer" class="btn-primary">
+            <i class="fas fa-comments"></i> Fale Conosco
+          </a>
+          <a href="https://wa.me/5521999999999" class="btn-whatsapp" target="_blank">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+          </a>
+        </div>
+        <p class="cta-info">
+          <i class="fas fa-clock"></i> Atendimento: Seg-Sex, 9h-18h<br>
+          <i class="fas fa-reply"></i> Resposta em até 2 horas úteis
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="main-footer" id="footer">
+    <div class="container footer-grid">
+      <section class="footer-brand">
+        <span class="logo">UNIVERSO PARALELO</span>
+        <p>Transformando ideias em objetos através da impressão 3D com qualidade e criatividade.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a>
+          <a href="#"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </section>
+
+      <section>
+        <h4>SERVIÇOS</h4>
+        <ul class="footer-links">
+          <li><a href="#modeling">Modelagem 3D</a></li>
+          <li><a href="#printing">Impressão Sob Demanda</a></li>
+          <li><a href="#projects">Projetos Especiais</a></li>
+          <li><a href="#materials">Materiais</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h4>CONTATO RÁPIDO</h4>
+        <p><i class="fas fa-phone"></i> +55 21 99999-9999</p>
+        <p><i class="fas fa-envelope"></i> universoparalelostore@gmail.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Rio de Janeiro, Brasil</p>
+      </section>
+
+      <section>
+        <h4>ORÇAMENTO EXPRESSO</h4>
+        <p>Envie detalhes do seu projeto para um orçamento rápido:</p>
+        <form class="quick-quote">
+          <input type="email" placeholder="Seu e-mail" required>
+          <textarea placeholder="Descreva seu projeto..." rows="2"></textarea>
+          <button type="submit">Enviar Projeto</button>
+        </form>
+      </section>
+    </div>
+
+    <div class="footer-bottom">
+      <p>Universo Paralelo Store © 2023 - Todos os direitos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    // Inicializar página
+    document.addEventListener('DOMContentLoaded', function () {
+      setupCalculator();
+      setupFAQ();
+      setupScrollAnimation();
+    });
+
+    // Configurar calculadora
+    function setupCalculator() {
+      const volumeSlider = document.getElementById('volume');
+      const volumeValue = document.getElementById('volumeValue');
+      const estimateValue = document.getElementById('estimateValue');
+      const complexityButtons = document.querySelectorAll('.complexity-btn');
+
+      // Atualizar display do volume
+      volumeSlider.addEventListener('input', updateEstimate);
+
+      // Configurar botões de complexidade
+      complexityButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+          complexityButtons.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          updateEstimate();
+        });
+      });
+
+      // Atualizar quando mudar seleções
+      document.getElementById('serviceType').addEventListener('change', updateEstimate);
+      document.getElementById('materialType').addEventListener('change', updateEstimate);
+
+      // Função para atualizar estimativa
+      function updateEstimate() {
+        const volume = parseInt(volumeSlider.value);
+        const serviceType = document.getElementById('serviceType').value;
+        const materialType = document.getElementById('materialType').value;
+        const complexity = document.querySelector('.complexity-btn.active').dataset.level;
+
+        // Atualizar display do volume
+        volumeValue.textContent = `${volume} cm³`;
+
+        // Calcular estimativa
+        let estimate = 0;
+
+        // Custo base por serviço
+        if (serviceType === 'modeling') estimate += 100;
+        else if (serviceType === 'printing') estimate += 50;
+        else if (serviceType === 'full') estimate += 200;
+
+        // Adicionar custo por complexidade
+        if (complexity === 'simple') estimate += 50;
+        else if (complexity === 'medium') estimate += 100;
+        else if (complexity === 'complex') estimate += 200;
+
+        // Adicionar custo do material
+        const materialPrices = {
+          'pla': 0.5,
+          'abs': 0.8,
+          'petg': 0.9,
+          'resin': 2.5
+        };
+        estimate += volume * materialPrices[materialType];
+
+        // Atualizar display
+        estimateValue.textContent = `R$ ${estimate.toFixed(2)}`;
+      }
+
+      // Calcular inicial
+      updateEstimate();
+    }
+
+    // Configurar FAQ
+    function setupFAQ() {
+      const faqQuestions = document.querySelectorAll('.faq-question');
+
+      faqQuestions.forEach(question => {
+        question.addEventListener('click', function () {
+          // Fechar outras perguntas
+          faqQuestions.forEach(q => {
+            if (q !== this) {
+              q.classList.remove('active');
+              q.nextElementSibling.style.maxHeight = null;
+            }
+          });
+
+          // Alternar atual
+          this.classList.toggle('active');
+          const answer = this.nextElementSibling;
+
+          if (this.classList.contains('active')) {
+            answer.style.maxHeight = answer.scrollHeight + "px";
+          } else {
+            answer.style.maxHeight = null;
+          }
+        });
+      });
+    }
+
+    // Configurar animação de scroll
+    function setupScrollAnimation() {
+      const revealElements = document.querySelectorAll('.reveal');
+
+      function revealOnScroll() {
+        const windowHeight = window.innerHeight;
+        const revealPoint = 100;
+
+        revealElements.forEach(element => {
+          const revealTop = element.getBoundingClientRect().top;
+
+          if (revealTop < windowHeight - revealPoint) {
+            element.classList.add('active');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', revealOnScroll);
+      revealOnScroll();
+    }
+
+    // Adicionar ao carrinho
+    document.addEventListener('click', function (e) {
+      if (e.target.classList.contains('btn-service')) {
+        const serviceCard = e.target.closest('.service-card');
+        const serviceName = serviceCard.querySelector('h3').textContent;
+
+        // Simular adição ao carrinho
+        const cartCount = document.querySelector('.cart-count');
+        let count = parseInt(cartCount.textContent) || 0;
+        count++;
+        cartCount.textContent = count;
+        cartCount.classList.add('pulse');
+
+        // Feedback visual
+        e.target.innerHTML = '<i class="fas fa-check"></i> Orçamento Solicitado';
+        e.target.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+
+        setTimeout(() => {
+          cartCount.classList.remove('pulse');
+          e.target.innerHTML = 'Solicitar Orçamento';
+          e.target.style.background = '';
+        }, 2000);
+
+        // Abrir modal de orçamento (simulação)
+        alert(`Orçamento solicitado para: ${serviceName}\n\nEm breve nossa equipe entrará em contato com você!`);
+      }
+    });
+  </script>
+
+</body>
+
+</html>

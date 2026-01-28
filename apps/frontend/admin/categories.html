@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categorias - Admin</title>
+  <link rel="stylesheet" href="../public/css/style(OFC).css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="categories.css">
+  <script src="../public/js/api.js"></script>
+</head>
+
+<body>
+  <div class="admin-wrapper">
+    <!-- Sidebar simplificada -->
+    <aside
+      style="width: 70px; background: #0b0015; border-right: 1px solid rgba(124, 58, 237, 0.2); padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 30px; position: fixed; height: 100vh;">
+      <a href="dashboard.html" style="color: #C084FC; font-size: 20px;">
+        <i class="fas fa-tachometer-alt"></i>
+      </a>
+      <a href="products.html" style="color: #C084FC; font-size: 20px;">
+        <i class="fas fa-cube"></i>
+      </a>
+      <a href="product-form.html" style="color: #C084FC; font-size: 20px;">
+        <i class="fas fa-plus-circle"></i>
+      </a>
+      <a href="categories.html" style="color: #DF38FF; font-size: 20px;">
+        <i class="fas fa-tags"></i>
+      </a>
+    </aside>
+
+    <!-- Main Content -->
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="categories-header">
+        <div class="header-title">
+          <h1><i class="fas fa-tags"></i> Gerenciar Categorias</h1>
+          <p>Organize seus produtos em categorias e subcategorias</p>
+        </div>
+        <div class="categories-header-buttons">
+          <button class="btn-new-category" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i>
+            Atualizar
+          </button>
+          <button class="btn-new-category" id="newCategoryBtn">
+            <i class="fas fa-plus"></i>
+            Nova Categoria
+          </button>
+        </div>
+      </header>
+    
+      <!-- Resto do código permanece igual... -->
+    
+
+      <!-- Formulário de Categoria (Oculto por padrão) -->
+      <div class="category-form-container" id="categoryForm">
+        <div class="form-header">
+          <h2><i class="fas fa-plus-circle"></i> <span id="formTitle">Nova Categoria</span></h2>
+          <button class="btn-close-form" onclick="hideCategoryForm()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form id="categoryFormData">
+          <input type="hidden" id="categoryId" value="">
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="label-required">Nome da Categoria</label>
+              <input type="text" class="form-control" id="categoryName" placeholder="Ex: Esculturas 3D" required>
+            </div>
+
+            <div class="form-group">
+              <label class="label-required">Slug (URL)</label>
+              <input type="text" class="form-control" id="categorySlug" placeholder="ex: esculturas-3d" required>
+              <small style="color: #666; font-size: 12px;">URL amigável para a categoria (sem espaços, use
+                hífens)</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea class="form-control" id="categoryDescription"
+              placeholder="Descreva a categoria em poucas palavras..." rows="3"></textarea>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ícone (Emoji ou Texto)</label>
+              <div class="icon-selector">
+                <div class="icon-preview" id="iconPreview">🏺</div>
+                <input type="text" id="iconInput" class="form-control" placeholder="🏺 ou fa-tag"
+                  style="flex: 1; margin-left: 10px;" maxlength="10">
+              </div>
+              <small style="color: #666; font-size: 12px;">Digite um emoji ou nome de ícone FontAwesome (ex:
+                fa-tag)</small>
+            </div>
+
+            <div class="form-group">
+              <label>Cor do Ícone</label>
+              <div class="color-picker" id="colorPicker">
+                <div class="color-option selected" style="background: #C084FC;" data-color="#C084FC"></div>
+                <div class="color-option" style="background: #DF38FF;" data-color="#DF38FF"></div>
+                <div class="color-option" style="background: #7C3AED;" data-color="#7C3AED"></div>
+                <div class="color-option" style="background: #4CAF50;" data-color="#4CAF50"></div>
+                <div class="color-option" style="background: #2196F3;" data-color="#2196F3"></div>
+                <div class="color-option" style="background: #FFC107;" data-color="#FFC107"></div>
+                <div class="color-option" style="background: #F44336;" data-color="#F44336"></div>
+                <div class="color-option" style="background: #9C27B0;" data-color="#9C27B0"></div>
+              </div>
+              <input type="hidden" id="selectedColor" value="#C084FC">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Categoria Pai</label>
+              <select class="form-control" id="parentCategory">
+                <option value="">Nenhuma (Categoria Principal)</option>
+                <!-- Categorias serão carregadas aqui -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Ordem de Exibição</label>
+              <input type="number" class="form-control" id="displayOrder" placeholder="1" min="1" value="1">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Imagem da Categoria (URL)</label>
+            <input type="url" class="form-control" id="categoryImage"
+              placeholder="https://exemplo.com/imagem-categoria.jpg">
+            <small style="color: #666; font-size: 12px;">URL de uma imagem representativa da categoria</small>
+          </div>
+
+          <div style="margin: 20px 0;">
+            <label style="display: flex; align-items: center; gap: 10px;">
+              <input type="checkbox" id="isActive" checked>
+              <span>Categoria ativa (visível na loja)</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" onclick="hideCategoryForm()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <i class="fas fa-save"></i>
+              Salvar Categoria
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" style="text-align: center; padding: 40px;">
+        <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
+        <p style="margin-top: 10px; color: #aaa;">Carregando categorias...</p>
+      </div>
+
+      <!-- Grid de Categorias -->
+      <div class="categories-grid" id="categoriesGrid" style="display: none;">
+        <!-- Categorias serão carregadas aqui dinamicamente -->
+      </div>
+
+      <!-- Modal de Confirmação -->
+      <div class="modal" id="deleteModal">
+        <div class="modal-content">
+          <button class="modal-close" onclick="closeDeleteModal()">
+            <i class="fas fa-times"></i>
+          </button>
+          <h2 class="modal-title">Excluir Categoria</h2>
+          <p class="modal-text" id="deleteModalText">
+            Tem certeza que deseja excluir esta categoria? Esta ação não pode ser desfeita.
+          </p>
+          <div class="modal-actions">
+            <button class="btn-modal cancel" onclick="closeDeleteModal()">
+              Cancelar
+            </button>
+            <button class="btn-modal delete" onclick="confirmDelete()">
+              Sim, excluir
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log("🏷️ Iniciando página de categorias...");
+
+      // Verificar login
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Variáveis globais
+      let allCategories = [];
+      let categoryToDelete = null;
+      let isEditing = false;
+
+      // Elementos DOM
+      const newCategoryBtn = document.getElementById('newCategoryBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const categoryForm = document.getElementById('categoryForm');
+      const categoryFormData = document.getElementById('categoryFormData');
+      const categoriesGrid = document.getElementById('categoriesGrid');
+      const loadingState = document.getElementById('loadingState');
+      const parentCategorySelect = document.getElementById('parentCategory');
+      const categoryNameInput = document.getElementById('categoryName');
+      const categorySlugInput = document.getElementById('categorySlug');
+      const iconPreview = document.getElementById('iconPreview');
+      const iconInput = document.getElementById('iconInput');
+      const colorPicker = document.getElementById('colorPicker');
+      const selectedColorInput = document.getElementById('selectedColor');
+      const formTitle = document.getElementById('formTitle');
+      const submitBtn = document.getElementById('submitBtn');
+      const categoryIdInput = document.getElementById('categoryId');
+
+      // === FUNÇÕES PRINCIPAIS ===
+
+      // Carregar categorias da API
+      async function loadCategories() {
+        try {
+          console.log("📥 Carregando categorias da API...");
+
+          // Mostrar loading
+          loadingState.style.display = 'block';
+          categoriesGrid.style.display = 'none';
+          categoriesGrid.innerHTML = '';
+
+          // Buscar categorias
+          allCategories = await ProductAPI.getAllCategories();
+          console.log(`✅ ${allCategories.length} categorias carregadas`);
+
+          // Ordenar categorias (principais primeiro, depois subcategorias)
+          allCategories.sort((a, b) => {
+            // Categorias principais primeiro (sem parent_id)
+            if (!a.parent_id && b.parent_id) return -1;
+            if (a.parent_id && !b.parent_id) return 1;
+
+            // Ordenar por nome
+            return a.name.localeCompare(b.name);
+          });
+
+          // Atualizar select de categorias pai
+          updateParentCategorySelect();
+
+          // Renderizar categorias
+          renderCategories();
+
+          // Esconder loading
+          loadingState.style.display = 'none';
+          categoriesGrid.style.display = 'grid';
+
+        } catch (error) {
+          console.error("❌ Erro ao carregar categorias:", error);
+          showNotification('Erro ao carregar categorias', 'error');
+
+          loadingState.innerHTML = `
+            <div style="color: #f44336;">
+              <i class="fas fa-exclamation-triangle fa-2x"></i>
+              <p style="margin-top: 10px;">Erro ao carregar categorias</p>
+              <button onclick="loadCategories()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                <i class="fas fa-sync-alt"></i> Tentar novamente
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      // Atualizar select de categorias pai
+      function updateParentCategorySelect() {
+        parentCategorySelect.innerHTML = '<option value="">Nenhuma (Categoria Principal)</option>';
+
+        // Adicionar apenas categorias principais (sem parent_id)
+        const mainCategories = allCategories.filter(cat => !cat.parent_id);
+
+        mainCategories.forEach(category => {
+          // Não permitir que uma categoria seja pai dela mesma (quando editar)
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          parentCategorySelect.appendChild(option);
+        });
+      }
+
+      // Renderizar categorias no grid
+      function renderCategories() {
+        if (allCategories.length === 0) {
+          categoriesGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+              <i class="fas fa-tags fa-3x" style="color: #7C3AED; opacity: 0.5;"></i>
+              <h3 style="margin-top: 20px; color: #aaa;">Nenhuma categoria encontrada</h3>
+              <p style="color: #888; margin-top: 10px;">Crie sua primeira categoria para organizar os produtos</p>
+              <button onclick="showCategoryForm()" style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                <i class="fas fa-plus"></i> Criar Primeira Categoria
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        let gridHTML = '';
+
+        // Separar categorias principais e subcategorias
+        const mainCategories = allCategories.filter(cat => !cat.parent_id);
+        const subCategories = allCategories.filter(cat => cat.parent_id);
+
+        // Renderizar categorias principais
+        mainCategories.forEach(category => {
+          gridHTML += createCategoryCard(category);
+
+          // Renderizar subcategorias desta categoria
+          const categorySubCategories = subCategories.filter(sub => sub.parent_id == category.id);
+          if (categorySubCategories.length > 0) {
+            gridHTML += `<div style="grid-column: 1 / -1; margin: 20px 0 10px 0; padding-left: 20px;">
+                          <h4 style="color: #aaa; font-size: 14px; border-left: 3px solid ${getCategoryColor(category)}; padding-left: 10px;">
+                            <i class="fas fa-sitemap"></i> Subcategorias de ${category.name}
+                          </h4>
+                        </div>`;
+
+            categorySubCategories.forEach(subCategory => {
+              gridHTML += createCategoryCard(subCategory, true);
+            });
+          }
+        });
+
+        categoriesGrid.innerHTML = gridHTML;
+      }
+
+      // Criar card de categoria
+      function createCategoryCard(category, isSubcategory = false) {
+        const parentCategory = category.parent_id ?
+          allCategories.find(cat => cat.id == category.parent_id) : null;
+
+        // Estatísticas (em um sistema real, viriam da API)
+        const productCount = 0; // Você pode implementar contagem de produtos depois
+        const salesCount = 0;   // Você pode implementar contagem de vendas depois
+
+        // Cor da categoria (se tiver, senão padrão)
+        const color = getCategoryColor(category);
+
+        // Ícone da categoria
+        let iconHTML = '🏺';
+        if (category.icon) {
+          if (category.icon.includes('fa-')) {
+            // Se for um ícone FontAwesome
+            iconHTML = `<i class="fas ${category.icon}"></i>`;
+          } else {
+            // Se for emoji ou texto
+            iconHTML = category.icon;
+          }
+        }
+
+        // Status
+        const isActive = category.status !== 'inactive';
+        const statusClass = isActive ? 'status-active' : 'status-inactive';
+        const statusIcon = isActive ? 'fas fa-check-circle' : 'fas fa-times-circle';
+        const statusText = isActive ? 'Ativa' : 'Inativa';
+
+        return `
+    <div class="category-card" data-category-id="${category.id}">
+      <div class="category-header">
+        <div class="category-icon" style="color: ${color};">
+          ${iconHTML}
+        </div>
+        <div class="category-actions">
+          <button class="btn-action-small" onclick="editCategory(${category.id})">
+            <i class="far fa-edit"></i>
+          </button>
+          <button class="btn-action-small" onclick="showDeleteModal(${category.id}, '${category.name.replace(/'/g, "\\'")}')">
+            <i class="far fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+      <div class="category-content">
+        ${parentCategory ? `
+          <div class="parent-category-badge" style="color: ${color};">
+            <i class="fas fa-tags"></i> ${parentCategory.name}
+          </div>
+        ` : ''}
+        
+        <h3>${category.name}</h3>
+        <p class="category-description">
+          ${category.description || 'Sem descrição'}
+        </p>
+        
+        <div class="category-stats">
+          <div class="stat-item">
+            <span class="stat-number">${productCount}</span>
+            <span class="stat-label">Produtos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">${salesCount}</span>
+            <span class="stat-label">Vendas</span>
+          </div>
+        </div>
+        
+        <div class="category-footer">
+          <span class="category-status ${statusClass}">
+            <i class="${statusIcon}"></i>
+            ${statusText}
+          </span>
+          <span class="category-slug">
+            ${category.slug}
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
+      }
+
+      // E na função renderCategories, use esta lógica para separar melhor:
+      function renderCategories() {
+        if (allCategories.length === 0) {
+          categoriesGrid.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-tags fa-3x"></i>
+        <h3>Nenhuma categoria encontrada</h3>
+        <p>Crie sua primeira categoria para organizar os produtos</p>
+        <button onclick="showCategoryForm()">
+          <i class="fas fa-plus"></i> Criar Primeira Categoria
+        </button>
+      </div>
+    `;
+          return;
+        }
+
+        let gridHTML = '';
+
+        // Separar categorias principais e subcategorias
+        const mainCategories = allCategories.filter(cat => !cat.parent_id);
+        const subCategories = allCategories.filter(cat => cat.parent_id);
+
+        // Renderizar categorias principais
+        mainCategories.forEach(category => {
+          gridHTML += createCategoryCard(category);
+
+          // Renderizar subcategorias desta categoria
+          const categorySubCategories = subCategories.filter(sub => sub.parent_id == category.id);
+          if (categorySubCategories.length > 0) {
+            gridHTML += `
+        <div class="subcategories-section" style="border-left-color: ${getCategoryColor(category)};">
+          <h4>
+            <i class="fas fa-sitemap"></i> Subcategorias de ${category.name}
+          </h4>
+          <div class="subcategories-grid">
+      `;
+
+            categorySubCategories.forEach(subCategory => {
+              gridHTML += createCategoryCard(subCategory);
+            });
+
+            gridHTML += `
+          </div>
+        </div>
+      `;
+          }
+        });
+
+        categoriesGrid.innerHTML = gridHTML;
+      }
+
+      // Obter cor da categoria
+      function getCategoryColor(category) {
+        // Se a categoria tiver uma cor salva, usar
+        if (category.color) return category.color;
+
+        // Se não, usar cor baseada no ID
+        const colors = [
+          '#C084FC', '#DF38FF', '#7C3AED', '#4CAF50',
+          '#2196F3', '#FFC107', '#F44336', '#9C27B0'
+        ];
+        return colors[category.id % colors.length];
+      }
+
+      // === FORMULÁRIO DE CATEGORIA ===
+
+      // Mostrar formulário
+      window.showCategoryForm = function () {
+        categoryForm.classList.add('show');
+        newCategoryBtn.style.display = 'none';
+        isEditing = false;
+        formTitle.textContent = 'Nova Categoria';
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Categoria';
+      };
+
+      // Esconder formulário
+      window.hideCategoryForm = function () {
+        categoryForm.classList.remove('show');
+        newCategoryBtn.style.display = 'flex';
+        categoryFormData.reset();
+        categoryIdInput.value = '';
+        iconPreview.innerHTML = '🏺';
+        iconPreview.style.color = '#C084FC';
+        selectedColorInput.value = '#C084FC';
+        parentCategorySelect.value = '';
+        isEditing = false;
+      };
+
+      // Editar categoria
+      window.editCategory = async function (id) {
+        try {
+          console.log(`✏️ Editando categoria #${id}...`);
+
+          const category = await ProductAPI.getCategoryById(id);
+          if (!category) {
+            showNotification('Categoria não encontrada', 'error');
+            return;
+          }
+
+          // Preencher formulário
+          categoryIdInput.value = category.id;
+          categoryNameInput.value = category.name;
+          categorySlugInput.value = category.slug;
+          categoryDescription.value = category.description || '';
+          parentCategorySelect.value = category.parent_id || '';
+          document.getElementById('categoryImage').value = category.image_url || '';
+          document.getElementById('displayOrder').value = 1; // Você pode adicionar este campo depois
+          document.getElementById('isActive').checked = category.status !== 'inactive';
+
+          // Ícone
+          if (category.icon) {
+            iconInput.value = category.icon;
+            if (category.icon.includes('fa-')) {
+              iconPreview.innerHTML = `<i class="fas ${category.icon}"></i>`;
+            } else {
+              iconPreview.innerHTML = category.icon;
+            }
+          }
+
+          // Cor
+          if (category.color) {
+            iconPreview.style.color = category.color;
+            selectedColorInput.value = category.color;
+
+            // Selecionar cor no color picker
+            document.querySelectorAll('.color-option').forEach(opt => {
+              opt.classList.remove('selected');
+              if (opt.getAttribute('data-color') === category.color) {
+                opt.classList.add('selected');
+              }
+            });
+          }
+
+          // Mostrar formulário
+          categoryForm.classList.add('show');
+          newCategoryBtn.style.display = 'none';
+          isEditing = true;
+          formTitle.textContent = 'Editar Categoria';
+          submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Categoria';
+
+          showNotification(`Editando categoria: ${category.name}`, 'info');
+
+        } catch (error) {
+          console.error("❌ Erro ao carregar categoria para edição:", error);
+          showNotification('Erro ao carregar categoria', 'error');
+        }
+      };
+
+      // Gerar slug a partir do nome
+      categoryNameInput.addEventListener('input', function () {
+        if (!isEditing && !categorySlugInput.value) {
+          const slug = this.value
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+          categorySlugInput.value = slug;
+        }
+      });
+
+      // Atualizar ícone preview
+      iconInput.addEventListener('input', function () {
+        const value = this.value.trim();
+        if (value.includes('fa-')) {
+          // Se for FontAwesome
+          iconPreview.innerHTML = `<i class="fas ${value}"></i>`;
+        } else if (value) {
+          // Se for emoji ou texto
+          iconPreview.innerHTML = value;
+        }
+      });
+
+      // Seletor de cor
+      document.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', function () {
+          document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+          this.classList.add('selected');
+          const color = this.getAttribute('data-color');
+          selectedColorInput.value = color;
+          iconPreview.style.color = color;
+        });
+      });
+
+      // Submissão do formulário
+      categoryFormData.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        // Validar campos obrigatórios
+        if (!categoryNameInput.value.trim()) {
+          showNotification('Nome da categoria é obrigatório', 'error');
+          return;
+        }
+
+        if (!categorySlugInput.value.trim()) {
+          showNotification('Slug da categoria é obrigatório', 'error');
+          return;
+        }
+
+        // Preparar dados
+        const categoryData = {
+          name: categoryNameInput.value.trim(),
+          slug: categorySlugInput.value.trim(),
+          description: document.getElementById('categoryDescription').value.trim(),
+          parent_id: parentCategorySelect.value || null,
+          image_url: document.getElementById('categoryImage').value.trim() || null,
+          icon: iconInput.value.trim() || '🏺',
+          color: selectedColorInput.value,
+          status: document.getElementById('isActive').checked ? 'active' : 'inactive'
+          // Adicione display_order se tiver no banco
+        };
+
+        console.log(`${isEditing ? '📤 Atualizando' : '📤 Criando'} categoria:`, categoryData);
+
+        // Mostrar loading
+        const originalHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        submitBtn.disabled = true;
+
+        try {
+          let result;
+
+          if (isEditing) {
+            // Atualizar categoria existente
+            const categoryId = categoryIdInput.value;
+            result = await ProductAPI.updateCategory(categoryId, categoryData);
+          } else {
+            // Criar nova categoria
+            result = await ProductAPI.createCategory(categoryData);
+          }
+
+          console.log("📥 Resposta da API:", result);
+
+          if (result.success) {
+            showNotification(
+              `Categoria ${isEditing ? 'atualizada' : 'criada'} com sucesso!`,
+              'success'
+            );
+
+            // Recarregar categorias
+            await loadCategories();
+
+            // Esconder formulário
+            hideCategoryForm();
+
+          } else {
+            showNotification(
+              `Erro: ${result.error || `Não foi possível ${isEditing ? 'atualizar' : 'criar'} a categoria`}`,
+              'error'
+            );
+            submitBtn.innerHTML = originalHTML;
+            submitBtn.disabled = false;
+          }
+
+        } catch (error) {
+          console.error("❌ Erro no envio:", error);
+          showNotification(`Erro: ${error.message || 'Falha na conexão'}`, 'error');
+          submitBtn.innerHTML = originalHTML;
+          submitBtn.disabled = false;
+        }
+      });
+
+      // === MODAL DE EXCLUSÃO ===
+      window.showDeleteModal = function (id, name) {
+        categoryToDelete = id;
+        const modal = document.getElementById('deleteModal');
+        modal.classList.add('show');
+
+        document.getElementById('deleteModalText').textContent =
+          `Tem certeza que deseja excluir a categoria "${name}"? Esta ação não pode ser desfeita.`;
+      };
+
+      window.closeDeleteModal = function () {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('show');
+        categoryToDelete = null;
+      };
+
+      window.confirmDelete = async function () {
+        if (!categoryToDelete) return;
+
+        try {
+          console.log(`🗑️ Excluindo categoria ${categoryToDelete}...`);
+
+          const result = await ProductAPI.deleteCategory(categoryToDelete);
+
+          if (result.success) {
+            showNotification('Categoria excluída com sucesso!', 'success');
+
+            // Recarregar categorias
+            await loadCategories();
+          } else {
+            showNotification(`Erro: ${result.error || 'Não foi possível excluir a categoria'}`, 'error');
+          }
+        } catch (error) {
+          console.error("❌ Erro ao excluir categoria:", error);
+          showNotification('Erro ao excluir categoria', 'error');
+        }
+
+        closeDeleteModal();
+      };
+
+      // === EVENT LISTENERS ===
+      newCategoryBtn.addEventListener('click', showCategoryForm);
+      refreshBtn.addEventListener('click', () => {
+        loadCategories();
+        showNotification('Categorias atualizadas!', 'info');
+      });
+
+      // Carregar categorias inicialmente
+      loadCategories();
+    });
+
+    // === FUNÇÃO DE NOTIFICAÇÃO ===
+    function showNotification(message, type = 'info') {
+      console.log(`📢 Notificação [${type}]: ${message}`);
+
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #1a002b, #0b0015);
+        border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        max-width: 400px;
+      `;
+
+      const icon = type === 'success' ? 'check-circle' :
+        type === 'error' ? 'exclamation-circle' :
+          type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
+      notification.innerHTML = `
+        <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
+        <span>${message}</span>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 4000);
+    }
+
+    // === ANIMAÇÕES CSS ===
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(100%); }
+      }
+      
+      .label-required::after {
+        content: " *";
+        color: #f44336;
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+
+</html>
