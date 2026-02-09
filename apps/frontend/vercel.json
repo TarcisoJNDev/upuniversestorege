@@ -1,14 +1,11 @@
 {
-  "name": "meu-frontend",
-  "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "home.html" },
+    { "source": "/", "destination": "/home.html" },
     { "source": "/servicos", "destination": "/servicos.html" },
     { "source": "/produto", "destination": "/produto.html" },
-    { "source": "/catalago", "destination": "catalago.html" },
+    { "source": "/catalago", "destination": "/catalago.html" },
     { "source": "/admin", "destination": "/admin/dashboard.html" },
     { "source": "/admin/categories", "destination": "/admin/categories.html" },
-    { "source": "/admin/product", "destination": "/admin/products.html" }
+    { "source": "/admin/product", "destination": "/admin/product.html" }
   ]
 }
-
