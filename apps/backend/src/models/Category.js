@@ -1,5 +1,5 @@
 // src/models/Category.js
-const { pool } = require("../config/database");
+const { pool } = require("../config/database-simple");
 
 class Category {
   constructor({

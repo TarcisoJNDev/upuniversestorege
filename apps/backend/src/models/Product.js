@@ -1,5 +1,5 @@
 // src/models/Product.js
-const { pool } = require("../config/database");
+const { pool } = require("../config/database-simple");
 
 class Product {
   constructor({

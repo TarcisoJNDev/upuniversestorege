@@ -50,7 +50,7 @@ app.use(
 );
 
 // Importações que dependem do app já criado
-const { setupDatabase } = require("./src/config/database");
+const { setupDatabase } = require("./src/config/database-simple");
 const productRoutes = require("./src/routes/productRoutes");
 const categoryRoutes = require("./src/routes/categoryRoutes");
 
