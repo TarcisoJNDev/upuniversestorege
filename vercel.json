@@ -7,30 +7,41 @@
     }
   ],
   "routes": [
+
     {
-      "src": "/",
+      "src": "^/$",
       "dest": "/apps/frontend/home.html"
     },
+    
+
     {
-      "src": "/(servicos|produto|catalogo|sobre|detalhes-produto)",
-      "dest": "/apps/frontend/$1.html"
+      "src": "^/([a-zA-Z0-9-_]+)\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$",
+      "dest": "/apps/frontend/$1.$2"
     },
     {
-      "src": "/admin/(.*)",
-      "dest": "/apps/frontend/admin/$1.html"
-    },
- 
-    {
-      "src": "/([a-z-]+)\\.css",
-      "dest": "/apps/frontend/$1.css"
-    },
- 
-    {
-      "src": "/public/(.*)",
+      "src": "^/public/(.*)$",
       "dest": "/apps/frontend/public/$1"
     },
+    
+
     {
-      "src": "/(.*)",
+      "src": "^/(servicos|produto|catalogo|sobre|detalhes-produto)$",
+      "dest": "/apps/frontend/$1.html"
+    },
+    
+
+    {
+      "src": "^/admin$",
+      "dest": "/apps/frontend/admin/login.html"
+    },
+    {
+      "src": "^/admin/([a-zA-Z0-9-_]+)$",
+      "dest": "/apps/frontend/admin/$1.html"
+    },
+    
+  
+    {
+      "src": "^(.*)$",
       "dest": "/apps/frontend/home.html"
     }
   ]
