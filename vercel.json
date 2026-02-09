@@ -12,24 +12,25 @@
       "dest": "/apps/frontend/home.html"
     },
     {
-      "src": "/admin",
-      "dest": "/apps/frontend/admin/login.html"
+      "src": "/(servicos|produto|catalogo|sobre|detalhes-produto)",
+      "dest": "/apps/frontend/$1.html"
     },
     {
       "src": "/admin/(.*)",
       "dest": "/apps/frontend/admin/$1.html"
     },
+ 
     {
-      "src": "/([^/]+)",
-      "dest": "/apps/frontend/$1.html"
+      "src": "/([a-z-]+)\\.css",
+      "dest": "/apps/frontend/$1.css"
     },
+ 
     {
       "src": "/public/(.*)",
       "dest": "/apps/frontend/public/$1"
     },
     {
       "src": "/(.*)",
-      "status": 404,
       "dest": "/apps/frontend/home.html"
     }
   ]
