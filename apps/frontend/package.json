@@ -1,7 +1,4 @@
 {
-  "name": "universo-paralelo-site",
-  "version": "1.0.0",
-  "scripts": {
-    "vercel-build": "echo Frontend pronto!"
-  }
+  "name": "frontend",
+  "version": "1.0.0"
 }

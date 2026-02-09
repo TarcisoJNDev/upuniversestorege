@@ -1,0 +1,33 @@
+{
+  "name": "meu-frontend",
+  "version": 2,
+  "builds": [
+    { "src": "**/*.html", "use": "@vercel/static" },
+    { "src": "**/*.css", "use": "@vercel/static" },
+    { "src": "**/*.js", "use": "@vercel/static" }
+  ],
+  "routes": [
+  
+    { "src": "/", "dest": "/public/home.html" },
+    
+
+    { "src": "/servicos", "dest": "/public/servicos.html" },
+    { "src": "/produto", "dest": "/public/produto.html" },
+    { "src": "/catalago", "dest": "/public/catalago.html" },
+    
+
+    { "src": "/admin", "dest": "/admin/dashboard.html" },
+    { "src": "/admin/dashboard", "dest": "/admin/dashboard.html" },
+    { "src": "/admin/categories", "dest": "/admin/categories.html" },
+    { "src": "/admin/product", "dest": "/admin/product.html" },
+    
+    {
+      "src": "/(css|js|images|assets)/(.*)",
+      "dest": "/public/$1/$2"
+    },
+    
+    { "src": "/(.*)", "status": 404, "dest": "/public/home.html" }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
+}
