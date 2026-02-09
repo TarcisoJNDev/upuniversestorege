@@ -24,7 +24,7 @@ const poolConfig = {
 
   // SSL OBRIGATÓRIO
   ssl: {
-    rejectUnauthorized: true,
+    rejectUnauthorized: false,
   },
 
   // Timeouts
