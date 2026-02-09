@@ -1,7 +1,0 @@
-{
-  "routes": [
-    { "src": "/", "dest": "/frontend/home.html" },
-    { "src": "/admin/(.*)", "dest": "/frontend/admin/$1" },
-    { "src": "/(.*)", "dest": "/frontend/$1" }
-  ]
-}
