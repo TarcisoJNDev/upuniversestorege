@@ -1,33 +1,92 @@
+// controllers/productController.js
 const Product = require("../models/Product");
+const Category = require("../models/Category");
+const path = require("path");
+const fs = require("fs");
 
 class ProductController {
-  // Criar novo produto
+  // Criar novo produto COM upload de imagens
   async create(req, res) {
     try {
-      const productData = req.body;
+      console.log("📦 Recebendo dados do produto...");
+      console.log("📝 Campos do body:", req.body);
+      console.log("📁 Arquivos recebidos:", req.files);
+
+      // DEBUG: Mostrar arquivos recebidos
+      if (req.files) {
+        console.log("📁 Arquivos recebidos:");
+        console.log(
+          "- main_image:",
+          req.files.main_image ? req.files.main_image[0]?.filename : "Nenhum",
+        );
+        console.log(
+          "- gallery_images:",
+          req.files.gallery_images?.length || 0,
+          "arquivo(s)",
+        );
+      }
+
+      let productData = { ...req.body };
+
+      // Processar imagens se existirem
+      if (req.files) {
+        // Imagem principal
+        if (req.files.main_image && req.files.main_image[0]) {
+          const mainImage = req.files.main_image[0];
+          productData.image_url = `/uploads/${mainImage.filename}`;
+          console.log("📷 Imagem principal salva em:", productData.image_url);
+        }
+
+        // Galeria de imagens
+        if (req.files.gallery_images) {
+          productData.images = req.files.gallery_images.map(
+            (file) => `/uploads/${file.filename}`,
+          );
+          console.log("🖼️ Galeria salva:", productData.images);
+        }
+      }
+
+      // Se tiver category, converter para ID
+      if (productData.category && !productData.category_id) {
+        const category = await Category.findByName(productData.category);
+        if (category) {
+          productData.category_id = category.id;
+          productData.category = category.name; // Manter o nome também
+        }
+      }
+
+      // Se não tiver category_id, usar 0
+      if (!productData.category_id) {
+        productData.category_id = 0;
+      }
 
       // Validação básica
-      if (!productData.name || !productData.price || !productData.category) {
+      if (!productData.name || !productData.price) {
         return res.status(400).json({
-          error: "Nome, preço e categoria são obrigatórios",
+          error: "Nome e preço são obrigatórios",
         });
       }
 
       const productId = await Product.create(productData);
+      console.log("✅ Produto criado no banco com ID:", productId);
 
-      // Buscar produto criado
       const product = await Product.findById(productId);
+      console.log("📋 Produto recuperado:", product);
 
+      // ENVIE SEMPRE UMA RESPOSTA JSON consistente
       res.status(201).json({
         success: true,
         message: "Produto criado com sucesso!",
-        product,
+        product: product,
+        productId: productId,
       });
     } catch (error) {
-      console.error("Erro ao criar produto:", error);
+      console.error("❌ Erro ao criar produto:", error);
       res.status(500).json({
+        success: false,
         error: "Erro ao criar produto",
         details: error.message,
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       });
     }
   }
@@ -36,18 +95,28 @@ class ProductController {
   async getAll(req, res) {
     try {
       const filters = {
-        category: req.query.category,
+        category: req.query.category, // nome da categoria
+        category_id: req.query.category_id, // ID da categoria (NOVO)
         status: req.query.status,
         featured: req.query.featured,
         search: req.query.search,
         limit: req.query.limit,
       };
 
+      console.log("🔍 Filtros aplicados:", filters);
+
       const products = await Product.findAll(filters);
-      res.json({ products });
+      res.json({
+        success: true,
+        products,
+        count: products.length,
+      });
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
-      res.status(500).json({ error: "Erro ao buscar produtos" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao buscar produtos",
+      });
     }
   }
 
@@ -69,14 +138,55 @@ class ProductController {
   }
 
   // Atualizar produto
+  // Atualizar produto COM upload de imagens
   async update(req, res) {
     try {
       const { id } = req.params;
-      const productData = req.body;
+      let productData = { ...req.body };
+
+      console.log("🔄 Atualizando produto:", id);
+      console.log("📁 Arquivos recebidos:", req.files);
 
       const productExists = await Product.findById(id);
       if (!productExists) {
         return res.status(404).json({ error: "Produto não encontrado" });
+      }
+
+      // Processar imagens se existirem
+      if (req.files) {
+        // Imagem principal
+        if (req.files.main_image && req.files.main_image[0]) {
+          const mainImage = req.files.main_image[0];
+          productData.image_url = `/uploads/${mainImage.filename}`;
+          console.log("📷 Nova imagem principal:", productData.image_url);
+        } else {
+          // Manter imagem atual se não enviar nova
+          productData.image_url = productExists.image_url;
+        }
+
+        // Galeria de imagens
+        if (req.files.gallery_images && req.files.gallery_images.length > 0) {
+          productData.images = req.files.gallery_images.map(
+            (file) => `/uploads/${file.filename}`,
+          );
+          console.log("🖼️ Nova galeria:", productData.images);
+        } else {
+          // Manter galeria atual se não enviar novas
+          productData.images = productExists.images;
+        }
+      } else {
+        // Se não enviar arquivos, manter os atuais
+        productData.image_url = productExists.image_url;
+        productData.images = productExists.images;
+      }
+
+      // Se tiver category, converter para ID
+      if (productData.category && !productData.category_id) {
+        const category = await Category.findByName(productData.category);
+        if (category) {
+          productData.category_id = category.id;
+          productData.category = category.name;
+        }
       }
 
       await Product.update(id, productData);
@@ -89,7 +199,11 @@ class ProductController {
       });
     } catch (error) {
       console.error("Erro ao atualizar produto:", error);
-      res.status(500).json({ error: "Erro ao atualizar produto" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao atualizar produto",
+        details: error.message,
+      });
     }
   }
 
@@ -135,6 +249,42 @@ class ProductController {
     } catch (error) {
       console.error("Erro ao buscar produtos por categoria:", error);
       res.status(500).json({ error: "Erro ao buscar produtos por categoria" });
+    }
+  }
+
+  async getByCategoryId(req, res) {
+    try {
+      const { categoryId } = req.params;
+      console.log("🔍 Buscando produtos por categoria ID:", categoryId);
+
+      // Converter para número se for string
+      const id = parseInt(categoryId);
+
+      if (isNaN(id)) {
+        return res.status(400).json({
+          error: "ID de categoria inválido",
+        });
+      }
+
+      const products = await Product.findByCategoryId(id);
+
+      console.log(
+        `✅ ${products.length} produtos encontrados para categoria ID ${id}`,
+      );
+
+      res.json({
+        success: true,
+        products,
+        categoryId: id,
+        count: products.length,
+      });
+    } catch (error) {
+      console.error("❌ Erro ao buscar produtos por categoria ID:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro ao buscar produtos por categoria",
+        details: error.message,
+      });
     }
   }
 }

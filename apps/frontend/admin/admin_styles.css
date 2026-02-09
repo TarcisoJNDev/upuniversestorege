@@ -1,0 +1,250 @@
+/* admin-styles.css - ESTILOS APENAS PARA ADMIN */
+:root {
+  --admin-sidebar: #0b0015;
+  --admin-primary: #DF38FF;
+  --admin-secondary: #7C3AED;
+  --admin-card-bg: rgba(26, 0, 43, 0.7);
+  --admin-text: #f2f2f2;
+  --admin-text-muted: #aaa;
+  --admin-font: "Segoe UI", Arial, sans-serif;
+}
+
+/* RESET PARA PÁGINAS ADMIN */
+body.admin-page {
+  font-family: var(--admin-font);
+  background: radial-gradient(circle at top, #2b0045, #050008);
+  color: var(--admin-text);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* SIDEBAR DO ADMIN (igual ao dashboard) */
+.admin-sidebar {
+  width: 250px;
+  background: var(--admin-sidebar);
+  border-right: 1px solid rgba(124, 58, 237, 0.2);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 0 20px 30px;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+  margin-bottom: 30px;
+}
+
+
+
+.sidebar-logo {
+  font-size: 20px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #DF38FF, #7C3AED);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 5px;
+  font-family: var(--admin-font);
+}
+
+.admin-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  font-family: var(--admin-font);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #4CAF50;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 0 20px;
+  overflow-y: auto;
+}
+
+.nav-section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--admin-text-muted);
+  margin-bottom: 15px;
+  font-weight: 600;
+  font-family: var(--admin-font);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  color: var(--admin-text);
+  text-decoration: none;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-family: var(--admin-font);
+}
+
+.nav-link:hover {
+  background: rgba(124, 58, 237, 0.1);
+  color: #C084FC;
+  transform: translateX(5px);
+}
+
+.nav-link.active {
+  background: linear-gradient(135deg, rgba(223, 56, 255, 0.2), rgba(124, 58, 237, 0.2));
+  color: var(--admin-primary);
+  border-left: 3px solid var(--admin-primary);
+}
+
+.nav-link i {
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(124, 58, 237, 0.2);
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #DF38FF, #7C3AED);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 16px;
+  font-family: var(--admin-font);
+}
+
+.profile-info h4 {
+  font-size: 14px;
+  margin-bottom: 3px;
+  color: var(--admin-text);
+  font-family: var(--admin-font);
+}
+
+.profile-info p {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  font-family: var(--admin-font);
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  color: #f44336;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--admin-font);
+}
+
+.btn-logout:hover {
+  background: rgba(244, 67, 54, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Responsividade da Sidebar */
+@media (max-width: 992px) {
+  .admin-sidebar {
+    width: 70px;
+    overflow: hidden;
+  }
+
+  .sidebar-header .sidebar-logo,
+  .admin-status,
+  .section-title,
+  .nav-link span,
+  .profile-info,
+  .btn-logout span {
+    display: none;
+  }
+
+  .sidebar-header {
+    padding: 20px 0;
+    text-align: center;
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .nav-link:hover {
+    transform: none;
+  }
+
+  .sidebar-footer {
+    padding: 20px 0;
+    text-align: center;
+  }
+
+  .admin-profile {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    width: 0;
+    display: none;
+  }
+}

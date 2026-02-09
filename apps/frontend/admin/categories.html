@@ -5,34 +5,96 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Categorias - Admin</title>
-  <link rel="stylesheet" href="../public/css/style(OFC).css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/regular.min.css">
+  <link rel="stylesheet" href="../public/css/base.css">
+ 
   <link rel="stylesheet" href="categories.css">
   <script src="../public/js/api.js"></script>
 </head>
 
 <body>
   <div class="admin-wrapper">
-    <!-- Sidebar simplificada -->
-    <aside
-      style="width: 70px; background: #0b0015; border-right: 1px solid rgba(124, 58, 237, 0.2); padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 30px; position: fixed; height: 100vh;">
-      <a href="dashboard.html" style="color: #C084FC; font-size: 20px;">
-        <i class="fas fa-tachometer-alt"></i>
-      </a>
-      <a href="products.html" style="color: #C084FC; font-size: 20px;">
-        <i class="fas fa-cube"></i>
-      </a>
-      <a href="product-form.html" style="color: #C084FC; font-size: 20px;">
-        <i class="fas fa-plus-circle"></i>
-      </a>
-      <a href="categories.html" style="color: #DF38FF; font-size: 20px;">
-        <i class="fas fa-tags"></i>
-      </a>
+    <!-- SIDEBAR COMPLETA (ATUALIZADA) -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">UNIVERSO PARALELO</div>
+        <div class="admin-status">
+          <span class="status-dot"></span>
+          <span>Admin Online</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="section-title">Principal</div>
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="products.html" class="nav-link">
+            <i class="fas fa-cube"></i>
+            <span>Produtos</span>
+          </a>
+          <a href="categories.html" class="nav-link active">
+            <i class="fas fa-tags"></i>
+            <span>Categorias</span>
+          </a>
+          <!-- href="orders.html" -->
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Pedidos</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Conteúdo</div>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-images"></i>
+            <span>Banners</span>
+          </a>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-star"></i>
+            <span>Avaliações</span>
+          </a>
+          <!-- Blog foi removido conforme solicitado -->
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Configurações</div>
+          <!-- Usuários foi removido conforme solicitado -->
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-cog"></i>
+            <span>Configurações</span>
+          </a>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-chart-line"></i>
+            <span>Relatórios</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="profile-avatar">A</div>
+          <div class="profile-info">
+            <h4>Admin Master</h4>
+            <p>Super Admin</p>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
     </aside>
 
-    <!-- Main Content -->
-    <!-- Main Content -->
+    <!-- MAIN CONTENT -->
     <main class="admin-main">
+      <!-- O resto do seu HTML atual (header, formulário, grid, modal) -->
       <header class="categories-header">
         <div class="header-title">
           <h1><i class="fas fa-tags"></i> Gerenciar Categorias</h1>
@@ -49,9 +111,6 @@
           </button>
         </div>
       </header>
-    
-      <!-- Resto do código permanece igual... -->
-    
 
       <!-- Formulário de Categoria (Oculto por padrão) -->
       <div class="category-form-container" id="categoryForm">
@@ -89,9 +148,9 @@
             <div class="form-group">
               <label>Ícone (Emoji ou Texto)</label>
               <div class="icon-selector">
-                <div class="icon-preview" id="iconPreview">🏺</div>
-                <input type="text" id="iconInput" class="form-control" placeholder="🏺 ou fa-tag"
-                  style="flex: 1; margin-left: 10px;" maxlength="10">
+                <div class="icon-preview" id="iconPreview" onclick="openIconPicker()">🏺</div>
+                <input type="text" id="iconInput" class="form-control" placeholder="Clique para selecionar ícone"
+                  style="flex: 1; margin-left: 10px; cursor: pointer;" onclick="openIconPicker()" readonly>
               </div>
               <small style="color: #666; font-size: 12px;">Digite um emoji ou nome de ícone FontAwesome (ex:
                 fa-tag)</small>
@@ -185,10 +244,591 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal de Seleção de Ícones FontAwesome -->
+      <div class="modal" id="iconPickerModal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh;">
+          <button class="modal-close" onclick="closeIconPicker()">
+            <i class="fas fa-times"></i>
+          </button>
+      
+          <h2 class="modal-title">
+            <i class="fas fa-icons"></i> Selecione um Ícone
+          </h2>
+      
+          <div class="icon-picker-header">
+            <div class="search-container">
+              <i class="fas fa-search"></i>
+              <input type="text" id="iconSearch" placeholder="Buscar ícones (ex: tag, home, user...)">
+            </div>
+            <div class="icon-categories" id="iconCategories">
+              <button class="category-btn active" data-category="all">Todos</button>
+              <button class="category-btn" data-category="solid">Solid</button>
+              <button class="category-btn" data-category="regular">Regular</button>
+              <button class="category-btn" data-category="brands">Brands</button>
+              <button class="category-btn" data-category="emoji">Emojis</button>
+            </div>
+          </div>
+      
+          <div class="icons-grid-container">
+            <div class="icons-grid" id="iconsGrid">
+              <!-- Ícones serão carregados aqui -->
+            </div>
+          </div>
+      
+          <div class="selected-icon-preview" id="selectedIconPreview">
+            <div class="preview-box">
+              <i class="fas fa-tag" id="previewIcon"></i>
+              <div class="preview-info">
+                <span id="previewName">fa-tag</span>
+                <small id="previewCode">fas fa-tag</small>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-modal cancel" onclick="closeIconPicker()">
+                Cancelar
+              </button>
+              <button class="btn-modal" onclick="selectIcon()" style="background: linear-gradient(135deg, #DF38FF, #7C3AED);">
+                <i class="fas fa-check"></i> Selecionar Ícone
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
   <script>
+    // ========== CONFIGURAÇÃO DA API ==========
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Função para obter headers
+    function getAPIConfig() {
+      return {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      };
+    }
+
+    // ========== FUNÇÕES DE API ESPECÍFICAS PARA CATEGORIAS ==========
+
+    // Função para buscar categorias com contagem
+    async function getCategoriesWithProductCount() {
+      try {
+        console.log("🌐 Chamando API:", `${API_BASE_URL}/categories/with-count`);
+        const response = await fetch(`${API_BASE_URL}/categories/with-count`, getAPIConfig());
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar categorias');
+        }
+
+        const data = await response.json();
+        console.log("📊 Dados recebidos da API:", data);
+        return data.categories || [];
+      } catch (error) {
+        console.error('Erro ao buscar categorias com contagem:', error);
+        return [];
+      }
+    }
+
+    // Função para buscar produtos por categoria
+    async function getProductsByCategory(categoryId) {
+      try {
+        const url = `${API_BASE_URL}/categories/${categoryId}/products`;
+        console.log("🌐 Chamando API:", url);
+
+        const response = await fetch(url, getAPIConfig());
+
+        if (!response.ok) {
+          // Se der 404, tente usar o nome da categoria
+          const category = await getCategoryById(categoryId);
+          if (category) {
+            console.log("🔄 Tentando buscar por nome da categoria...");
+            return await getProductsByCategoryName(category.name);
+          }
+          throw new Error('Erro ao buscar produtos da categoria');
+        }
+
+        const data = await response.json();
+        console.log("📦 Produtos retornados:", data);
+        return data;
+      } catch (error) {
+        console.error('Erro ao buscar produtos por categoria:', error);
+        throw error;
+      }
+    }
+
+    // Função auxiliar: buscar produtos pelo NOME da categoria (fallback)
+    async function getProductsByCategoryName(categoryName) {
+      try {
+        const url = `${API_BASE_URL}/products/category/${encodeURIComponent(categoryName)}`;
+        console.log("🔄 Chamando API por nome:", url);
+
+        const response = await fetch(url, getAPIConfig());
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar produtos por nome da categoria');
+        }
+
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Erro ao buscar produtos por nome:', error);
+        return { products: [] };
+      }
+    }
+
+    
+    // Função auxiliar: buscar categoria por ID
+    async function getCategoryById(categoryId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`, getAPIConfig());
+
+        if (!response.ok) {
+          return null;
+        }
+
+        const data = await response.json();
+        return data.category;
+      } catch (error) {
+        console.error('Erro ao buscar categoria:', error);
+        return null;
+      }
+    }
+
+    // ========== INTEGRAR COM ProductAPI EXISTENTE ==========
+    // Verificar se já existe um ProductAPI e adicionar nossos métodos
+    if (typeof ProductAPI !== 'undefined') {
+      // Adicionar métodos ao ProductAPI existente
+      ProductAPI.getCategoriesWithProductCount = getCategoriesWithProductCount;
+      ProductAPI.getProductsByCategory = getProductsByCategory;
+      ProductAPI.API_BASE_URL = API_BASE_URL;
+    } else {
+      // Se não existir, criar objeto global
+      window.ProductAPI = {
+        getCategoriesWithProductCount,
+        getProductsByCategory,
+        API_BASE_URL,
+
+        // Métodos básicos que devem existir (se não existirem, crie fallbacks)
+        getCategoryById: getCategoryById || async function (id) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/categories/${id}`, getAPIConfig());
+            const data = await response.json();
+            return data.category;
+          } catch (error) {
+            console.error('Erro no fallback getCategoryById:', error);
+            return null;
+          }
+        },
+
+        updateCategory: ProductAPI?.updateCategory || async function (id, data) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+              method: 'PUT',
+              ...getAPIConfig(),
+              body: JSON.stringify(data)
+            });
+            return await response.json();
+          } catch (error) {
+            console.error('Erro no fallback updateCategory:', error);
+            return { success: false, error: error.message };
+          }
+        },
+
+        createCategory: ProductAPI?.createCategory || async function (data) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/categories`, {
+              method: 'POST',
+              ...getAPIConfig(),
+              body: JSON.stringify(data)
+            });
+            return await response.json();
+          } catch (error) {
+            console.error('Erro no fallback createCategory:', error);
+            return { success: false, error: error.message };
+          }
+        },
+
+        deleteCategory: ProductAPI?.deleteCategory || async function (id) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+              method: 'DELETE',
+              ...getAPIConfig()
+            });
+            return await response.json();
+          } catch (error) {
+            console.error('Erro no fallback deleteCategory:', error);
+            return { success: false, error: error.message };
+          }
+        }
+      };
+    }
+
+    // ========== SISTEMA DE SELEÇÃO DE ÍCONES ==========
+
+      // Lista de ícones FontAwesome populares
+      const fontAwesomeIcons = {
+        solid: [
+          'fa-tag', 'fa-tags', 'fa-box', 'fa-cube', 'fa-cubes', 'fa-gem', 'fa-ring',
+          'fa-home', 'fa-store', 'fa-shopping-cart', 'fa-shopping-bag', 'fa-gift',
+          'fa-star', 'fa-heart', 'fa-thumbs-up', 'fa-fire', 'fa-bolt', 'fa-magic',
+          'fa-palette', 'fa-brush', 'fa-image', 'fa-camera', 'fa-photo-film',
+          'fa-toolbox', 'fa-wrench', 'fa-screwdriver', 'fa-hammer', 'fa-ruler',
+          'fa-robot', 'fa-gamepad', 'fa-dice', 'fa-puzzle-piece', 'fa-chess',
+          'fa-book', 'fa-graduation-cap', 'fa-microscope', 'fa-atom',
+          'fa-car', 'fa-bicycle', 'fa-motorcycle', 'fa-plane', 'fa-rocket',
+          'fa-utensils', 'fa-mug-hot', 'fa-pizza-slice', 'fa-cake-candles',
+          'fa-shirt', 'fa-hat-cowboy', 'fa-glasses', 'fa-watch', 'fa-ring'
+        ],
+        regular: [
+          'fa-clock', 'fa-calendar', 'fa-flag', 'fa-bookmark', 'fa-star', 'fa-heart',
+          'fa-comment', 'fa-envelope', 'fa-folder', 'fa-file', 'fa-image', 'fa-user'
+        ],
+        brands: [
+          'fa-apple', 'fa-windows', 'fa-android', 'fa-playstation', 'fa-xbox',
+          'fa-steam', 'fa-spotify', 'fa-youtube', 'fa-twitch', 'fa-discord'
+        ]
+      };
+
+      // Emojis populares para categorias
+      const popularEmojis = [
+        '🏺', '🎨', '🖼️', '📸', '🔧', '⚙️', '🧩', '🎮', '🤖', '🚗',
+        '✈️', '🚀', '📚', '🎓', '🔬', '⚗️', '🍕', '☕', '🎂', '👕',
+        '👒', '👓', '⌚', '💍', '🏠', '🏪', '🛒', '🎁', '⭐', '❤️',
+        '🔥', '⚡', '✨', '🎭', '🎪', '🏆', '🎯', '🧸', '🎲', '♟️',
+        '🎧', '🎸', '🥁', '🎺', '🎬', '📺', '🎥', '🎙️', '📻', '📱',
+        '💻', '🖥️', '⌨️', '🖱️', '📞', '📠', '📹', '🔍', '💡', '🔦',
+        '🕯️', '🧭', '⏰', '⏲️', '📅', '📍', '📌', '🖇️', '📎', '✂️',
+        '📏', '📐', '🧮', '📊', '📈', '📉', '📋', '📁', '📂', '🗂️',
+        '🗃️', '🗄️', '🗑️', '🔒', '🔑', '🗝️', '🔨', '⛏️', '⚒️', '🛠️',
+        '🗡️', '⚔️', '🔫', '🏹', '🛡️', '🔧', '🔩', '⚙️', '🗜️', '⚖️',
+        '🔗', '⛓️', '🧰', '🧲', '⚗️', '🧪', '🧫', '🧬', '🔬', '🔭',
+        '📡', '💉', '💊', '🩹', '🩺', '🚪', '🪑', '🛋️', '🛏️', '🛌',
+        '🧺', '🧻', '🚽', '🚿', '🛁', '🪒', '🧴', '🧷', '🧹', '🧽',
+        '🧼', '🪥', '🪒', '🧺', '🛒', '🚲', '🛵', '🏍️', '🚗', '🚕',
+        '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛',
+        '🚜', '🛻', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃',
+        '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊',
+        '🚉', '✈️', '🛫', '🛬', '🛩️', '💺', '🛰️', '🚀', '🛸', '🚁',
+        '🛶', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🚧', '⛽',
+        '🚏', '🚦', '🚥', '🗺️', '🧭', '🎠', '🎡', '🎢', '🚂', '🎪'
+      ];
+
+      // Variáveis para controle do seletor de ícones
+      let selectedIconType = 'fa'; // 'fa' ou 'emoji'
+      let selectedIconValue = 'fa-tag';
+      let selectedIconClass = 'fas fa-tag';
+
+      // Função para abrir o seletor de ícones
+      window.openIconPicker = function () {
+        const modal = document.getElementById('iconPickerModal');
+        modal.classList.add('show');
+
+        // Carregar ícones
+        loadIcons('all');
+
+        // Atualizar preview com ícone atual
+        const currentIcon = document.getElementById('iconPreview').innerHTML;
+        const currentInput = document.getElementById('iconInput').value;
+
+        if (currentIcon.includes('fa-')) {
+          // É um FontAwesome
+          selectedIconType = 'fa';
+          selectedIconValue = currentInput || 'fa-tag';
+          selectedIconClass = currentInput.includes('fa-') ? currentInput : `fas ${currentInput}`;
+        } else {
+          // É um emoji
+          selectedIconType = 'emoji';
+          selectedIconValue = currentIcon;
+          selectedIconClass = currentIcon;
+        }
+
+        updateIconPreview();
+      };
+
+      // Função para fechar o seletor
+      function closeIconPicker() {
+        const modal = document.getElementById('iconPickerModal');
+        modal.classList.remove('show');
+      }
+
+      // Função para carregar ícones na grid
+      function loadIcons(category) {
+        const grid = document.getElementById('iconsGrid');
+        grid.innerHTML = '';
+
+        let icons = [];
+
+        if (category === 'all' || category === 'emoji') {
+          // Adicionar emojis
+          popularEmojis.forEach(emoji => {
+            const div = document.createElement('div');
+            div.className = 'icon-item';
+            div.setAttribute('data-type', 'emoji');
+            div.setAttribute('data-value', emoji);
+            div.innerHTML = `
+        <div style="font-size: 24px;">${emoji}</div>
+        <div class="icon-name">Emoji</div>
+      `;
+            div.onclick = () => selectIconInGrid(emoji, 'emoji', emoji);
+            grid.appendChild(div);
+          });
+        }
+
+        if (category === 'all' || category === 'solid') {
+          fontAwesomeIcons.solid.forEach(icon => {
+            const div = document.createElement('div');
+            div.className = 'icon-item';
+            div.setAttribute('data-type', 'fa');
+            div.setAttribute('data-value', icon);
+            div.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <div class="icon-name">${icon}</div>
+      `;
+            div.onclick = () => selectIconInGrid(icon, 'fa', `fas ${icon}`);
+            grid.appendChild(div);
+          });
+        }
+
+        if (category === 'all' || category === 'regular') {
+          fontAwesomeIcons.regular.forEach(icon => {
+            const div = document.createElement('div');
+            div.className = 'icon-item';
+            div.setAttribute('data-type', 'fa');
+            div.setAttribute('data-value', icon);
+            div.innerHTML = `
+        <i class="far ${icon}"></i>
+        <div class="icon-name">${icon}</div>
+      `;
+            div.onclick = () => selectIconInGrid(icon, 'fa', `far ${icon}`);
+            grid.appendChild(div);
+          });
+        }
+
+        if (category === 'all' || category === 'brands') {
+          fontAwesomeIcons.brands.forEach(icon => {
+            const div = document.createElement('div');
+            div.className = 'icon-item';
+            div.setAttribute('data-type', 'fa');
+            div.setAttribute('data-value', icon);
+            div.innerHTML = `
+        <i class="fab ${icon}"></i>
+        <div class="icon-name">${icon}</div>
+      `;
+            div.onclick = () => selectIconInGrid(icon, 'fa', `fab ${icon}`);
+            grid.appendChild(div);
+          });
+        }
+      }
+
+      // Função para selecionar ícone na grid
+      function selectIconInGrid(value, type, fullClass) {
+        // Remover seleção anterior
+        document.querySelectorAll('.icon-item.selected').forEach(item => {
+          item.classList.remove('selected');
+        });
+
+        // Selecionar novo
+        const items = document.querySelectorAll(`.icon-item[data-value="${value}"]`);
+        items.forEach(item => {
+          if (item.getAttribute('data-type') === type) {
+            item.classList.add('selected');
+          }
+        });
+
+        // Atualizar variáveis
+        selectedIconType = type;
+        selectedIconValue = value;
+        selectedIconClass = fullClass;
+
+        // Atualizar preview
+        updateIconPreview();
+      }
+
+      // Atualizar preview do ícone selecionado
+      function updateIconPreview() {
+        const previewIcon = document.getElementById('previewIcon');
+        const previewName = document.getElementById('previewName');
+        const previewCode = document.getElementById('previewCode');
+
+        if (selectedIconType === 'emoji') {
+          previewIcon.parentElement.innerHTML = `<div style="font-size: 32px;">${selectedIconValue}</div>`;
+          previewName.textContent = 'Emoji';
+          previewCode.textContent = selectedIconValue;
+        } else {
+          previewIcon.parentElement.innerHTML = `<i class="${selectedIconClass}" style="font-size: 32px;"></i>`;
+          previewName.textContent = selectedIconValue;
+          previewCode.textContent = selectedIconClass;
+        }
+      }
+
+      // Função para selecionar o ícone e aplicar ao formulário
+      function selectIcon() {
+        const iconPreview = document.getElementById('iconPreview');
+        const iconInput = document.getElementById('iconInput');
+
+        if (selectedIconType === 'emoji') {
+          iconPreview.innerHTML = selectedIconValue;
+          iconInput.value = selectedIconValue;
+        } else {
+          // Para FontAwesome, mostrar o ícone no preview
+          iconPreview.innerHTML = `<i class="${selectedIconClass}"></i>`;
+          iconInput.value = selectedIconClass.includes(' ') ? selectedIconClass : `fas ${selectedIconClass}`;
+        }
+
+        closeIconPicker();
+        showNotification('Ícone selecionado com sucesso!', 'success');
+      }
+
+    // Busca de ícones
+      document.addEventListener('DOMContentLoaded', function () {
+        // Configurar busca
+        const searchInput = document.getElementById('iconSearch');
+        if (searchInput) {
+          searchInput.addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase();
+            const items = document.querySelectorAll('.icon-item');
+
+            items.forEach(item => {
+              const iconName = item.getAttribute('data-value').toLowerCase();
+              const iconType = item.querySelector('.icon-name')?.textContent.toLowerCase() || '';
+
+              if (iconName.includes(searchTerm) || iconType.includes(searchTerm)) {
+                item.style.display = 'flex';
+              } else {
+                item.style.display = 'none';
+              }
+            });
+          });
+        }
+
+        // Configurar categorias
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        categoryBtns.forEach(btn => {
+          btn.addEventListener('click', function () {
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const category = this.getAttribute('data-category');
+            loadIcons(category);
+          });
+        });
+
+        
+
+        // Tornar o preview do ícone clicável
+        const iconPreview = document.getElementById('iconPreview');
+        if (iconPreview) {
+          iconPreview.style.cursor = 'pointer';
+          iconPreview.addEventListener('click', openIconPicker);
+        }
+
+        // Também tornar o input clicável
+        const iconInput = document.getElementById('iconInput');
+        if (iconInput) {
+          iconInput.readOnly = true;
+          iconInput.style.cursor = 'pointer';
+          iconInput.addEventListener('click', openIconPicker);
+        }
+
+        
+      });
+
+      // === FUNÇÕES PRINCIPAIS ===
+
+        // Carregar categorias da API
+        async function loadCategories() {
+          // ... seu código existente ...
+        }
+
+        // Atualizar select de categorias pai
+        function updateParentCategorySelect() {
+          // ... seu código existente ...
+        }
+
+        // ========== ADICIONE O EVENT LISTENER AQUI ==========
+
+        // Este código deve vir APÓS as variáveis serem definidas e ANTES do event listener existente
+        document.addEventListener('DOMContentLoaded', function () {
+          // Configurar busca
+          const searchInput = document.getElementById('iconSearch');
+          if (searchInput) {
+            searchInput.addEventListener('input', function () {
+              // ... código existente ...
+            });
+          }
+
+          // Configurar categorias
+          const categoryBtns = document.querySelectorAll('.category-btn');
+          categoryBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+              // ... código existente ...
+            });
+          });
+
+          // ========== ADICIONE ESTA PARTE ==========
+          // Tornar o preview do ícone clicável
+          const iconPreview = document.getElementById('iconPreview');
+          const iconInput = document.getElementById('iconInput');
+
+          if (iconPreview && iconInput) {
+            // Preview clicável
+            iconPreview.style.cursor = 'pointer';
+            iconPreview.addEventListener('click', openIconPicker);
+
+            // Input também clicável
+            iconInput.readOnly = true;
+            iconInput.style.cursor = 'pointer';
+            iconInput.addEventListener('click', openIconPicker);
+
+            // ========== ADICIONE ESTE EVENT LISTENER ==========
+            // Atualizar ícone preview em tempo real quando digitar manualmente
+            iconInput.addEventListener('input', function () {
+              const value = this.value.trim();
+              if (value.includes('fa-')) {
+                // Se for FontAwesome
+                iconPreview.innerHTML = `<i class="${value}"></i>`;
+              } else if (value) {
+                // Se for emoji ou texto
+                iconPreview.innerHTML = value;
+              }
+            });
+            // =================================================
+          }
+        });
+    document.addEventListener('DOMContentLoaded', function () {
+      // Adiciona o script do dashboard para logout e perfil
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      logoutBtn.addEventListener('click', function () {
+        if (confirm('Tem certeza que deseja sair?')) {
+          localStorage.removeItem('adminLoggedIn');
+          localStorage.removeItem('adminEmail');
+          window.location.href = 'login.html';
+        }
+      });
+
+      // Update admin name from localStorage
+      const adminEmail = localStorage.getItem('adminEmail');
+      const profileName = document.querySelector('.profile-info h4');
+      if (adminEmail) {
+        profileName.textContent = adminEmail.split('@')[0];
+      }
+
+      // Atualizar avatar com primeira letra do nome
+      const profileAvatar = document.querySelector('.profile-avatar');
+      if (adminEmail && profileAvatar) {
+        const firstName = adminEmail.split('@')[0];
+        profileAvatar.textContent = firstName.charAt(0).toUpperCase();
+      }
+    });
     document.addEventListener('DOMContentLoaded', function () {
       console.log("🏷️ Iniciando página de categorias...");
 
@@ -234,9 +874,25 @@
           categoriesGrid.style.display = 'none';
           categoriesGrid.innerHTML = '';
 
-          // Buscar categorias
-          allCategories = await ProductAPI.getAllCategories();
+          // DEBUG: Testar a API primeiro
+          console.log("🧪 Testando API...");
+          const testResponse = await fetch('http://localhost:5000/api/categories/with-count');
+          const testData = await testResponse.json();
+          console.log("📊 Teste API - Resposta:", testData);
+          console.log("📊 Teste API - Primeira categoria:", testData.categories ? testData.categories[0] : 'Nenhuma');
+
+          // Buscar categorias COM CONTAGEM DE PRODUTOS
+          allCategories = await ProductAPI.getCategoriesWithProductCount();
+
           console.log(`✅ ${allCategories.length} categorias carregadas`);
+
+          // DEBUG: Mostrar detalhes das primeiras 3 categorias
+          if (allCategories.length > 0) {
+            console.log("🔍 Detalhes das categorias:");
+            allCategories.slice(0, 3).forEach((cat, index) => {
+              console.log(`  ${index + 1}. ${cat.name}: product_count = ${cat.product_count} (tipo: ${typeof cat.product_count})`);
+            });
+          }
 
           // Ordenar categorias (principais primeiro, depois subcategorias)
           allCategories.sort((a, b) => {
@@ -260,17 +916,56 @@
 
         } catch (error) {
           console.error("❌ Erro ao carregar categorias:", error);
-          showNotification('Erro ao carregar categorias', 'error');
+          showNotification('Erro ao carregar categorias: ' + error.message, 'error');
 
           loadingState.innerHTML = `
-            <div style="color: #f44336;">
-              <i class="fas fa-exclamation-triangle fa-2x"></i>
-              <p style="margin-top: 10px;">Erro ao carregar categorias</p>
-              <button onclick="loadCategories()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                <i class="fas fa-sync-alt"></i> Tentar novamente
-              </button>
-            </div>
-          `;
+      <div style="color: #f44336;">
+        <i class="fas fa-exclamation-triangle fa-2x"></i>
+        <p style="margin-top: 10px;">Erro ao carregar categorias</p>
+        <p style="font-size: 12px; color: #aaa;">${error.message}</p>
+        <p style="font-size: 12px; color: #aaa;">Verifique se o servidor está rodando em http://localhost:5000</p>
+        <button onclick="loadCategories()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer;">
+          <i class="fas fa-sync-alt"></i> Tentar novamente
+        </button>
+        <button onclick="testAPI()" style="margin-top: 10px; margin-left: 10px; padding: 8px 15px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
+          <i class="fas fa-bug"></i> Testar API
+        </button>
+      </div>
+    `;
+        }
+      }
+
+      // Adicione esta função de teste
+      async function testAPI() {
+        try {
+          console.log("🧪 Testando todas as APIs...");
+
+          // Teste 1: Health check
+          const health = await fetch('http://localhost:5000/api/health');
+          console.log("✅ Health check:", await health.json());
+
+          // Teste 2: Categorias normais
+          const categories = await fetch('http://localhost:5000/api/categories');
+          const catData = await categories.json();
+          console.log("✅ Categorias normais:", catData.categories ? catData.categories.length : 0, "categorias");
+
+          // Teste 3: Categorias com contagem
+          const withCount = await fetch('http://localhost:5000/api/categories/with-count');
+          const countData = await withCount.json();
+          console.log("✅ Categorias com contagem:", countData.categories ? countData.categories.length : 0, "categorias");
+
+          if (countData.categories && countData.categories.length > 0) {
+            console.log("📊 Exemplo de categoria com contagem:", {
+              name: countData.categories[0].name,
+              product_count: countData.categories[0].product_count,
+              id: countData.categories[0].id
+            });
+          }
+
+          alert('Teste completo! Verifique o console para detalhes.');
+        } catch (error) {
+          console.error('❌ Erro no teste da API:', error);
+          alert('Erro ao testar API: ' + error.message);
         }
       }
 
@@ -334,13 +1029,129 @@
         categoriesGrid.innerHTML = gridHTML;
       }
 
-      // Criar card de categoria
+      window.viewCategoryProducts = async function (categoryId, event = null) {
+        if (event) event.stopPropagation();
+
+        try {
+          const category = allCategories.find(c => c.id == categoryId);
+          if (!category) {
+            showNotification('Categoria não encontrada', 'error');
+            return;
+          }
+
+          console.log(`📦 Carregando produtos da categoria "${category.name}"...`);
+
+          // Mostrar loading
+          showNotification(`Carregando produtos de ${category.name}...`, 'info');
+
+          // Buscar produtos da categoria
+          const response = await ProductAPI.getProductsByCategory(categoryId);
+
+          if (response.products && response.products.length > 0) {
+            // Abrir modal com os produtos
+            showCategoryProductsModal(category, response.products);
+          } else {
+            showNotification(`Nenhum produto encontrado na categoria "${category.name}"`, 'warning');
+          }
+
+        } catch (error) {
+          console.error('❌ Erro ao carregar produtos da categoria:', error);
+          showNotification('Erro ao carregar produtos', 'error');
+        }
+      };
+
+      // Função para mostrar modal com produtos da categoria
+      function showCategoryProductsModal(category, products) {
+        // Criar modal
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.innerHTML = `
+    <div class="modal-content" style="max-width: 800px; max-height: 80vh;">
+      <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+        <i class="fas fa-times"></i>
+      </button>
+      <h2 class="modal-title">
+        <i class="fas fa-tags" style="color: ${category.color || '#7C3AED'}"></i>
+        Produtos: ${category.name}
+      </h2>
+      <p style="color: #aaa; margin-bottom: 20px;">
+        ${category.description || ''}
+        <br>
+        <small>Total: ${products.length} produto(s)</small>
+      </p>
+      
+      <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: rgba(124, 58, 237, 0.1);">
+              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Produto</th>
+              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Preço</th>
+              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Estoque</th>
+              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Status</th>
+              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${products.map(product => `
+              <tr>
+                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    ${product.image_url ?
+            `<img src="${product.image_url}" alt="${product.name}" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover;">` :
+            `<div style="width: 40px; height: 40px; background: rgba(124, 58, 237, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-cube"></i>
+                      </div>`
+          }
+                    <div>
+                      <strong>${product.name}</strong><br>
+                      <small style="color: #aaa;">${product.sku || `ID: ${product.id}`}</small>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
+                  R$ ${parseFloat(product.price).toFixed(2)}
+                </td>
+                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
+                  ${product.stock} un.
+                </td>
+                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
+                  <span style="padding: 3px 8px; border-radius: 4px; font-size: 12px; background: ${product.status === 'active' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'}; color: ${product.status === 'active' ? '#4CAF50' : '#f44336'}">
+                    ${product.status === 'active' ? 'Ativo' : 'Inativo'}
+                  </span>
+                </td>
+                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
+                  <button onclick="window.location.href='product-form.html?edit=${product.id}'" 
+                          style="padding: 5px 10px; background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); color: #C084FC; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn-modal cancel" onclick="this.parentElement.parentElement.remove()">
+          Fechar
+        </button>
+        <button class="btn-modal" style="background: linear-gradient(135deg, #DF38FF, #7C3AED);" 
+                onclick="window.location.href='products.html?category=${encodeURIComponent(category.name)}'">
+          <i class="fas fa-external-link-alt"></i> Ver todos na página de produtos
+        </button>
+      </div>
+    </div>
+  `;
+
+        document.body.appendChild(modal);
+      }
+
       function createCategoryCard(category, isSubcategory = false) {
         const parentCategory = category.parent_id ?
           allCategories.find(cat => cat.id == category.parent_id) : null;
 
-        // Estatísticas (em um sistema real, viriam da API)
-        const productCount = 0; // Você pode implementar contagem de produtos depois
+        // USAR A CONTAGEM REAL DA API - ESSA É A MUDANÇA PRINCIPAL!
+        const productCount = category.product_count || 0; // ← MUDE ESTA LINHA
         const salesCount = 0;   // Você pode implementar contagem de vendas depois
 
         // Cor da categoria (se tiver, senão padrão)
@@ -364,56 +1175,70 @@
         const statusIcon = isActive ? 'fas fa-check-circle' : 'fas fa-times-circle';
         const statusText = isActive ? 'Ativa' : 'Inativa';
 
+        // Adicionar link para ver produtos se houver algum
+        const viewProductsLink = productCount > 0 ? `
+    <div style="margin-top: 10px;">
+      <button onclick="viewCategoryProducts(${category.id})" 
+              style="width: 100%; padding: 8px; background: rgba(124, 58, 237, 0.1); 
+                     border: 1px solid rgba(124, 58, 237, 0.3); color: #C084FC; 
+                     border-radius: 6px; cursor: pointer; font-size: 13px;">
+        <i class="fas fa-eye"></i> Ver ${productCount} produto(s)
+      </button>
+    </div>
+  ` : '';
+
         return `
-    <div class="category-card" data-category-id="${category.id}">
-      <div class="category-header">
-        <div class="category-icon" style="color: ${color};">
-          ${iconHTML}
-        </div>
-        <div class="category-actions">
-          <button class="btn-action-small" onclick="editCategory(${category.id})">
-            <i class="far fa-edit"></i>
-          </button>
-          <button class="btn-action-small" onclick="showDeleteModal(${category.id}, '${category.name.replace(/'/g, "\\'")}')">
-            <i class="far fa-trash-alt"></i>
-          </button>
-        </div>
+<div class="category-card" data-category-id="${category.id}" style="cursor: pointer;" onclick="viewCategoryProducts(${category.id})">
+  <div class="category-header">
+    <div class="category-icon" style="color: ${color};">
+      ${iconHTML}
+    </div>
+    <div class="category-actions">
+      <button class="btn-action-small" onclick="editCategory(${category.id}); event.stopPropagation();">
+        <i class="far fa-edit"></i>
+      </button>
+      <button class="btn-action-small" onclick="showDeleteModal(${category.id}, '${category.name.replace(/'/g, "\\'")}'); event.stopPropagation();">
+        <i class="far fa-trash-alt"></i>
+      </button>
+    </div>
+  </div>
+  <div class="category-content">
+    ${parentCategory ? `
+      <div class="parent-category-badge" style="color: ${color};">
+        <i class="fas fa-tags"></i> ${parentCategory.name}
       </div>
-      <div class="category-content">
-        ${parentCategory ? `
-          <div class="parent-category-badge" style="color: ${color};">
-            <i class="fas fa-tags"></i> ${parentCategory.name}
-          </div>
-        ` : ''}
-        
-        <h3>${category.name}</h3>
-        <p class="category-description">
-          ${category.description || 'Sem descrição'}
-        </p>
-        
-        <div class="category-stats">
-          <div class="stat-item">
-            <span class="stat-number">${productCount}</span>
-            <span class="stat-label">Produtos</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">${salesCount}</span>
-            <span class="stat-label">Vendas</span>
-          </div>
-        </div>
-        
-        <div class="category-footer">
-          <span class="category-status ${statusClass}">
-            <i class="${statusIcon}"></i>
-            ${statusText}
-          </span>
-          <span class="category-slug">
-            ${category.slug}
-          </span>
-        </div>
+    ` : ''}
+    
+    <h3>${category.name}</h3>
+    <p class="category-description">
+      ${category.description || 'Sem descrição'}
+    </p>
+    
+    <div class="category-stats">
+      <div class="stat-item">
+        <span class="stat-number" style="color: ${productCount > 0 ? '#C084FC' : '#aaa'};">${productCount}</span>
+        <span class="stat-label">Produtos</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">${salesCount}</span>
+        <span class="stat-label">Vendas</span>
       </div>
     </div>
-  `;
+    
+    ${viewProductsLink}
+    
+    <div class="category-footer">
+      <span class="category-status ${statusClass}">
+        <i class="${statusIcon}"></i>
+        ${statusText}
+      </span>
+      <span class="category-slug">
+        ${category.slug}
+      </span>
+    </div>
+  </div>
+</div>
+`;
       }
 
       // E na função renderCategories, use esta lógica para separar melhor:

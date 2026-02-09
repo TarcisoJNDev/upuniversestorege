@@ -5,8 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pedidos - Admin</title>
-  <link rel="stylesheet" href="../public/css/style(OFC).css">
+  <link rel="stylesheet" href="../public/css/base.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="categories.css">
+  <link rel="stylesheet" href="admin-styles.css">
   <style>
     /* ESTILOS PARA PEDIDOS */
     .admin-wrapper {
@@ -734,21 +736,83 @@
 
 <body>
   <div class="admin-wrapper">
-    <!-- Sidebar simplificada -->
-    <aside
-      style="width: 70px; background: #0b0015; border-right: 1px solid rgba(124, 58, 237, 0.2); padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 30px; position: fixed; height: 100vh;">
-      <a href="dashboard.html" style="color: #C084FC; font-size: 20px;">
-        <i class="fas fa-tachometer-alt"></i>
-      </a>
-      <a href="products.html" style="color: #C084FC; font-size: 20px;">
-        <i class="fas fa-cube"></i>
-      </a>
-      <a href="categories.html" style="color: #C084FC; font-size: 20px;">
-        <i class="fas fa-tags"></i>
-      </a>
-      <a href="orders.html" style="color: #DF38FF; font-size: 20px;">
-        <i class="fas fa-shopping-cart"></i>
-      </a>
+    <!-- SIDEBAR COMPLETA -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">UNIVERSO PARALELO</div>
+        <div class="admin-status">
+          <span class="status-dot"></span>
+          <span>Admin Online</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="section-title">Principal</div>
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="products.html" class="nav-link">
+            <i class="fas fa-cube"></i>
+            <span>Produtos</span>
+          </a>
+          <a href="orders.html" class="nav-link active">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Pedidos</span>
+          </a>
+          <a href="categories.html" class="nav-link">
+            <i class="fas fa-tags"></i>
+            <span>Categorias</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Conteúdo</div>
+          <a href="#" class="nav-link">
+            <i class="fas fa-images"></i>
+            <span>Banners</span>
+          </a>
+          <a href="#" class="nav-link">
+            <i class="fas fa-star"></i>
+            <span>Avaliações</span>
+          </a>
+          <a href="#" class="nav-link">
+            <i class="fas fa-newspaper"></i>
+            <span>Blog</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Configurações</div>
+          <a href="#" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>Usuários</span>
+          </a>
+          <a href="#" class="nav-link">
+            <i class="fas fa-cog"></i>
+            <span>Configurações</span>
+          </a>
+          <a href="#" class="nav-link">
+            <i class="fas fa-chart-line"></i>
+            <span>Relatórios</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="profile-avatar">A</div>
+          <div class="profile-info">
+            <h4>Admin Master</h4>
+            <p>Super Admin</p>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
     </aside>
 
     <!-- Main Content -->
@@ -1328,6 +1392,9 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      console.log("🛒 Iniciando página de pedidos...");
+
+      // === GERENCIAMENTO DO PERFIL E LOGOUT ===
       // Verificar login
       const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
       if (!isLoggedIn) {
@@ -1335,17 +1402,39 @@
         return;
       }
 
+      // Logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+          if (confirm('Tem certeza que deseja sair?')) {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminEmail');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+
+      // Update admin name from localStorage
+      const adminEmail = localStorage.getItem('adminEmail');
+      const profileName = document.querySelector('.profile-info h4');
+      if (adminEmail && profileName) {
+        profileName.textContent = adminEmail.split('@')[0];
+      }
+
+      // === GERENCIAMENTO DE PEDIDOS ===
       // Selecionar todos os pedidos
       const selectAll = document.getElementById('selectAllOrders');
       const checkboxes = document.querySelectorAll('.order-checkbox');
       const selectedCount = document.getElementById('selectedOrdersCount');
 
-      selectAll.addEventListener('change', function () {
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = this.checked;
+      if (selectAll) {
+        selectAll.addEventListener('change', function () {
+          checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+          });
+          updateSelectedOrdersCount();
         });
-        updateSelectedOrdersCount();
-      });
+      }
 
       checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function () {
@@ -1362,20 +1451,24 @@
       const filterBtn = document.querySelector('.btn-filter');
       const clearBtn = document.querySelector('.btn-filter.secondary');
 
-      filterBtn.addEventListener('click', function () {
-        showNotification('Filtros aplicados!', 'info');
-      });
-
-      clearBtn.addEventListener('click', function () {
-        document.querySelectorAll('.filter-control').forEach(input => {
-          if (input.tagName === 'SELECT') {
-            input.selectedIndex = 0;
-          } else {
-            input.value = '';
-          }
+      if (filterBtn) {
+        filterBtn.addEventListener('click', function () {
+          showNotification('Filtros aplicados!', 'info');
         });
-        showNotification('Filtros limpos!', 'info');
-      });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+          document.querySelectorAll('.filter-control').forEach(input => {
+            if (input.tagName === 'SELECT') {
+              input.selectedIndex = 0;
+            } else {
+              input.value = '';
+            }
+          });
+          showNotification('Filtros limpos!', 'info');
+        });
+      }
 
       // Tabs do modal
       const orderTabs = document.querySelectorAll('.order-tab');
@@ -1417,6 +1510,8 @@
 
     // Função de notificação
     function showNotification(message, type = 'info') {
+      console.log(`📢 Notificação [${type}]: ${message}`);
+
       const notification = document.createElement('div');
       notification.style.cssText = `
         position: fixed;
@@ -1435,9 +1530,12 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       `;
 
+      const icon = type === 'success' ? 'check-circle' :
+        type === 'error' ? 'exclamation-circle' :
+          type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
       notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" 
-           style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'}"></i>
+        <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
         <span>${message}</span>
       `;
 
@@ -1449,7 +1547,7 @@
       }, 3000);
     }
 
-    // Adicionar animações CSS
+    // === ANIMAÇÕES CSS ===
     const style = document.createElement('style');
     style.textContent = `
       @keyframes slideIn {

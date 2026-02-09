@@ -5,38 +5,94 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Produtos - Admin</title>
-  <link rel="stylesheet" href="../public/css/style(OFC).css">
+  <link rel="stylesheet" href="../public/css/base.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="categories.css">
   <link rel="stylesheet" href="products.css">
   <script src="../public/js/api.js"></script>
 </head>
 
 <body>
   <div class="admin-wrapper">
-    <!-- Sidebar (simplificada) -->
-    <aside class="admin-sidebar" style="width: 70px;">
-      <!-- Sidebar minimalista -->
-      <nav style="padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 30px;">
-        <a href="dashboard.html" style="color: #C084FC; font-size: 20px;">
-          <i class="fas fa-tachometer-alt"></i>
-        </a>
-        <a href="products.html" style="color: #DF38FF; font-size: 20px;">
-          <i class="fas fa-cube"></i>
-        </a>
-        <a href="categories.html" style="color: #C084FC; font-size: 20px;">
-          <i class="fas fa-tags"></i>
-        </a>
-        <a href="product-form.html" style="color: #C084FC; font-size: 20px;">
-          <i class="fas fa-plus-circle"></i>
-        </a>
+    <!-- SIDEBAR ATUALIZADA COM LINKS DESABILITADOS -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">UNIVERSO PARALELO</div>
+        <div class="admin-status">
+          <span class="status-dot"></span>
+          <span>Admin Online</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="section-title">Principal</div>
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="products.html" class="nav-link active">
+            <i class="fas fa-cube"></i>
+            <span>Produtos</span>
+          </a>
+          <a href="categories.html" class="nav-link">
+            <i class="fas fa-tags"></i>
+            <span>Categorias</span>
+          </a>
+          <!-- href="orders.html" -->
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Pedidos</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Conteúdo</div>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-images"></i>
+            <span>Banners</span>
+          </a>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-star"></i>
+            <span>Avaliações</span>
+          </a>
+          <!-- Blog foi removido conforme solicitado -->
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Configurações</div>
+          <!-- Usuários foi removido conforme solicitado -->
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-cog"></i>
+            <span>Configurações</span>
+          </a>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-chart-line"></i>
+            <span>Relatórios</span>
+          </a>
+        </div>
       </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="profile-avatar">A</div>
+          <div class="profile-info">
+            <h4>Admin Master</h4>
+            <p>Super Admin</p>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- MAIN CONTENT -->
     <main class="admin-main">
       <header class="products-header">
         <div class="header-title">
-          <h1>Gerenciar Produtos</h1>
+          <h1><i class="fas fa-cube"></i> Gerenciar Produtos</h1>
           <p>Gerencie todos os produtos da sua loja</p>
         </div>
         <div class="products-toolbar">
@@ -55,11 +111,7 @@
       <div class="products-filters">
         <select class="filter-select" id="categoryFilter">
           <option value="">Todas as categorias</option>
-          <option value="esculturas">Esculturas 3D</option>
-          <option value="decoracao">Decoração</option>
-          <option value="utilitarios">Utilitários</option>
-          <option value="prototipos">Protótipos</option>
-          <option value="brinquedos">Brinquedos</option>
+          <!-- Categorias serão carregadas dinamicamente aqui -->
         </select>
 
         <select class="filter-select" id="statusFilter">
@@ -177,9 +229,71 @@
   </div>
 
   <script>
+    // ========== CONFIGURAÇÃO DA API ==========
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Função para obter headers
+    function getAPIConfig() {
+      return {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      };
+    }
+
+    // ========== FUNÇÕES DE API ESPECÍFICAS PARA CATEGORIAS ==========
+
+    // Função para buscar categorias com contagem (ADICIONADA AQUI)
+    async function getCategoriesWithProductCount() {
+      try {
+        console.log("🌐 Chamando API:", `${API_BASE_URL}/categories/with-count`);
+        const response = await fetch(`${API_BASE_URL}/categories/with-count`, getAPIConfig());
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar categorias');
+        }
+
+        const data = await response.json();
+        console.log("📊 Dados recebidos da API:", data);
+        return data.categories || [];
+      } catch (error) {
+        console.error('Erro ao buscar categorias com contagem:', error);
+        return [];
+      }
+    }
+
+    // Função para buscar categorias simples (sem contagem)
+    async function getCategories() {
+      try {
+        console.log("🌐 Chamando API:", `${API_BASE_URL}/categories`);
+        const response = await fetch(`${API_BASE_URL}/categories`, getAPIConfig());
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar categorias');
+        }
+
+        const data = await response.json();
+        return data.categories || [];
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+        return [];
+      }
+    }
+
+    // ========== INTEGRAR COM ProductAPI EXISTENTE ==========
+    // Adicionar métodos ao ProductAPI se não existirem
+    if (typeof ProductAPI === 'undefined') {
+      window.ProductAPI = {};
+    }
+
+    // Adicionar os métodos de categorias ao ProductAPI
+    ProductAPI.getCategoriesWithProductCount = getCategoriesWithProductCount;
+    ProductAPI.getCategories = getCategories;
+
     document.addEventListener('DOMContentLoaded', function () {
       console.log("📦 Iniciando página de produtos...");
 
+      // === GERENCIAMENTO DO PERFIL E LOGOUT ===
       // Verificar login
       const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
       if (!isLoggedIn) {
@@ -187,9 +301,37 @@
         return;
       }
 
+      // Logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+          if (confirm('Tem certeza que deseja sair?')) {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminEmail');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+
+      // Update admin name from localStorage
+      const adminEmail = localStorage.getItem('adminEmail');
+      const profileName = document.querySelector('.profile-info h4');
+      if (adminEmail && profileName) {
+        profileName.textContent = adminEmail.split('@')[0];
+      }
+
+      // Atualizar avatar com primeira letra do nome
+      const profileAvatar = document.querySelector('.profile-avatar');
+      if (adminEmail && profileAvatar) {
+        const firstName = adminEmail.split('@')[0];
+        profileAvatar.textContent = firstName.charAt(0).toUpperCase();
+      }
+
+      // === GERENCIAMENTO DE PRODUTOS ===
       // Variáveis globais
       let allProducts = [];
       let filteredProducts = [];
+      let allCategories = [];
       let currentPage = 1;
       const productsPerPage = 10;
       let productToDelete = null;
@@ -214,6 +356,77 @@
 
       // === FUNÇÕES PRINCIPAIS ===
 
+      // Função para carregar categorias da API
+      async function loadCategories() {
+        try {
+          console.log("🏷️ Carregando categorias da API...");
+
+          // Tentar buscar categorias com contagem
+          try {
+            allCategories = await ProductAPI.getCategoriesWithProductCount();
+          } catch (error) {
+            console.log("🔄 Fallback: buscando categorias simples...");
+            // Se falhar, tentar buscar categorias normais
+            allCategories = await ProductAPI.getCategories();
+          }
+
+          console.log(`✅ ${allCategories.length} categorias carregadas`);
+
+          // Atualizar o select de categorias
+          updateCategoryFilter();
+
+          return allCategories;
+        } catch (error) {
+          console.error("❌ Erro ao carregar categorias:", error);
+          showNotification('Erro ao carregar categorias', 'error');
+          return [];
+        }
+      }
+
+      // Função para atualizar o filtro de categorias
+      function updateCategoryFilter() {
+        const categoryFilter = document.getElementById('categoryFilter');
+
+        // Limpar opções existentes (exceto a primeira)
+        categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
+
+        if (!allCategories || allCategories.length === 0) {
+          // Se não houver categorias, adicionar uma opção padrão
+          const option = document.createElement('option');
+          option.value = "uncategorized";
+          option.textContent = "Não categorizado";
+          categoryFilter.appendChild(option);
+          return;
+        }
+
+        // Ordenar categorias por nome
+        allCategories.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Adicionar categorias principais primeiro (sem parent_id)
+        const mainCategories = allCategories.filter(cat => !cat.parent_id);
+        const subCategories = allCategories.filter(cat => cat.parent_id);
+
+        // Adicionar categorias principais
+        mainCategories.forEach(category => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          categoryFilter.appendChild(option);
+
+          // Adicionar subcategorias desta categoria
+          const categorySubCategories = subCategories.filter(sub => sub.parent_id == category.id);
+          if (categorySubCategories.length > 0) {
+            categorySubCategories.forEach(subCategory => {
+              const subOption = document.createElement('option');
+              subOption.value = subCategory.id;
+              subOption.textContent = `└─ ${subCategory.name}`;
+              subOption.style.paddingLeft = '20px';
+              categoryFilter.appendChild(subOption);
+            });
+          }
+        });
+      }
+
       // Carregar produtos da API
       async function loadProducts() {
         try {
@@ -228,6 +441,9 @@
               </td>
             </tr>
           `;
+
+          // Carregar categorias primeiro
+          await loadCategories();
 
           // Buscar produtos
           allProducts = await ProductAPI.getAllProducts();
@@ -255,13 +471,19 @@
       }
 
       // Aplicar filtros
+     // Aplicar filtros - VERSÃO CORRIGIDA PARA category (string)
       function applyFilters() {
         const searchTerm = searchInput.value.toLowerCase();
-        const category = categoryFilter.value;
+        const categoryId = categoryFilter.value;
         const status = statusFilter.value;
         const sortBy = sortFilter.value;
 
-        console.log("🔍 Aplicando filtros:", { searchTerm, category, status, sortBy });
+        console.log("🔍 Aplicando filtros:", {
+          searchTerm,
+          categoryId,
+          status,
+          sortBy
+        });
 
         // Filtrar produtos
         filteredProducts = allProducts.filter(product => {
@@ -271,14 +493,47 @@
             (product.description && product.description.toLowerCase().includes(searchTerm)) ||
             (product.sku && product.sku.toLowerCase().includes(searchTerm));
 
-          // Filtro por categoria
-          const matchesCategory = !category || product.category === category;
+          // Filtro por categoria - VERSÃO CORRIGIDA PARA category (string)
+          let matchesCategory = true;
+          if (categoryId) {
+            // Obter o nome da categoria selecionada
+            let selectedCategoryName = '';
+
+            // Encontrar a categoria selecionada pelo ID
+            const selectedCategory = allCategories.find(cat => cat.id.toString() === categoryId.toString());
+            if (selectedCategory) {
+              selectedCategoryName = selectedCategory.name;
+              console.log(`Categoria selecionada: ${selectedCategoryName} (ID: ${categoryId})`);
+            }
+
+            // Verificar se o produto pertence a esta categoria
+            if (selectedCategoryName) {
+              // Primeiro, tentar usar category_id se existir
+              if (product.category_id !== null && product.category_id !== undefined) {
+                matchesCategory = product.category_id.toString() === categoryId.toString();
+              }
+              // Se não tiver category_id, usar o campo category (string)
+              else if (product.category) {
+                // Comparar nomes das categorias
+                matchesCategory = product.category.toLowerCase() === selectedCategoryName.toLowerCase();
+                console.log(`Comparando categoria do produto "${product.category}" com "${selectedCategoryName}": ${matchesCategory}`);
+              } else {
+                // Produto sem categoria
+                matchesCategory = false;
+              }
+            } else {
+              // Categoria não encontrada (não deve acontecer)
+              matchesCategory = false;
+            }
+          }
 
           // Filtro por status
           const matchesStatus = !status || product.status === status;
 
           return matchesSearch && matchesCategory && matchesStatus;
         });
+
+        console.log(`📊 ${filteredProducts.length} produtos após filtragem (de ${allProducts.length} total)`);
 
         // Ordenar produtos
         filteredProducts.sort((a, b) => {
@@ -297,8 +552,6 @@
           }
         });
 
-        console.log(`📊 ${filteredProducts.length} produtos após filtragem`);
-
         // Atualizar exibição
         currentPage = 1;
         updateTable();
@@ -310,6 +563,23 @@
         const startIndex = (currentPage - 1) * productsPerPage;
         const endIndex = startIndex + productsPerPage;
         const pageProducts = filteredProducts.slice(startIndex, endIndex);
+
+        function buildImageUrl(imagePath) {
+          if (!imagePath) return '';
+
+          // Se já for URL completa
+          if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) {
+            return imagePath;
+          }
+
+          // Se começar com /, adicionar domínio
+          if (imagePath.startsWith('/')) {
+            return `http://localhost:5000${imagePath}`;
+          }
+
+          // Se for apenas nome do arquivo
+          return `http://localhost:5000/uploads/${imagePath}`;
+        }
 
         if (pageProducts.length === 0) {
           productsTableBody.innerHTML = `
@@ -356,14 +626,8 @@
             stockStatusText = 'Em estoque';
           }
 
-          // Imagem do produto (se houver)
-          let imageUrl = product.image_url ||
-            'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
-
-          // Se for base64, usar diretamente
-          if (product.image_url && product.image_url.startsWith('data:image')) {
-            imageUrl = product.image_url;
-          }
+          // Imagem do produto
+          const mainImageUrl = buildImageUrl(product.image_url);
 
           // Formatar preço
           const formattedPrice = new Intl.NumberFormat('pt-BR', {
@@ -374,52 +638,68 @@
           // SKU ou ID
           const productId = product.sku || `PROD-${String(product.id).padStart(3, '0')}`;
 
+          // Obter nome da categoria
+          let categoryName = 'Não categorizado';
+          if (product.category_id && allCategories && allCategories.length > 0) {
+            const category = allCategories.find(cat => cat.id == product.category_id);
+            if (category) {
+              categoryName = category.name;
+            }
+          } else if (product.category) {
+            // Se ainda estiver usando o campo antigo category
+            categoryName = product.category;
+          }
+
           tableHTML += `
-            <tr data-product-id="${product.id}">
-              <td>
-                <input type="checkbox" class="product-checkbox" data-product-id="${product.id}">
-              </td>
-              <td>
-                <div class="product-cell">
-                  <div class="product-image">
-                    <img src="${imageUrl}" alt="${product.name}" 
-                         onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'">
-                  </div>
-                  <div class="product-info">
-                    <h4>${product.name} ${isFeatured}</h4>
-                    <p>ID: ${productId}</p>
-                  </div>
-                </div>
-              </td>
-              <td>${product.category || 'Não categorizado'}</td>
-              <td>
-                <strong style="color: #C084FC;">${formattedPrice}</strong>
-              </td>
-              <td>${product.stock} unidades</td>
-              <td>
-                <span class="stock-status ${stockStatusClass}">
-                  <i class="${stockStatusIcon}"></i>
-                  ${stockStatusText}
-                </span>
-              </td>
-              <td>
-                <div class="actions-cell">
-                  <button class="btn-action btn-view" onclick="viewProduct(${product.id})">
-                    <i class="far fa-eye"></i>
-                    Ver
-                  </button>
-                  <button class="btn-action btn-edit" onclick="editProduct(${product.id})">
-                    <i class="far fa-edit"></i>
-                    Editar
-                  </button>
-                  <button class="btn-action btn-delete" onclick="showDeleteModal(${product.id}, '${product.name}')">
-                    <i class="far fa-trash-alt"></i>
-                    Excluir
-                  </button>
-                </div>
-              </td>
-            </tr>
-          `;
+    <tr data-product-id="${product.id}">
+      <td>
+        <input type="checkbox" class="product-checkbox" data-product-id="${product.id}">
+      </td>
+      <td>
+        <div class="product-cell">
+          <div class="product-image">
+            <img src="${mainImageUrl}" alt="${product.name}" 
+                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;"
+                 onerror="
+                    console.error('❌ Erro ao carregar imagem do produto ${product.id}:', this.src);
+                    this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
+                 ">
+          </div>
+          <div class="product-info">
+            <h4>${product.name} ${isFeatured}</h4>
+            <p>ID: ${productId}</p>
+          </div>
+        </div>
+      </td>
+      <td>${categoryName}</td>
+      <td>
+        <strong style="color: #C084FC;">${formattedPrice}</strong>
+      </td>
+      <td>${product.stock} unidades</td>
+      <td>
+        <span class="stock-status ${stockStatusClass}">
+          <i class="${stockStatusIcon}"></i>
+          ${stockStatusText}
+        </span>
+      </td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn-action btn-view" onclick="viewProduct(${product.id})">
+            <i class="far fa-eye"></i>
+            Ver
+          </button>
+          <button class="btn-action btn-edit" onclick="editProduct(${product.id})">
+            <i class="far fa-edit"></i>
+            Editar
+          </button>
+          <button class="btn-action btn-delete" onclick="showDeleteModal(${product.id}, '${product.name.replace(/'/g, "\\'")}')">
+            <i class="far fa-trash-alt"></i>
+            Excluir
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
         });
 
         productsTableBody.innerHTML = tableHTML;
@@ -500,7 +780,6 @@
       }
 
       window.viewProduct = function (productId) {
-        // Implementar visualização detalhada do produto
         console.log("👁️ Visualizando produto:", productId);
         // Aqui você pode abrir um modal ou redirecionar para uma página de detalhes
         showNotification(`Visualizando produto ID: ${productId}`, 'info');
@@ -632,13 +911,15 @@
 
       // === EVENT LISTENERS ===
       // Selecionar todos
-      selectAll.addEventListener('change', function () {
-        const checkboxes = document.querySelectorAll('.product-checkbox');
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = this.checked;
+      if (selectAll) {
+        selectAll.addEventListener('change', function () {
+          const checkboxes = document.querySelectorAll('.product-checkbox');
+          checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+          });
+          updateBulkActions();
         });
-        updateBulkActions();
-      });
+      }
 
       // Atualizar contagem quando checkboxes mudam
       document.addEventListener('change', function (e) {
@@ -648,31 +929,37 @@
       });
 
       // Busca em tempo real
-      searchInput.addEventListener('input', function () {
-        clearTimeout(this.searchTimeout);
-        this.searchTimeout = setTimeout(() => {
-          applyFilters();
-        }, 500);
-      });
+      if (searchInput) {
+        searchInput.addEventListener('input', function () {
+          clearTimeout(this.searchTimeout);
+          this.searchTimeout = setTimeout(() => {
+            applyFilters();
+          }, 500);
+        });
+      }
 
       // Filtros
-      categoryFilter.addEventListener('change', applyFilters);
-      statusFilter.addEventListener('change', applyFilters);
-      sortFilter.addEventListener('change', applyFilters);
-      applyFiltersBtn.addEventListener('click', applyFilters);
+      if (categoryFilter) categoryFilter.addEventListener('change', applyFilters);
+      if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+      if (sortFilter) sortFilter.addEventListener('change', applyFilters);
+      if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', applyFilters);
 
       // Botão de atualizar
-      refreshBtn.addEventListener('click', function () {
-        loadProducts();
-        showNotification('Produtos atualizados!', 'info');
-      });
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', function () {
+          loadProducts();
+          showNotification('Produtos atualizados!', 'info');
+        });
+      }
 
       // Botões de paginação
-      prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
-      nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
+      if (prevPageBtn) prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+      if (nextPageBtn) nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
 
       // Ações em massa
-      applyBulkActionBtn.addEventListener('click', applyBulkAction);
+      if (applyBulkActionBtn) {
+        applyBulkActionBtn.addEventListener('click', applyBulkAction);
+      }
 
       // Carregar produtos inicialmente
       loadProducts();

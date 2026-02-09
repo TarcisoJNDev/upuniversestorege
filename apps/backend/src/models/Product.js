@@ -68,7 +68,7 @@ class Product {
       }
     };
 
-    // Processar imagens
+    // Processar imagens da galeria
     let images = [];
     try {
       if (row.images) {
@@ -87,9 +87,37 @@ class Product {
       images = [];
     }
 
+    // CORREÇÃO: Processar image_url para garantir que tenha o caminho completo
+    let image_url = row.image_url || "";
+
+    // Se image_url não for vazio e não começar com http, data: ou /
+    if (
+      image_url &&
+      !image_url.startsWith("http") &&
+      !image_url.startsWith("data:image") &&
+      !image_url.startsWith("/")
+    ) {
+      // Adicionar caminho correto (porta 5000)
+      image_url = `http://localhost:5000/uploads/${image_url}`; // ← MUDE AQUI
+    }
+
     // Garantir que featured seja boolean
     const featured =
       row.featured === 1 || row.featured === true || row.featured === "1";
+
+    // CORREÇÃO: Processar imagens da galeria também
+    const processedImages = images.map((img) => {
+      // Se a imagem da galeria for apenas nome do arquivo, adicionar caminho
+      if (
+        img &&
+        !img.startsWith("http") &&
+        !img.startsWith("data:image") &&
+        !img.startsWith("/")
+      ) {
+        return `/uploads/${img}`;
+      }
+      return img;
+    });
 
     return new Product({
       id: row.id,
@@ -103,8 +131,8 @@ class Product {
       category: row.category || "",
       stock: parseInt(row.stock) || 0,
       sku: row.sku || "",
-      image_url: row.image_url || "",
-      images: images,
+      image_url: image_url, // ← AGORA COM CAMINHO CORRETO
+      images: processedImages, // ← GALERIA COM CAMINHO CORRETO
       material: row.material || "",
       dimensions: row.dimensions || "",
       weight: row.weight || "",
@@ -192,18 +220,26 @@ class Product {
     }
   }
 
-  // Buscar todos os produtos
+  // models/Product.js - ATUALIZE findAll
   static async findAll(filters = {}) {
     const connection = await pool.getConnection();
     try {
       let query = "SELECT * FROM products WHERE 1=1";
       const params = [];
 
+      // Filtro por nome da categoria
       if (filters.category) {
         query += " AND category = ?";
         params.push(filters.category);
       }
 
+      // Filtro por ID da categoria (NOVO)
+      if (filters.category_id) {
+        query += " AND category_id = ?";
+        params.push(parseInt(filters.category_id));
+      }
+
+      // ... resto dos filtros existentes
       if (filters.status) {
         query += " AND status = ?";
         params.push(filters.status);
@@ -224,31 +260,11 @@ class Product {
         );
       }
 
-      if (filters.minPrice) {
-        query += " AND price >= ?";
-        params.push(parseFloat(filters.minPrice));
-      }
-
-      if (filters.maxPrice) {
-        query += " AND price <= ?";
-        params.push(parseFloat(filters.maxPrice));
-      }
-
-      if (filters.sku) {
-        query += " AND sku = ?";
-        params.push(filters.sku);
-      }
-
       query += " ORDER BY created_at DESC";
 
       if (filters.limit) {
         query += " LIMIT ?";
         params.push(parseInt(filters.limit));
-      }
-
-      if (filters.offset) {
-        query += " OFFSET ?";
-        params.push(parseInt(filters.offset));
       }
 
       const [rows] = await connection.query(query, params);
@@ -416,6 +432,23 @@ class Product {
     }
   }
 
+  // Buscar produtos por ID de categoria
+  static async findByCategoryId(categoryId) {
+    const connection = await pool.getConnection();
+    try {
+      const [rows] = await connection.query(
+        "SELECT * FROM products WHERE category_id = ? ORDER BY created_at DESC",
+        [categoryId],
+      );
+      return rows.map((row) => this.fromDatabase(row));
+    } catch (error) {
+      console.error("Erro ao buscar produtos por categoria ID:", error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   // Buscar produtos por status
   static async findByStatus(status) {
     const connection = await pool.getConnection();
@@ -499,6 +532,66 @@ class Product {
       return rows[0].count > 0;
     } catch (error) {
       console.error("Erro ao verificar SKU:", error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // Buscar produtos por categoria
+  // E também atualize o método findByCategory para trabalhar com ambas as formas:
+  static async findByCategory(categoryNameOrId) {
+    const connection = await pool.getConnection();
+    try {
+      let query;
+      let params;
+
+      // Se for número, busca por category_id
+      if (!isNaN(categoryNameOrId)) {
+        query =
+          "SELECT * FROM products WHERE category_id = ? ORDER BY created_at DESC";
+        params = [parseInt(categoryNameOrId)];
+      } else {
+        // Se for string, busca por category (nome)
+        query =
+          "SELECT * FROM products WHERE category = ? ORDER BY created_at DESC";
+        params = [categoryNameOrId];
+      }
+
+      const [rows] = await connection.query(query, params);
+      return rows.map((row) => this.fromDatabase(row));
+    } catch (error) {
+      console.error("Erro ao buscar produtos por categoria:", error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  async getByCategoryId(req, res) {
+    try {
+      const { categoryId } = req.params;
+      const products = await Product.findByCategoryId(categoryId);
+      res.json({ products });
+    } catch (error) {
+      console.error("Erro ao buscar produtos por categoria ID:", error);
+      res
+        .status(500)
+        .json({ error: "Erro ao buscar produtos por categoria ID" });
+    }
+  }
+
+  // Contar produtos por categoria
+  static async countByCategory(categoryId) {
+    const connection = await pool.getConnection();
+    try {
+      const [rows] = await connection.query(
+        "SELECT COUNT(*) as count FROM products WHERE category_id = ?",
+        [categoryId],
+      );
+      return rows[0].count;
+    } catch (error) {
+      console.error("Erro ao contar produtos por categoria:", error);
       throw error;
     } finally {
       connection.release();

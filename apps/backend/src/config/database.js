@@ -74,25 +74,29 @@ async function setupDatabase() {
     await connection.query(`USE ${process.env.DB_NAME}`);
 
     // Criar tabela de produtos (versão base)
+    // Na função setupDatabase(), na criação da tabela products:
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS products (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        price DECIMAL(10, 2) NOT NULL,
-        category VARCHAR(100),
-        stock INT DEFAULT 0,
-        image_url VARCHAR(500),
-        images JSON,
-        material VARCHAR(100),
-        dimensions VARCHAR(100),
-        weight VARCHAR(50),
-        featured BOOLEAN DEFAULT FALSE,
-        status ENUM('active', 'inactive', 'out_of_stock') DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
-    `);
+    CREATE TABLE IF NOT EXISTS products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    stock INT DEFAULT 0,
+    image_url VARCHAR(500),
+    images JSON,
+    material VARCHAR(100),
+    dimensions VARCHAR(100),
+    weight VARCHAR(50),
+    featured BOOLEAN DEFAULT FALSE,
+    status ENUM('active', 'inactive', 'out_of_stock') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -- Adicionar relacionamento com categorias
+    category_id INT,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+  )
+  `);
 
     console.log("✅ Tabela 'products' verificada/criada");
 

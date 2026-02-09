@@ -5,17 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Universo Paralelo Store | Home</title>
-  <!-- Em todas as páginas -->
-  <link rel="stylesheet" href="public/css/style(OFC).css">
-  
-  
-  <!-- Se quiser carregar CSS específico só quando necessário -->
-  <!--<link rel="stylesheet" href="public/css/base.css">-->
-  <!--<link rel="stylesheet" href="public/css/components.css">-->
-  <!--<link rel="stylesheet" href="public/css/layout.css">-->
-  <!-- E depois o CSS específico da página -->
-  <!--<link rel="stylesheet" href="public/css/pages/home.css">-->
+  <link rel="stylesheet" href="home.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Inclui o api.js que você já tem -->
+  <script src="public/js/api.js"></script>
+  <!-- Inclui o cart.js -->
+  <script src="public/js/cart.js"></script>
+
 </head>
 
 <body>
@@ -27,7 +23,6 @@
         <li><a href="home.html" class="active">Início</a></li>
         <li><a href="catalogo.html">Catálogo 3D</a></li>
         <li><a href="servicos.html">Serviços</a></li>
-        <li><a href="sobre.html">Sobre</a></li>
         <li><a href="#footer">Contato</a></li>
       </ul>
       <div class="header-actions">
@@ -101,90 +96,19 @@
       </div>
     </section>
 
-    <!-- Destaques -->
+    <!-- Destaques (PRODUTOS DA API) -->
     <section class="featured-section reveal">
       <div class="section-header">
         <h2 class="section-title">PRODUTOS EM DESTAQUE</h2>
-        <p class="section-subtitle">As peças mais populares da nossa coleção</p>
+        <p class="section-subtitle">Os produtos mais acessíveis da nossa coleção</p>
       </div>
 
-      <ul class="products-grid">
-        <li class="product-item">
-          <article class="product-card">
-            <span class="badge">Mais Vendido</span>
-            <figure class="product-image">
-              <img src="public/images/osman-talha-dikyar-DAN_8SELMB8-unsplash.jpg" alt="Crânio T-Rex 3D">
-            </figure>
-            <section class="product-details">
-              <h3>Crânio T-Rex 3D</h3>
-              <small>Escultura decorativa - 18cm</small>
-              <p class="price">R$ 120,00</p>
-              <footer class="card-actions">
-                <button class="btn-primary">Comprar Agora</button>
-                <button class="btn-secondary">Detalhes</button>
-              </footer>
-            </section>
-          </article>
-        </li>
-
-        <li class="product-item">
-          <article class="product-card">
-            <span class="badge">Novidade</span>
-            <figure class="product-image">
-              <img
-                src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Troféu Personalizado">
-            </figure>
-            <section class="product-details">
-              <h3>Trofeu Personalizado</h3>
-              <small>Com nome e logo - 25cm</small>
-              <p class="price">R$ 95,00</p>
-              <footer class="card-actions">
-                <button class="btn-primary">Comprar Agora</button>
-                <button class="btn-secondary">Detalhes</button>
-              </footer>
-            </section>
-          </article>
-        </li>
-
-        <li class="product-item">
-          <article class="product-card">
-            <span class="badge">Oferta</span>
-            <figure class="product-image">
-              <img
-                src="https://images.unsplash.com/photo-1532464564361-898e8d8d5e4e?ixlib=rb-4.0.3&auto=format&fit=crop&w-800&q=80"
-                alt="Suporte para Headphone">
-            </figure>
-            <section class="product-details">
-              <h3>Suporte para Headphone</h3>
-              <small>Design ergonômico - 3 cores</small>
-              <p class="price">R$ 65,00</p>
-              <footer class="card-actions">
-                <button class="btn-primary">Comprar Agora</button>
-                <button class="btn-secondary">Detalhes</button>
-              </footer>
-            </section>
-          </article>
-        </li>
-
-        <li class="product-item">
-          <article class="product-card">
-            <figure class="product-image">
-              <img
-                src="https://images.unsplash.com/photo-1572635148813-8667b61d5b63?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                alt="Estatueta Gamer">
-            </figure>
-            <section class="product-details">
-              <h3>Estatueta Gamer</h3>
-              <small>Personagem personalizável</small>
-              <p class="price">R$ 150,00</p>
-              <footer class="card-actions">
-                <button class="btn-primary">Comprar Agora</button>
-                <button class="btn-secondary">Detalhes</button>
-              </footer>
-            </section>
-          </article>
-        </li>
+      <ul class="products-grid" id="featuredProductsGrid">
+        <!-- Produtos serão carregados dinamicamente da API -->
+        <div class="loading-products" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+          <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
+          <p style="margin-top: 10px;">Carregando produtos...</p>
+        </div>
       </ul>
 
       <div class="section-footer">
@@ -192,45 +116,19 @@
       </div>
     </section>
 
-    <!-- Categorias -->
+    <!-- Categorias (CATEGORIAS DA API) -->
     <section class="categories-section reveal">
       <div class="section-header">
         <h2 class="section-title">CATEGORIAS</h2>
         <p class="section-subtitle">Navegue por nossas principais categorias de produtos</p>
       </div>
 
-      <div class="categories-grid">
-        <a href="catalogo.html?categoria=decoracao" class="category-card">
-          <div class="category-icon">
-            <i class="fas fa-palette"></i>
-          </div>
-          <h3>Decoração</h3>
-          <p>Peças para deixar seu ambiente único</p>
-        </a>
-
-        <a href="catalogo.html?categoria=escritorio" class="category-card">
-          <div class="category-icon">
-            <i class="fas fa-briefcase"></i>
-          </div>
-          <h3>Escritório</h3>
-          <p>Organizadores e acessórios para trabalho</p>
-        </a>
-
-        <a href="catalogo.html?categoria=gamer" class="category-card">
-          <div class="category-icon">
-            <i class="fas fa-gamepad"></i>
-          </div>
-          <h3>Gamer</h3>
-          <p>Acessórios e decoração para gamers</p>
-        </a>
-
-        <a href="catalogo.html?categoria=personalizado" class="category-card">
-          <div class="category-icon">
-            <i class="fas fa-user-astronaut"></i>
-          </div>
-          <h3>Personalizados</h3>
-          <p>Criados especialmente para você</p>
-        </a>
+      <div class="categories-grid" id="categoriesGrid">
+        <!-- Categorias serão carregadas dinamicamente da API -->
+        <div class="loading-categories" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+          <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
+          <p style="margin-top: 10px;">Carregando categorias...</p>
+        </div>
       </div>
     </section>
 
@@ -334,7 +232,399 @@
   </footer>
 
   <script>
-    // Carousel functionality
+    // Configuração da API
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Função para construir URL da imagem
+    function buildImageUrl(imagePath) {
+      if (!imagePath) return 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+
+      if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) {
+        return imagePath;
+      }
+
+      if (imagePath.startsWith('/')) {
+        return `http://localhost:5000${imagePath}`;
+      }
+
+      return `http://localhost:5000/uploads/${imagePath}`;
+    }
+
+    // Função para buscar produtos da API
+    async function fetchFeaturedProducts() {
+      try {
+        console.log("📥 Buscando produtos para a home...");
+        const response = await fetch(`${API_BASE_URL}/products`);
+
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const products = data.products || [];
+
+        // Ordenar por preço (menor para maior) e pegar 4 primeiros
+        const sortedProducts = products
+          .filter(product => product.status === 'active' && product.stock > 0)
+          .sort((a, b) => (a.price || 0) - (b.price || 0))
+          .slice(0, 4);
+
+        console.log(`✅ ${sortedProducts.length} produtos carregados para a home`);
+        return sortedProducts;
+      } catch (error) {
+        console.error("❌ Erro ao buscar produtos:", error);
+        return [];
+      }
+    }
+
+    // Função para buscar categorias da API
+    async function fetchCategories() {
+      try {
+        console.log("🏷️ Buscando categorias para a home...");
+        const response = await fetch(`${API_BASE_URL}/categories`);
+
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const categories = data.categories || [];
+
+        console.log(`✅ ${categories.length} categorias carregadas para a home`);
+        return categories;
+      } catch (error) {
+        console.error("❌ Erro ao buscar categorias:", error);
+        return [];
+      }
+    }
+
+    // Função para renderizar produtos
+    function renderFeaturedProducts(products) {
+      const productsGrid = document.getElementById('featuredProductsGrid');
+
+      if (!products || products.length === 0) {
+        productsGrid.innerHTML = `
+          <div class="no-products" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <i class="fas fa-box-open fa-2x" style="color: #ddd; margin-bottom: 20px;"></i>
+            <h3 style="color: #666; margin-bottom: 10px;">Nenhum produto disponível</h3>
+            <p style="color: #888;">Em breve teremos novidades!</p>
+          </div>
+        `;
+        return;
+      }
+
+      let productsHTML = '';
+
+      products.forEach(product => {
+        const imageUrl = buildImageUrl(product.image_url);
+        const formattedPrice = new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(product.price || 0);
+
+        // Verificar se está em estoque
+        const inStock = product.stock > 0 && product.status === 'active';
+        const addToCartText = inStock ? 'Comprar Agora' : 'Esgotado';
+        const addToCartClass = inStock ? 'btn-primary' : 'btn-primary disabled';
+        const addToCartDisabled = !inStock ? 'disabled' : '';
+
+        // Badge baseado no preço (se for muito barato)
+        let badgeHTML = '';
+        if (product.price && product.price < 50) {
+          badgeHTML = '<span class="badge">Oferta</span>';
+        } else if (product.featured) {
+          badgeHTML = '<span class="badge featured">Destaque</span>';
+        }
+
+        // Nome da categoria
+        let categoryName = product.category || 'Sem categoria';
+
+        // Descrição curta
+        const shortDescription = product.description
+          ? (product.description.length > 80
+            ? product.description.substring(0, 80) + '...'
+            : product.description)
+          : 'Produto impresso em 3D com qualidade premium e design exclusivo.';
+
+        productsHTML += `
+  <li class="product-item">
+    <article class="product-card">
+      ${badgeHTML}
+      <figure class="product-image">
+        <img src="${imageUrl}" alt="${product.name}" 
+             onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+      </figure>
+      <section class="product-details">
+        <!-- Cabeçalho com título e categoria lado a lado -->
+        <div class="product-header">
+          <h3 class="product-title">${product.name}</h3>
+          <span class="product-category-badge">${categoryName}</span>
+        </div>
+        <!-- Descrição -->
+        <p class="product-description">${shortDescription}</p>
+        <!-- Preço sem "R$" duplicado -->
+        <div class="price-container">
+          <div class="price">${formattedPrice}</div>
+        </div>
+        <!-- Ações -->
+        <footer class="card-actions">
+          <button class="${addToCartClass}" ${addToCartDisabled} onclick="addToCart(${product.id})">
+            <i class="fas fa-shopping-cart"></i> ${addToCartText}
+          </button>
+          <button class="btn-secondary" onclick="viewProductDetails(${product.id})">
+            <i class="fas fa-eye"></i> Detalhes
+          </button>
+        </footer>
+      </section>
+    </article>
+  </li>
+`;
+      });
+
+      productsGrid.innerHTML = productsHTML;
+    }
+
+    // Função para renderizar categorias
+    function renderCategories(categories) {
+      const categoriesGrid = document.getElementById('categoriesGrid');
+
+      if (!categories || categories.length === 0) {
+        categoriesGrid.innerHTML = `
+          <a href="catalogo.html" class="category-card" onclick="filterByCategory('all')">
+            <div class="category-icon">
+              <i class="fas fa-tags"></i>
+            </div>
+            <h3>Todas Categorias</h3>
+            <p>Explore nosso catálogo completo</p>
+          </a>
+          
+          <a href="catalogo.html" class="category-card" onclick="filterByCategory('featured')">
+            <div class="category-icon">
+              <i class="fas fa-star"></i>
+            </div>
+            <h3>Em Destaque</h3>
+            <p>Produtos mais populares</p>
+          </a>
+          
+          <a href="catalogo.html" class="category-card" onclick="filterByCategory('new')">
+            <div class="category-icon">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <h3>Novidades</h3>
+            <p>Últimos lançamentos</p>
+          </a>
+          
+          <a href="catalogo.html" class="category-card" onclick="filterByCategory('exclusive')">
+            <div class="category-icon">
+              <i class="fas fa-gem"></i>
+            </div>
+            <h3>Exclusivos</h3>
+            <p>Peças únicas e especiais</p>
+          </a>
+        `;
+        return;
+      }
+
+      let categoriesHTML = '';
+
+      // Pegar até 4 categorias
+      const featuredCategories = categories.slice(0, 4);
+
+      featuredCategories.forEach(category => {
+        // Ícone padrão caso a categoria não tenha
+        let iconHTML = category.icon || '<i class="fas fa-tag"></i>';
+        let iconClass = '';
+
+        // Se for um emoji, usar como texto
+        if (iconHTML.includes('🏺') || iconHTML.includes('🏠') || iconHTML.includes('🔧') || iconHTML.includes('🧸') ||
+          iconHTML.includes('⚙️') || iconHTML.includes('🧪') || iconHTML.includes('🎨') || iconHTML.includes('🎮')) {
+          iconClass = 'emoji-icon';
+        }
+
+        // Criar link para filtrar por esta categoria específica
+        categoriesHTML += `
+          <a href="catalogo.html" class="category-card" data-category-id="${category.id}" onclick="filterByCategory(${category.id}, '${category.name}')">
+            <div class="category-icon ${iconClass}">
+              ${iconHTML}
+            </div>
+            <h3>${category.name}</h3>
+            <p>${category.description || 'Produtos incríveis'}</p>
+          </a>
+        `;
+      });
+
+      categoriesGrid.innerHTML = categoriesHTML;
+    }
+
+    // Função para filtrar por categoria (leva para catálogo com filtro)
+    function filterByCategory(categoryId, categoryName) {
+      console.log(`🔍 Filtrando por categoria: ${categoryId} - ${categoryName}`);
+
+      // Salvar o filtro no localStorage para ser usado no catálogo
+      const filterData = {
+        categoryId: categoryId,
+        categoryName: categoryName,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem('categoryFilter', JSON.stringify(filterData));
+
+      // Redirecionar para o catálogo
+      window.location.href = 'catalogo.html';
+    }
+
+    // Função para adicionar ao carrinho
+    async function addToCart(productId) {
+        console.log("🛒 Adicionando ao carrinho:", productId);
+
+        try {
+          // Usar o cartManager para adicionar ao carrinho
+          const result = await cartManager.addToCart(productId);
+
+          if (result.success) {
+            // Feedback visual
+            showNotification('Produto adicionado ao carrinho!', 'success');
+
+            // Atualizar contador no header
+            cartManager.updateCartCount();
+
+            // Mostrar modal de confirmação
+            showAddToCartModal();
+          } else {
+            showNotification('Erro ao adicionar produto', 'error');
+          }
+        } catch (error) {
+          console.error('Erro ao adicionar ao carrinho:', error);
+          showNotification('Erro ao adicionar produto', 'error');
+        }
+      }
+
+      // Função para mostrar modal de confirmação
+      function showAddToCartModal() {
+        // Verificar se já existe o modal
+        let modal = document.getElementById('cart-confirmation-modal');
+
+        if (!modal) {
+          // Criar modal
+          modal = document.createElement('div');
+          modal.id = 'cart-confirmation-modal';
+          modal.className = 'modal-overlay';
+          modal.innerHTML = `
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeAddToCartModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="modal-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="modal-title">Produto Adicionado!</h2>
+        <p class="modal-message" id="modal-message">O produto foi adicionado ao seu carrinho com sucesso.</p>
+        <div class="modal-actions">
+          <button class="btn-continue-modal" onclick="closeAddToCartModal()">
+            Continuar Comprando
+          </button>
+          <a href="carrinho.html" class="btn-view-cart">
+            Ver Carrinho
+          </a>
+        </div>
+      </div>
+    `;
+          document.body.appendChild(modal);
+        }
+
+        modal.style.display = 'flex';
+      }
+
+      // Função para fechar modal
+      function closeAddToCartModal() {
+        const modal = document.getElementById('cart-confirmation-modal');
+        if (modal) {
+          modal.style.display = 'none';
+        }
+      }
+
+      // Fechar modal ao clicar fora
+      document.addEventListener('click', function (e) {
+        const modal = document.getElementById('cart-confirmation-modal');
+        if (modal && e.target === modal) {
+          closeAddToCartModal();
+        }
+      });
+
+    // Função para ver detalhes do produto
+    function viewProductDetails(productId) {
+      console.log("👁️ Visualizando detalhes do produto:", productId);
+      // Redirecionar para página de detalhes
+      window.location.href = `detalhes-produto.html?id=${productId}`;
+    }
+
+    // Função para mostrar notificação
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      `;
+
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span style="margin-left: 10px;">${message}</span>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    // Inicializar a página
+    async function initializeHome() {
+      console.log("🚀 Inicializando página home...");
+
+      try {
+        // Buscar produtos e categorias em paralelo
+        const [products, categories] = await Promise.all([
+          fetchFeaturedProducts(),
+          fetchCategories()
+        ]);
+
+        // Renderizar os dados
+        renderFeaturedProducts(products);
+        renderCategories(categories);
+
+        console.log("✅ Home inicializada com sucesso!");
+      } catch (error) {
+        console.error("❌ Erro ao inicializar home:", error);
+
+        // Mostrar mensagem de erro
+        document.getElementById('featuredProductsGrid').innerHTML = `
+          <div class="error-message" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <i class="fas fa-exclamation-triangle fa-2x" style="color: #f44336; margin-bottom: 20px;"></i>
+            <h3 style="color: #666; margin-bottom: 10px;">Erro ao carregar produtos</h3>
+            <p style="color: #888;">Tente recarregar a página</p>
+          </div>
+        `;
+
+        document.getElementById('categoriesGrid').innerHTML = `
+          <div class="error-message" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <i class="fas fa-exclamation-triangle fa-2x" style="color: #f44336; margin-bottom: 20px;"></i>
+            <h3 style="color: #666; margin-bottom: 10px;">Erro ao carregar categorias</h3>
+            <p style="color: #888;">Tente recarregar a página</p>
+          </div>
+        `;
+      }
+    }
+
+    // Carousel functionality (mantido do código original)
     document.addEventListener('DOMContentLoaded', function () {
       // Carousel
       const slides = document.querySelectorAll('.carousel-slide');
@@ -344,41 +634,32 @@
       let currentSlide = 0;
       let slideInterval;
 
-      // Função para mostrar slide específico
       function showSlide(n) {
-        // Remove active class de todos os slides e dots
         slides.forEach(slide => slide.classList.remove('active'));
         dots.forEach(dot => dot.classList.remove('active'));
 
-        // Atualiza índice atual
         currentSlide = (n + slides.length) % slides.length;
 
-        // Adiciona active class ao slide e dot atual
         slides[currentSlide].classList.add('active');
         dots[currentSlide].classList.add('active');
       }
 
-      // Próximo slide
       function nextSlide() {
         showSlide(currentSlide + 1);
       }
 
-      // Slide anterior
       function prevSlide() {
         showSlide(currentSlide - 1);
       }
 
-      // Inicia carousel automático
       function startCarousel() {
         slideInterval = setInterval(nextSlide, 5000);
       }
 
-      // Pára carousel automático
       function stopCarousel() {
         clearInterval(slideInterval);
       }
 
-      // Event listeners
       prevBtn.addEventListener('click', () => {
         prevSlide();
         stopCarousel();
@@ -391,7 +672,6 @@
         startCarousel();
       });
 
-      // Event listeners para dots
       dots.forEach((dot, index) => {
         dot.addEventListener('click', () => {
           showSlide(index);
@@ -400,12 +680,10 @@
         });
       });
 
-      // Pausar carousel quando o mouse estiver sobre ele
       const carouselContainer = document.querySelector('.carousel-container');
       carouselContainer.addEventListener('mouseenter', stopCarousel);
       carouselContainer.addEventListener('mouseleave', startCarousel);
 
-      // Inicia o carousel
       startCarousel();
 
       // Scroll reveal animation
@@ -425,36 +703,39 @@
       }
 
       window.addEventListener('scroll', revealOnScroll);
-      // Chama uma vez para verificar elementos visíveis no carregamento
       revealOnScroll();
 
-      // Simulação de adicionar ao carrinho
-      const buyButtons = document.querySelectorAll('.btn-primary');
-      const cartCount = document.querySelector('.cart-count');
-      let cartItems = 0;
-
-      buyButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
+      // Adicionar funcionalidade aos botões de compra dinâmicos
+      document.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-primary') && !e.target.closest('.btn-primary').classList.contains('disabled')) {
           e.preventDefault();
+
+          const cartCount = document.querySelector('.cart-count');
+          let cartItems = parseInt(cartCount.textContent) || 0;
           cartItems++;
           cartCount.textContent = cartItems;
           cartCount.classList.add('pulse');
+
+          const button = e.target.closest('.btn-primary');
+          const originalText = button.textContent;
 
           // Animação de feedback
           button.textContent = 'Adicionado!';
           button.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
 
           setTimeout(() => {
-            button.textContent = 'Comprar Agora';
-            button.style.background = 'radial-gradient(circle at top, #B236CA, #2E134A)';
+            button.textContent = originalText;
+            button.style.background = '';
           }, 1500);
 
-          // Remove classe de animação após completar
           setTimeout(() => {
             cartCount.classList.remove('pulse');
           }, 300);
-        });
+        }
       });
+
+      // Inicializar dados da API
+      initializeHome();
     });
   </script>
 

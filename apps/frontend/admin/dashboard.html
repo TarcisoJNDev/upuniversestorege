@@ -5,194 +5,347 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Admin</title>
-  <link rel="stylesheet" href="../public/css/style(OFC).css">
+  <link rel="stylesheet" href="../public/css/base.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="categories.css"> <!-- Usando o mesmo CSS das categorias -->
+</head>
+
+<body>
+  <div class="admin-wrapper">
+    <!-- SIDEBAR ATUALIZADA COM LINKS DESABILITADOS -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">UNIVERSO PARALELO</div>
+        <div class="admin-status">
+          <span class="status-dot"></span>
+          <span>Admin Online</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="section-title">Principal</div>
+          <a href="dashboard.html" class="nav-link active">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="products.html" class="nav-link">
+            <i class="fas fa-cube"></i>
+            <span>Produtos</span>
+          </a>
+          <a href="categories.html" class="nav-link">
+            <i class="fas fa-tags"></i>
+            <span>Categorias</span>
+          </a>
+          <!-- href="orders.html" -->
+          <a href="#"  class="nav-link disabled">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Pedidos</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Conteúdo</div>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-images"></i>
+            <span>Banners</span>
+          </a>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-star"></i>
+            <span>Avaliações</span>
+          </a>
+          <!-- Blog foi removido conforme solicitado -->
+        </div>
+
+        <div class="nav-section">
+          <div class="section-title">Configurações</div>
+          <!-- Usuários foi removido conforme solicitado -->
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-cog"></i>
+            <span>Configurações</span>
+          </a>
+          <a href="#" class="nav-link disabled">
+            <i class="fas fa-chart-line"></i>
+            <span>Relatórios</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="profile-avatar">A</div>
+          <div class="profile-info">
+            <h4>Admin Master</h4>
+            <p>Super Admin</p>
+          </div>
+        </div>
+        <button class="btn-logout" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+      <header class="main-header">
+        <div class="header-title">
+          <h1>Dashboard Administrativo</h1>
+          <p>Bem-vindo ao painel de controle da Universo Paralelo Store</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-action" onclick="window.print()">
+            <i class="fas fa-print"></i>
+            Imprimir
+          </button>
+          <button class="btn-action" onclick="exportData()">
+            <i class="fas fa-download"></i>
+            Exportar
+          </button>
+          <a href="product-form.html" class="btn-action primary">
+            <i class="fas fa-plus"></i>
+            Novo Produto
+          </a>
+        </div>
+      </header>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              12%
+            </div>
+          </div>
+          <div class="stat-number">R$ 12.580,00</div>
+          <div class="stat-label">Vendas do Mês</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-cube"></i>
+            </div>
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              8%
+            </div>
+          </div>
+          <div class="stat-number">48</div>
+          <div class="stat-label">Produtos Ativos</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              23%
+            </div>
+          </div>
+          <div class="stat-number">156</div>
+          <div class="stat-label">Novos Clientes</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-change negative">
+              <i class="fas fa-arrow-down"></i>
+              3%
+            </div>
+          </div>
+          <div class="stat-number">4.7</div>
+          <div class="stat-label">Avaliação Média</div>
+        </div>
+      </div>
+
+      <!-- MAIN SECTIONS -->
+      <div class="dashboard-sections">
+        <!-- RECENT ORDERS -->
+        <div class="section-card">
+          <div class="section-header">
+            <h2><i class="fas fa-clock"></i> Pedidos Recentes</h2>
+            <a href="orders.html" class="btn-view-all">
+              Ver todos <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>#ORD-001</td>
+                <td>Maria Silva</td>
+                <td>15/11/2023</td>
+                <td>R$ 189,00</td>
+                <td><span class="order-status status-completed">Entregue</span></td>
+                <td>
+                  <button class="btn-action-small">Ver</button>
+                </td>
+              </tr>
+              <tr>
+                <td>#ORD-002</td>
+                <td>João Santos</td>
+                <td>16/11/2023</td>
+                <td>R$ 245,00</td>
+                <td><span class="order-status status-processing">Processando</span></td>
+                <td>
+                  <button class="btn-action-small">Editar</button>
+                </td>
+              </tr>
+              <tr>
+                <td>#ORD-003</td>
+                <td>Ana Costa</td>
+                <td>17/11/2023</td>
+                <td>R$ 120,00</td>
+                <td><span class="order-status status-pending">Pendente</span></td>
+                <td>
+                  <button class="btn-action-small">Aprovar</button>
+                </td>
+              </tr>
+              <tr>
+                <td>#ORD-004</td>
+                <td>Carlos Lima</td>
+                <td>18/11/2023</td>
+                <td>R$ 350,00</td>
+                <td><span class="order-status status-completed">Entregue</span></td>
+                <td>
+                  <button class="btn-action-small">Ver</button>
+                </td>
+              </tr>
+              <tr>
+                <td>#ORD-005</td>
+                <td>Beatriz Rocha</td>
+                <td>19/11/2023</td>
+                <td>R$ 89,00</td>
+                <td><span class="order-status status-cancelled">Cancelado</span></td>
+                <td>
+                  <button class="btn-action-small">Reativar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- RECENT PRODUCTS -->
+        <div class="section-card">
+          <div class="section-header">
+            <h2><i class="fas fa-fire"></i> Produtos Populares</h2>
+            <a href="products.html" class="btn-view-all">
+              Ver todos <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          <div class="products-list">
+            <div class="product-item">
+              <div class="product-image">
+                <img
+                  src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                  alt="Crânio T-Rex">
+              </div>
+              <div class="product-info">
+                <h4>Crânio T-Rex 3D</h4>
+                <p>Esculturas</p>
+              </div>
+              <div class="product-price">R$ 120,00</div>
+            </div>
+            <div class="product-item">
+              <div class="product-image">
+                <img
+                  src="https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                  alt="Dragão">
+              </div>
+              <div class="product-info">
+                <h4>Dragão Alado 3D</h4>
+                <p>Esculturas</p>
+              </div>
+              <div class="product-price">R$ 220,00</div>
+            </div>
+            <div class="product-item">
+              <div class="product-image">
+                <img
+                  src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                  alt="Robô">
+              </div>
+              <div class="product-info">
+                <h4>Robô Futurista</h4>
+                <p>Esculturas</p>
+              </div>
+              <div class="product-price">R$ 140,00</div>
+            </div>
+            <div class="product-item">
+              <div class="product-image">
+                <img
+                  src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                  alt="Samurai">
+              </div>
+              <div class="product-info">
+                <h4>Samurai Japonês</h4>
+                <p>Esculturas</p>
+              </div>
+              <div class="product-price">R$ 175,00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SALES CHART -->
+      <div class="chart-section">
+        <div class="section-header">
+          <h2><i class="fas fa-chart-line"></i> Vendas dos Últimos 7 Dias</h2>
+          <div class="period-selector">
+            <select class="form-input" style="width: 150px; padding: 8px 15px;">
+              <option>Últimos 7 dias</option>
+              <option>Últimos 30 dias</option>
+              <option>Este mês</option>
+              <option>Este ano</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-container" id="salesChart">
+          <!-- Chart will be inserted here by JavaScript -->
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #aaa;">
+            <div style="text-align: center;">
+              <i class="fas fa-chart-bar" style="font-size: 48px; margin-bottom: 15px;"></i>
+              <p>Gráfico de vendas carregado via JavaScript</p>
+              <small>Para visualização real, integre uma biblioteca como Chart.js</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- CSS específico para o Dashboard -->
   <style>
-    /* ESTILOS PARA DASHBOARD */
-    :root {
-      --admin-sidebar: #0b0015;
-      --admin-primary: #DF38FF;
-      --admin-secondary: #7C3AED;
-      --admin-card-bg: rgba(26, 0, 43, 0.7);
-      --admin-text: #f2f2f2;
-      --admin-text-muted: #aaa;
-    }
+    /* ESTILOS PARA DASHBOARD - APENAS OS ESPECÍFICOS */
+    /* Os estilos da sidebar já estão no categories.css */
 
-    .admin-wrapper {
-      display: flex;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #2b0045, #050008);
-    }
-
-    /* SIDEBAR */
-    .admin-sidebar {
-      width: 250px;
-      background: var(--admin-sidebar);
-      border-right: 1px solid rgba(124, 58, 237, 0.2);
-      padding: 20px 0;
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      height: 100vh;
-      z-index: 100;
-    }
-
-    .sidebar-header {
-      padding: 0 20px 30px;
-      border-bottom: 1px solid rgba(124, 58, 237, 0.2);
-      margin-bottom: 30px;
-    }
-
-    .sidebar-logo {
-      font-size: 20px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #DF38FF, #7C3AED);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 5px;
-    }
-
-    .admin-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: var(--admin-text-muted);
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background: #4CAF50;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.5;
-      }
-    }
-
-    .sidebar-nav {
-      flex: 1;
-      padding: 0 20px;
-    }
-
-    .nav-section {
-      margin-bottom: 30px;
-    }
-
-    .section-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--admin-text-muted);
-      margin-bottom: 15px;
-      font-weight: 600;
-    }
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 15px;
-      color: var(--admin-text);
-      text-decoration: none;
-      border-radius: 10px;
-      margin-bottom: 5px;
-      transition: all 0.3s ease;
-      font-size: 14px;
-    }
-
-    .nav-link:hover {
-      background: rgba(124, 58, 237, 0.1);
-      color: #C084FC;
-      transform: translateX(5px);
-    }
-
-    .nav-link.active {
-      background: linear-gradient(135deg, rgba(223, 56, 255, 0.2), rgba(124, 58, 237, 0.2));
-      color: var(--admin-primary);
-      border-left: 3px solid var(--admin-primary);
-    }
-
-    .nav-link i {
-      width: 20px;
-      text-align: center;
-      font-size: 16px;
-    }
-
-    .sidebar-footer {
-      padding: 20px;
-      border-top: 1px solid rgba(124, 58, 237, 0.2);
-      margin-top: auto;
-    }
-
-    .admin-profile {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .profile-avatar {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #DF38FF, #7C3AED);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: #fff;
-      font-size: 16px;
-    }
-
-    .profile-info h4 {
-      font-size: 14px;
-      margin-bottom: 3px;
-      color: var(--admin-text);
-    }
-
-    .profile-info p {
-      font-size: 12px;
-      color: var(--admin-text-muted);
-    }
-
-    .btn-logout {
-      width: 100%;
-      padding: 10px;
-      background: transparent;
-      border: 1px solid rgba(244, 67, 54, 0.3);
-      color: #f44336;
-      border-radius: 8px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-logout:hover {
-      background: rgba(244, 67, 54, 0.1);
-      transform: translateY(-2px);
-    }
-
-    /* MAIN CONTENT */
     .admin-main {
       flex: 1;
       margin-left: 250px;
       padding: 30px;
+      width: calc(100% - 250px);
+      min-height: 100vh;
+      box-sizing: border-box;
+      overflow-y: auto;
+      position: relative;
     }
 
     .main-header {
@@ -521,51 +674,9 @@
     }
 
     @media (max-width: 992px) {
-      .admin-sidebar {
-        width: 70px;
-        overflow: hidden;
-      }
-
-      .sidebar-header .sidebar-logo,
-      .admin-status,
-      .section-title,
-      .nav-link span,
-      .profile-info,
-      .btn-logout span {
-        display: none;
-      }
-
       .admin-main {
         margin-left: 70px;
-      }
-
-      .sidebar-header {
-        padding: 20px 0;
-        text-align: center;
-      }
-
-      .nav-link {
-        justify-content: center;
-        padding: 15px;
-      }
-
-      .nav-link:hover {
-        transform: none;
-      }
-
-      .sidebar-footer {
-        padding: 20px 0;
-        text-align: center;
-      }
-
-      .admin-profile {
-        justify-content: center;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .stats-grid {
-        grid-template-columns: 1fr;
+        width: calc(100% - 70px);
       }
 
       .main-header {
@@ -584,7 +695,11 @@
       }
     }
 
-    @media (max-width: 576px) {
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
       .admin-main {
         padding: 20px 15px;
       }
@@ -597,335 +712,27 @@
         padding: 20px;
       }
     }
+
+    @media (max-width: 576px) {
+      .admin-main {
+        padding: 20px 15px;
+      }
+
+      .header-title h1 {
+        font-size: 24px;
+      }
+
+      .header-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .btn-action {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
-</head>
-
-<body>
-  <div class="admin-wrapper">
-    <!-- SIDEBAR -->
-    <aside class="admin-sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">UNIVERSO PARALELO</div>
-        <div class="admin-status">
-          <span class="status-dot"></span>
-          <span>Admin Online</span>
-        </div>
-      </div>
-
-      <nav class="sidebar-nav">
-        <div class="nav-section">
-          <div class="section-title">Principal</div>
-          <a href="dashboard.html" class="nav-link active">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-          </a>
-          <a href="products.html" class="nav-link">
-            <i class="fas fa-cube"></i>
-            <span>Produtos</span>
-          </a>
-          <a href="orders.html" class="nav-link">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Pedidos</span>
-          </a>
-          <a href="categories.html" class="nav-link">
-            <i class="fas fa-tags"></i>
-            <span>Categorias</span>
-          </a>
-        </div>
-
-        <div class="nav-section">
-          <div class="section-title">Conteúdo</div>
-          <a href="#" class="nav-link">
-            <i class="fas fa-images"></i>
-            <span>Banners</span>
-          </a>
-          <a href="#" class="nav-link">
-            <i class="fas fa-star"></i>
-            <span>Avaliações</span>
-          </a>
-          <a href="#" class="nav-link">
-            <i class="fas fa-newspaper"></i>
-            <span>Blog</span>
-          </a>
-        </div>
-
-        <div class="nav-section">
-          <div class="section-title">Configurações</div>
-          <a href="#" class="nav-link">
-            <i class="fas fa-users"></i>
-            <span>Usuários</span>
-          </a>
-          <a href="#" class="nav-link">
-            <i class="fas fa-cog"></i>
-            <span>Configurações</span>
-          </a>
-          <a href="#" class="nav-link">
-            <i class="fas fa-chart-line"></i>
-            <span>Relatórios</span>
-          </a>
-        </div>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="admin-profile">
-          <div class="profile-avatar">A</div>
-          <div class="profile-info">
-            <h4>Admin Master</h4>
-            <p>Super Admin</p>
-          </div>
-        </div>
-        <button class="btn-logout" id="logoutBtn">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Sair</span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="admin-main">
-      <header class="main-header">
-        <div class="header-title">
-          <h1>Dashboard Administrativo</h1>
-          <p>Bem-vindo ao painel de controle da Universo Paralelo Store</p>
-        </div>
-        <div class="header-actions">
-          <button class="btn-action" onclick="window.print()">
-            <i class="fas fa-print"></i>
-            Imprimir
-          </button>
-          <button class="btn-action" onclick="exportData()">
-            <i class="fas fa-download"></i>
-            Exportar
-          </button>
-          <a href="product-form.html" class="btn-action primary">
-            <i class="fas fa-plus"></i>
-            Novo Produto
-          </a>
-        </div>
-      </header>
-
-      <!-- STATS -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon">
-              <i class="fas fa-shopping-cart"></i>
-            </div>
-            <div class="stat-change positive">
-              <i class="fas fa-arrow-up"></i>
-              12%
-            </div>
-          </div>
-          <div class="stat-number">R$ 12.580,00</div>
-          <div class="stat-label">Vendas do Mês</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon">
-              <i class="fas fa-cube"></i>
-            </div>
-            <div class="stat-change positive">
-              <i class="fas fa-arrow-up"></i>
-              8%
-            </div>
-          </div>
-          <div class="stat-number">48</div>
-          <div class="stat-label">Produtos Ativos</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon">
-              <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-change positive">
-              <i class="fas fa-arrow-up"></i>
-              23%
-            </div>
-          </div>
-          <div class="stat-number">156</div>
-          <div class="stat-label">Novos Clientes</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <div class="stat-icon">
-              <i class="fas fa-star"></i>
-            </div>
-            <div class="stat-change negative">
-              <i class="fas fa-arrow-down"></i>
-              3%
-            </div>
-          </div>
-          <div class="stat-number">4.7</div>
-          <div class="stat-label">Avaliação Média</div>
-        </div>
-      </div>
-
-      <!-- MAIN SECTIONS -->
-      <div class="dashboard-sections">
-        <!-- RECENT ORDERS -->
-        <div class="section-card">
-          <div class="section-header">
-            <h2><i class="fas fa-clock"></i> Pedidos Recentes</h2>
-            <a href="orders.html" class="btn-view-all">
-              Ver todos <i class="fas fa-arrow-right"></i>
-            </a>
-          </div>
-          <table class="orders-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Data</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>#ORD-001</td>
-                <td>Maria Silva</td>
-                <td>15/11/2023</td>
-                <td>R$ 189,00</td>
-                <td><span class="order-status status-completed">Entregue</span></td>
-                <td>
-                  <button class="btn-action-small">Ver</button>
-                </td>
-              </tr>
-              <tr>
-                <td>#ORD-002</td>
-                <td>João Santos</td>
-                <td>16/11/2023</td>
-                <td>R$ 245,00</td>
-                <td><span class="order-status status-processing">Processando</span></td>
-                <td>
-                  <button class="btn-action-small">Editar</button>
-                </td>
-              </tr>
-              <tr>
-                <td>#ORD-003</td>
-                <td>Ana Costa</td>
-                <td>17/11/2023</td>
-                <td>R$ 120,00</td>
-                <td><span class="order-status status-pending">Pendente</span></td>
-                <td>
-                  <button class="btn-action-small">Aprovar</button>
-                </td>
-              </tr>
-              <tr>
-                <td>#ORD-004</td>
-                <td>Carlos Lima</td>
-                <td>18/11/2023</td>
-                <td>R$ 350,00</td>
-                <td><span class="order-status status-completed">Entregue</span></td>
-                <td>
-                  <button class="btn-action-small">Ver</button>
-                </td>
-              </tr>
-              <tr>
-                <td>#ORD-005</td>
-                <td>Beatriz Rocha</td>
-                <td>19/11/2023</td>
-                <td>R$ 89,00</td>
-                <td><span class="order-status status-cancelled">Cancelado</span></td>
-                <td>
-                  <button class="btn-action-small">Reativar</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- RECENT PRODUCTS -->
-        <div class="section-card">
-          <div class="section-header">
-            <h2><i class="fas fa-fire"></i> Produtos Populares</h2>
-            <a href="products.html" class="btn-view-all">
-              Ver todos <i class="fas fa-arrow-right"></i>
-            </a>
-          </div>
-          <div class="products-list">
-            <div class="product-item">
-              <div class="product-image">
-                <img
-                  src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
-                  alt="Crânio T-Rex">
-              </div>
-              <div class="product-info">
-                <h4>Crânio T-Rex 3D</h4>
-                <p>Esculturas</p>
-              </div>
-              <div class="product-price">R$ 120,00</div>
-            </div>
-            <div class="product-item">
-              <div class="product-image">
-                <img
-                  src="https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
-                  alt="Dragão">
-              </div>
-              <div class="product-info">
-                <h4>Dragão Alado 3D</h4>
-                <p>Esculturas</p>
-              </div>
-              <div class="product-price">R$ 220,00</div>
-            </div>
-            <div class="product-item">
-              <div class="product-image">
-                <img
-                  src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
-                  alt="Robô">
-              </div>
-              <div class="product-info">
-                <h4>Robô Futurista</h4>
-                <p>Esculturas</p>
-              </div>
-              <div class="product-price">R$ 140,00</div>
-            </div>
-            <div class="product-item">
-              <div class="product-image">
-                <img
-                  src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
-                  alt="Samurai">
-              </div>
-              <div class="product-info">
-                <h4>Samurai Japonês</h4>
-                <p>Esculturas</p>
-              </div>
-              <div class="product-price">R$ 175,00</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SALES CHART -->
-      <div class="chart-section">
-        <div class="section-header">
-          <h2><i class="fas fa-chart-line"></i> Vendas dos Últimos 7 Dias</h2>
-          <div class="period-selector">
-            <select class="form-input" style="width: 150px; padding: 8px 15px;">
-              <option>Últimos 7 dias</option>
-              <option>Últimos 30 dias</option>
-              <option>Este mês</option>
-              <option>Este ano</option>
-            </select>
-          </div>
-        </div>
-        <div class="chart-container" id="salesChart">
-          <!-- Chart will be inserted here by JavaScript -->
-          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #aaa;">
-            <div style="text-align: center;">
-              <i class="fas fa-chart-bar" style="font-size: 48px; margin-bottom: 15px;"></i>
-              <p>Gráfico de vendas carregado via JavaScript</p>
-              <small>Para visualização real, integre uma biblioteca como Chart.js</small>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -951,6 +758,13 @@
       const profileName = document.querySelector('.profile-info h4');
       if (adminEmail) {
         profileName.textContent = adminEmail.split('@')[0];
+      }
+
+      // Atualizar avatar com primeira letra do nome
+      const profileAvatar = document.querySelector('.profile-avatar');
+      if (adminEmail && profileAvatar) {
+        const firstName = adminEmail.split('@')[0];
+        profileAvatar.textContent = firstName.charAt(0).toUpperCase();
       }
 
       // Simular dados do gráfico
