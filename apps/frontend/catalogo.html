@@ -1313,9 +1313,18 @@
       revealOnScroll();
     });
 
-    // ========== FUNÇÕES DO MODAL DE FILTROS (mantenha as existentes) ==========
-    // As funções setupFiltersModal, applyAllFiltersFromModal, etc. permanecem iguais
-    // Apenas certificar-se de que usam as variáveis globais atualizadas
+    // ========== INICIALIZAÇÃO ==========
+      // Chame esta função logo após o DOM carregar
+      document.addEventListener('DOMContentLoaded', function () {
+        console.log("🚀 Catálogo iniciado");
+
+        // Inicializar o catálogo
+        initializeCatalog().then(() => {
+          // Verificar filtro da home
+          checkHomeCategoryFilter();
+        });
+        setupScrollAnimation();
+      });
 
   </script>
 

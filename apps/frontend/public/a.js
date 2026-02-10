@@ -262,15 +262,3 @@ function showError(message) {
           </div>
         `;
 }
-// ========== INICIALIZAÇÃO ==========
-    // Chame esta função logo após o DOM carregar
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log("🚀 Catálogo iniciado");
-
-        // Inicializar o catálogo
-        initializeCatalog().then(() => {
-          // Verificar filtro da home
-          checkHomeCategoryFilter();
-        });
-        setupScrollAnimation();
-      });
