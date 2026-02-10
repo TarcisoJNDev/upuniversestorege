@@ -44,7 +44,14 @@
       "src": "^/admin/login$",
       "dest": "/apps/frontend/admin/login.html"
     },
-    
+     {
+      "src": "^/admin/([a-zA-Z0-9-_]+)\\.css$",
+      "dest": "/apps/frontend/admin/$1.css"
+    },
+    {
+      "src": "^/admin/([a-zA-Z0-9-_]+)\\.js$",
+      "dest": "/apps/frontend/admin/$1.js"
+    },
 
     {
       "src": "^/admin/dashboard$",
