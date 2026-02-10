@@ -28,7 +28,11 @@ if (fs.existsSync(UPLOADS_PATH)) {
 // Middleware
 app.use(
   cors({
-    origin: "*", // Para desenvolvimento, depois restrinja
+    origin: [
+      "https://upuniverse-store.vercel.app/",
+      "http://localhost:3000",
+      "*",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
