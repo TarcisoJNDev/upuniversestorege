@@ -2,16 +2,20 @@ services:
   - type: web
     name: universo-paralelo-api
     env: node
-    root: apps/backend # Correto - aponta para sua pasta backend
-    buildCommand: |
-      npm install
-      npm run build || true  # Se não tiver build script, continua
+    # REMOVA a linha root: apps/backend ou use apenas se seu app está realmente nessa pasta
+    # root: apps/backend # Só mantenha se sua estrutura for exatamente assim
+
+    buildCommand: npm install
     startCommand: npm start
+
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
+      # NÃO defina PORT manualmente - o Render fornece automaticamente
+      # - key: PORT
+      #   value: 10000
+
+      # Variáveis do banco de dados (configure no dashboard do Render)
       - key: DB_HOST
         sync: false
       - key: DB_PORT
@@ -22,16 +26,37 @@ services:
         sync: false
       - key: DB_NAME
         sync: false
+
+      # CORS para funcionar no Render
+      - key: RENDER_EXTERNAL_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://upuniverse-store.vercel.app,http://localhost:3000,http://localhost:5173"
       - key: JWT_SECRET
-        value: sua-chave-secreta-aqui
+        generateValue: true # Gera automaticamente
+
     healthCheckPath: /api/health
     autoDeploy: true
-    # Otimizações para Node.js
+
+    # Headers CORS para o proxy do Render
+    headers:
+      - path: /*
+        name: Access-Control-Allow-Origin
+        value: "*"
+      - path: /*
+        name: Access-Control-Allow-Methods
+        value: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+      - path: /*
+        name: Access-Control-Allow-Headers
+        value: "Content-Type, Authorization, Origin, X-Requested-With, Accept"
+      - path: /*
+        name: Access-Control-Expose-Headers
+        value: "Content-Length, Content-Type"
+      - path: /*
+        name: Access-Control-Max-Age
+        value: "86400"
+
+    # Otimizações
     nodeVersion: 18
-    # Garantir que uploads exista
-    buildFilter:
-      paths:
-        - apps/backend/**
-    # Configurações de instância
-    plan: free # Ou starter se tiver verificação
+    plan: free
     instanceType: free
