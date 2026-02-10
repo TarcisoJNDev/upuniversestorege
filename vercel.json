@@ -11,7 +11,6 @@
       "src": "^/$",
       "dest": "/apps/frontend/home.html"
     },
-    
     {
       "src": "^/home$",
       "dest": "/apps/frontend/home.html"
@@ -42,8 +41,46 @@
       "dest": "/apps/frontend/admin/login.html"
     },
     {
-      "src": "^/admin/([a-zA-Z0-9-_]+)$",
-      "dest": "/apps/frontend/admin/$1.html"
+      "src": "^/admin/login$",
+      "dest": "/apps/frontend/admin/login.html"
+    },
+    
+
+    {
+      "src": "^/admin/dashboard$",
+      "dest": "/apps/frontend/admin/dashboard.html"
+    },
+   
+    {
+      "src": "^/admin/products$",
+      "dest": "/apps/frontend/admin/products.html"
+    },
+    {
+      "src": "^/admin/produtos$",
+      "dest": "/apps/frontend/admin/products.html"
+    },
+    
+
+    {
+      "src": "^/admin/product/new$",
+      "dest": "/apps/frontend/admin/product-form.html"
+    },
+    {
+      "src": "^/admin/product/edit/([a-zA-Z0-9-_]+)$",
+      "dest": "/apps/frontend/admin/product-form.html"
+    },
+    {
+      "src": "^/admin/product-form$",
+      "dest": "/apps/frontend/admin/product-form.html"
+    },
+
+    {
+      "src": "^/admin/categories$",
+      "dest": "/apps/frontend/admin/categories.html"
+    },
+    {
+      "src": "^/admin/categorias$",
+      "dest": "/apps/frontend/admin/categories.html"
     },
     
     {
@@ -59,6 +96,11 @@
       "src": "^/([a-zA-Z0-9-_]+)\\.html$",
       "dest": "/apps/frontend/$1.html"
     },
+    {
+      "src": "^/admin/([a-zA-Z0-9-_]+)\\.html$",
+      "dest": "/apps/frontend/admin/$1.html"
+    },
+    
     
     {
       "src": "^(.*)$",
