@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./../public/css/base.css">
   <link rel="stylesheet" href="./../admin/categories.css">
   <script src="./../public/js/api.js"></script>
+  <script src="/public/js/config.js"></script>
 </head>
 
 <body>
@@ -299,37 +300,32 @@
 
   <script>
     // ========== CONFIGURAÇÃO DA API ==========
-    const API_BASE_URL = 'http://localhost:5000/api';
+      const API_BASE_URL = API_CONFIG.BASE_URL;
 
-    // Função para obter headers
-    function getAPIConfig() {
-      return {
-        headers: {
-          'Content-Type': 'application/json',
+        // Atualizar TODAS as chamadas fetch para usar getApiUrl()
+        async function getCategoriesWithProductCount() {
+          try {
+            const url = getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES_WITH_COUNT);
+            console.log("🌐 Chamando API:", url);
+
+            const response = await fetch(url, {
+              headers: { 'Content-Type': 'application/json' },
+              signal: AbortSignal.timeout(30000)
+            });
+
+            if (!response.ok) {
+              throw new Error(`Erro ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data.categories || [];
+
+          } catch (error) {
+            console.error('❌ Erro:', error);
+            showNotification('Erro ao carregar categorias', 'error');
+            return [];
+          }
         }
-      };
-    }
-
-    // ========== FUNÇÕES DE API ESPECÍFICAS PARA CATEGORIAS ==========
-
-    // Função para buscar categorias com contagem
-    async function getCategoriesWithProductCount() {
-      try {
-        console.log("🌐 Chamando API:", `${API_BASE_URL}/categories/with-count`);
-        const response = await fetch(`${API_BASE_URL}/categories/with-count`, getAPIConfig());
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar categorias');
-        }
-
-        const data = await response.json();
-        console.log("📊 Dados recebidos da API:", data);
-        return data.categories || [];
-      } catch (error) {
-        console.error('Erro ao buscar categorias com contagem:', error);
-        return [];
-      }
-    }
 
     // Função para buscar produtos por categoria
     async function getProductsByCategory(categoryId) {

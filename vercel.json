@@ -7,6 +7,7 @@
     }
   ],
   "routes": [
+
     {
       "src": "^/$",
       "dest": "/apps/frontend/home.html"
@@ -35,7 +36,6 @@
       "src": "^/carrinho$",
       "dest": "/apps/frontend/carrinho.html"
     },
-    
     {
       "src": "^/admin$",
       "dest": "/apps/frontend/admin/login.html"
@@ -44,20 +44,10 @@
       "src": "^/admin/login$",
       "dest": "/apps/frontend/admin/login.html"
     },
-     {
-      "src": "^/admin/([a-zA-Z0-9-_]+)\\.css$",
-      "dest": "/apps/frontend/admin/$1.css"
-    },
-    {
-      "src": "^/admin/([a-zA-Z0-9-_]+)\\.js$",
-      "dest": "/apps/frontend/admin/$1.js"
-    },
-
     {
       "src": "^/admin/dashboard$",
       "dest": "/apps/frontend/admin/dashboard.html"
     },
-   
     {
       "src": "^/admin/products$",
       "dest": "/apps/frontend/admin/products.html"
@@ -66,8 +56,6 @@
       "src": "^/admin/produtos$",
       "dest": "/apps/frontend/admin/products.html"
     },
-    
-
     {
       "src": "^/admin/product/new$",
       "dest": "/apps/frontend/admin/product-form.html"
@@ -80,7 +68,6 @@
       "src": "^/admin/product-form$",
       "dest": "/apps/frontend/admin/product-form.html"
     },
-
     {
       "src": "^/admin/categories$",
       "dest": "/apps/frontend/admin/categories.html"
@@ -90,28 +77,77 @@
       "dest": "/apps/frontend/admin/categories.html"
     },
     
+
+    {
+      "src": "^/public/(.*\\.css)$",
+      "dest": "/apps/frontend/public/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "^/public/(.*\\.js)$",
+      "dest": "/apps/frontend/public/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "^/public/(.*\\.(png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))$",
+      "dest": "/apps/frontend/public/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    
+  
+    {
+      "src": "^/admin/([a-zA-Z0-9-_]+)\\.css$",
+      "dest": "/apps/frontend/admin/$1.css",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    
+ 
+    {
+      "src": "^/admin/([a-zA-Z0-9-_]+)\\.js$",
+      "dest": "/apps/frontend/admin/$1.js",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    
+    
+    {
+      "src": "^/([a-zA-Z0-9-_]+)\\.html$",
+      "dest": "/apps/frontend/$1.html"
+    },
+    
+
+    {
+      "src": "^/admin/([a-zA-Z0-9-_]+)\\.html$",
+      "dest": "/apps/frontend/admin/$1.html"
+    },
+    
+
     {
       "src": "^/([a-zA-Z0-9-_]+)\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$",
       "dest": "/apps/frontend/$1.$2"
     },
+    
     {
       "src": "^/public/(.*)$",
       "dest": "/apps/frontend/public/$1"
     },
     
     {
-      "src": "^/([a-zA-Z0-9-_]+)\\.html$",
-      "dest": "/apps/frontend/$1.html"
-    },
-    {
-      "src": "^/admin/([a-zA-Z0-9-_]+)\\.html$",
-      "dest": "/apps/frontend/admin/$1.html"
-    },
-    
-    
-    {
       "src": "^(.*)$",
       "dest": "/apps/frontend/home.html"
     }
-  ]
+  ],
+  
+  "env": {
+    "API_URL": "https://upuniversestorege.onrender.com/api"
+  }
 }
