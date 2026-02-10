@@ -25,18 +25,75 @@ if (fs.existsSync(UPLOADS_PATH)) {
   }
 }
 
-// Middleware
+// ========== CONFIGURAÇÃO CORS CRÍTICA ==========
 app.use(
   cors({
-    origin: [
-      "https://upuniverse-store.vercel.app/",
-      "http://localhost:3000",
-      "*",
+    origin: "*", // Permitir todas as origens TEMPORARIAMENTE
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Origin",
+      "X-Requested-With",
+      "Content-Type",
+      "Accept",
+      "Authorization",
+      "Cache-Control",
+      "Pragma",
+      "Expires",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: [
+      "Content-Length",
+      "Content-Type",
+      "Authorization",
+      "X-Request-ID",
+    ],
+    credentials: true,
+    maxAge: 86400,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   }),
 );
+
+// IMPORTANTE: Lidar com requisições OPTIONS (preflight)
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, Expires",
+  );
+  res.header("Access-Control-Max-Age", "86400");
+  res.sendStatus(204);
+});
+
+// Middleware para adicionar headers CORS manualmente
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, Expires",
+  );
+  res.header(
+    "Access-Control-Expose-Headers",
+    "Content-Length, Content-Type, Authorization, X-Request-ID",
+  );
+  res.header("Access-Control-Max-Age", "86400");
+
+  // Se for uma requisição OPTIONS, responder imediatamente
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+// ========== OUTROS MIDDLEWARES ==========
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

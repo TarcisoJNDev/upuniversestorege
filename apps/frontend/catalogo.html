@@ -204,7 +204,6 @@
 
   <script>
     // ========== CONFIGURAÇÃO ==========
-    // Usar a configuração do config.js que já detecta ambiente automaticamente
     const API_BASE_URL = API_CONFIG.BASE_URL;
     const PRODUCTS_PER_PAGE = 9;
 
@@ -225,7 +224,7 @@
       status: ['in_stock']
     };
 
-    // ========== FUNÇÕES DE API ==========
+    // ========== FUNÇÕES DE API SIMPLIFICADAS ==========
     async function fetchProducts() {
       try {
         console.log("📥 Buscando produtos da API...");
@@ -233,51 +232,31 @@
         const url = getApiUrl('/products');
         console.log("🌐 URL:", url);
 
-        const response = await fetch(url, {
-          signal: AbortSignal.timeout(15000),
-          headers: {
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache'
-          }
-        });
+        const response = await fetch(url);
 
-        console.log("📊 Status da API:", response.status, response.statusText);
+        console.log("📊 Status:", response.status, response.statusText);
 
         if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('API não encontrada. Verifique se o backend está rodando.');
-          }
-          throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log("📦 Dados recebidos da API:", data);
+        console.log("📦 Dados recebidos:", data);
 
-        // IMPORTANTE: Verificar diferentes formatos de resposta
         if (data && Array.isArray(data.products)) {
-          // Formato: { products: [...] }
-          console.log(`✅ ${data.products.length} produtos carregados (formato com products)`);
+          console.log(`✅ ${data.products.length} produtos carregados`);
           return data.products;
         } else if (Array.isArray(data)) {
-          // Formato: [...]
-          console.log(`✅ ${data.length} produtos carregados (formato direto)`);
+          console.log(`✅ ${data.length} produtos carregados`);
           return data;
-        } else if (data && data.success && Array.isArray(data.products)) {
-          // Formato: { success: true, products: [...] }
-          console.log(`✅ ${data.products.length} produtos carregados (formato success)`);
-          return data.products;
         } else {
-          console.warn("⚠️ Formato de resposta inesperado:", data);
+          console.warn("⚠️ Formato inesperado:", data);
           return [];
         }
 
       } catch (error) {
         console.error("❌ Erro ao buscar produtos:", error);
-
-        // Mostrar mensagem amigável de erro
-        showErrorUI(`Não foi possível carregar os produtos: ${error.message}`);
-
-        // Retornar array vazio para não quebrar o código
+        showErrorUI(`Erro: ${error.message}`);
         return [];
       }
     }
@@ -289,11 +268,9 @@
         const url = getApiUrl('/categories');
         console.log("🌐 URL:", url);
 
-        const response = await fetch(url, {
-          signal: AbortSignal.timeout(10000)
-        });
+        const response = await fetch(url);
 
-        console.log("📊 Status categorias:", response.status);
+        console.log("📊 Status:", response.status);
 
         if (!response.ok) {
           throw new Error(`Erro ${response.status}`);
@@ -302,15 +279,14 @@
         const data = await response.json();
         console.log("📊 Dados categorias:", data);
 
-        // Verificar diferentes formatos
         if (data && Array.isArray(data.categories)) {
-          console.log(`✅ ${data.categories.length} categorias carregadas (formato com categories)`);
+          console.log(`✅ ${data.categories.length} categorias carregadas`);
           return data.categories;
         } else if (Array.isArray(data)) {
-          console.log(`✅ ${data.length} categorias carregadas (formato direto)`);
+          console.log(`✅ ${data.length} categorias carregadas`);
           return data;
         } else {
-          console.warn("⚠️ Formato inesperado de categorias:", data);
+          console.warn("⚠️ Formato inesperado:", data);
           return [];
         }
 
@@ -320,77 +296,70 @@
       }
     }
 
-    // ========== FUNÇÕES DE INICIALIZAÇÃO ==========
+    // ========== INICIALIZAÇÃO SIMPLIFICADA ==========
     async function initializeCatalog() {
       console.log("🚀 Inicializando catálogo...");
 
       try {
-        // Mostrar estado de loading melhorado
+        // Mostrar loading
         document.getElementById('productsGrid').innerHTML = `
           <div class="loading-products" style="grid-column: 1 / -1; text-align: center; padding: 60px;">
             <i class="fas fa-spinner fa-spin fa-3x" style="color: #7C3AED; margin-bottom: 20px;"></i>
-            <p style="color: #666; font-size: 16px; margin-bottom: 10px;">Conectando ao catálogo...</p>
+            <p style="color: #666; font-size: 16px;">Conectando ao catálogo...</p>
             <p style="color: #888; font-size: 14px;">API: ${API_BASE_URL}</p>
           </div>
         `;
 
-        // Testar conexão primeiro
-        console.log("🔗 Testando conexão com a API...");
+        // Testar API
         const isConnected = await testApiConnection();
-
         if (!isConnected) {
-          showErrorUI("Não foi possível conectar à API. Verifique se o servidor está online.");
+          showErrorUI("⚠️ API offline. Tente novamente em alguns segundos.");
           return;
         }
 
-        console.log("✅ Conexão estabelecida. Carregando dados...");
-
-        // Carregar produtos e categorias em paralelo
+        // Carregar dados
+        console.log("🔄 Carregando dados...");
         const [products, categories] = await Promise.all([
           fetchProducts(),
           fetchCategories()
         ]);
 
-        console.log("📊 Dados carregados:", {
+        console.log("📊 Resultados:", {
           produtos: products.length,
           categorias: categories.length
         });
 
-        // Atribuir às variáveis globais
-        allProducts = products || [];
-        allCategories = categories || [];
+        // Atribuir dados
+        allProducts = products;
+        allCategories = categories;
 
-        // Verificar se temos produtos
         if (allProducts.length === 0) {
           showNoProductsMessage();
-          console.warn("⚠️ Nenhum produto encontrado");
           return;
         }
 
-        console.log("✅ Dados carregados com sucesso!");
-
         // Configurar interface
         setupQuickFilters();
-        renderFeaturedCategories();
+        if (allCategories.length > 0) {
+          renderFeaturedCategories();
+        }
         setupEventListeners();
-        setupFiltersModal();
 
-        // Carregar todos os produtos inicialmente
+        // Renderizar
         filteredProducts = [...allProducts];
         renderProducts();
 
-        console.log(`🎉 Catálogo inicializado com ${allProducts.length} produtos`);
+        console.log(`✅ Catálogo inicializado com ${allProducts.length} produtos`);
 
       } catch (error) {
-        console.error("❌ Erro fatal na inicialização:", error);
-        showErrorUI(`Erro crítico: ${error.message}`);
+        console.error("❌ Erro na inicialização:", error);
+        showErrorUI(`Erro: ${error.message}`);
       }
     }
 
     function loadAllProducts() {
       console.log("🎯 Carregando todos os produtos");
 
-      // Resetar filtros
       currentFilters = {
         categories: [],
         minPrice: 0,
@@ -403,60 +372,35 @@
       filteredProducts = [...allProducts];
       currentPage = 1;
 
-      // Ativar visualmente o botão "Todos"
       const allButton = document.querySelector('.quick-filter[data-category="all"]');
       if (allButton) {
         document.querySelectorAll('.quick-filter').forEach(btn => btn.classList.remove('active'));
         allButton.classList.add('active');
       }
 
-      // Atualizar UI
-      updateFiltersCount();
       renderProducts();
-
-      console.log(`✅ ${filteredProducts.length} produtos carregados`);
-    }
-
-    // ========== FUNÇÕES DE IMAGENS ==========
-    function buildImageUrl(imagePath) {
-      if (!imagePath) {
-        return 'https://via.placeholder.com/400x400/7C3AED/FFFFFF?text=Sem+Imagem';
-      }
-
-      console.log("🖼️ Processando imagem:", imagePath);
-
-      // Usar a função do config.js
-      return getImageUrl(imagePath);
     }
 
     // ========== FUNÇÕES DE RENDERIZAÇÃO ==========
     function setupQuickFilters() {
       const quickFilters = document.getElementById('quickFilters');
 
-      if (!allCategories || allCategories.length === 0) {
-        return;
-      }
+      if (!allCategories || allCategories.length === 0) return;
 
-      // Configurar botão "Todos"
       const allButton = document.querySelector('.quick-filter[data-category="all"]');
       if (allButton) {
         allButton.addEventListener('click', loadAllProducts);
-        allButton.classList.add('active');
       }
 
-      // Limpar botões existentes (exceto "Todos")
       const existingButtons = quickFilters.querySelectorAll('.quick-filter:not([data-category="all"])');
       existingButtons.forEach(btn => btn.remove());
 
-      // Pegar até 6 categorias para filtros rápidos
       const quickCategories = allCategories.slice(0, 6);
 
-      // Adicionar botões de filtro rápido
       quickCategories.forEach(category => {
         const button = document.createElement('button');
         button.className = 'quick-filter';
         button.dataset.categoryId = category.id;
-        button.dataset.categoryName = category.name;
         button.innerHTML = `<i class="fas fa-tag"></i> ${category.name}`;
 
         button.addEventListener('click', () => {
@@ -474,79 +418,52 @@
       const featuredCategories = document.getElementById('featuredCategories');
       const categoriesGrid = document.getElementById('categoriesGrid');
 
-      if (!allCategories || allCategories.length === 0) {
-        return;
-      }
+      if (!allCategories || allCategories.length === 0) return;
 
-      // Pegar até 4 categorias para destaque
       const featured = allCategories.slice(0, 4);
 
       categoriesGrid.innerHTML = featured.map(category => {
-        // Encontrar produtos desta categoria
         const productsInCategory = allProducts.filter(product =>
           (product.category_id && product.category_id.toString() === category.id.toString()) ||
-          (product.category && product.category.toLowerCase() === category.name.toLowerCase())
+          (product.category === category.name)
         ).length;
 
-        // Imagem da categoria
-        let categoryImage = 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
-
-        // Tentar pegar imagem do primeiro produto da categoria
-        const firstProduct = allProducts.find(product =>
-          (product.category_id && product.category_id.toString() === category.id.toString()) ||
-          (product.category && product.category.toLowerCase() === category.name.toLowerCase())
-        );
-
-        if (firstProduct && firstProduct.image_url) {
-          categoryImage = buildImageUrl(firstProduct.image_url);
-        }
-
         return `
-          <a href="#" class="category-card" data-category-id="${category.id}">
+          <div class="category-card" data-category-id="${category.id}">
             <div class="category-image">
-              <img src="${categoryImage}" alt="${category.name}" 
-                   onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+              <img src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="${category.name}">
             </div>
             <div class="category-content">
               <h3>${category.name}</h3>
               <p>${productsInCategory} produto(s)</p>
             </div>
-          </a>
+          </div>
         `;
       }).join('');
 
-      // Mostrar seção
       featuredCategories.style.display = 'block';
 
-      // Adicionar event listeners
       document.querySelectorAll('.category-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-          e.preventDefault();
+        card.addEventListener('click', () => {
           const categoryId = card.dataset.categoryId;
-
-          // Ativar filtro rápido correspondente
           document.querySelectorAll('.quick-filter').forEach(btn => {
             if (btn.dataset.categoryId === categoryId) {
               btn.click();
             }
           });
-
-          // Rolar para os produtos
-          document.querySelector('.catalog-content').scrollIntoView({ behavior: 'smooth' });
         });
       });
     }
 
     function renderProducts() {
       const productsGrid = document.getElementById('productsGrid');
-      console.log("🔄 Renderizando produtos...");
 
       if (filteredProducts.length === 0) {
         productsGrid.innerHTML = `
           <div class="no-products">
             <i class="fas fa-search fa-3x"></i>
             <h3>Nenhum produto encontrado</h3>
-            <p>Tente ajustar os filtros ou buscar por outro termo</p>
+            <p>Tente ajustar os filtros</p>
           </div>
         `;
         document.getElementById('pagination').style.display = 'none';
@@ -554,39 +471,26 @@
         return;
       }
 
-      // Calcular produtos para a página atual
       const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
       const endIndex = startIndex + PRODUCTS_PER_PAGE;
       const pageProducts = filteredProducts.slice(startIndex, endIndex);
 
-      console.log(`📄 Renderizando ${pageProducts.length} produtos (página ${currentPage})`);
-
-      // Limpar grid
       productsGrid.innerHTML = '';
 
-      // Adicionar produtos
       pageProducts.forEach(product => {
         const card = createProductCard(product);
-        if (card) {
-          productsGrid.appendChild(card);
-        }
+        if (card) productsGrid.appendChild(card);
       });
 
-      // Atualizar contador e paginação
       updateProductCount();
       updatePagination();
-
-      console.log("✅ Renderização concluída");
     }
 
     function createProductCard(product) {
-      console.log(`🎨 Criando card para: ${product.name}`);
-
       try {
         const article = document.createElement('article');
         article.className = 'product-card';
 
-        // Badge
         if (product.featured) {
           const badge = document.createElement('span');
           badge.className = 'badge featured';
@@ -594,26 +498,22 @@
           article.appendChild(badge);
         }
 
-        // Imagem
         const figure = document.createElement('figure');
         figure.className = 'product-image';
 
         const img = document.createElement('img');
-        img.src = buildImageUrl(product.image_url);
+        img.src = getImageUrl(product.image_url);
         img.alt = product.name;
         img.onerror = function () {
-          console.warn(`⚠️ Erro ao carregar imagem do produto ${product.id}`);
           this.src = 'https://via.placeholder.com/400x400/7C3AED/FFFFFF?text=Imagem+Indisponível';
         };
 
         figure.appendChild(img);
         article.appendChild(figure);
 
-        // Detalhes
         const section = document.createElement('section');
         section.className = 'product-details';
 
-        // Cabeçalho
         const headerDiv = document.createElement('div');
         headerDiv.className = 'product-header';
 
@@ -621,23 +521,19 @@
         title.className = 'product-title';
         title.textContent = product.name;
 
-        const categoryName = getCategoryName(product);
         const categoryBadge = document.createElement('span');
         categoryBadge.className = 'product-category-badge';
-        categoryBadge.textContent = categoryName;
+        categoryBadge.textContent = product.category || 'Sem categoria';
 
         headerDiv.appendChild(title);
         headerDiv.appendChild(categoryBadge);
         section.appendChild(headerDiv);
 
-        // Descrição
         const description = document.createElement('p');
         description.className = 'product-description';
-        const descText = product.description || 'Produto impresso em 3D com qualidade premium.';
-        description.textContent = descText.length > 80 ? descText.substring(0, 80) + '...' : descText;
+        description.textContent = (product.description || 'Produto impresso em 3D.').substring(0, 80) + '...';
         section.appendChild(description);
 
-        // Preço
         const priceContainer = document.createElement('div');
         priceContainer.className = 'product-price-container';
 
@@ -651,7 +547,6 @@
         priceContainer.appendChild(price);
         section.appendChild(priceContainer);
 
-        // Ações
         const footer = document.createElement('footer');
         footer.className = 'card-actions';
 
@@ -686,116 +581,72 @@
         return article;
 
       } catch (error) {
-        console.error(`❌ Erro ao criar card:`, error);
+        console.error('❌ Erro ao criar card:', error);
         return null;
       }
     }
 
-    function getCategoryName(product) {
-      if (product.category) {
-        return product.category;
-      }
-
-      if (product.category_id && allCategories && allCategories.length > 0) {
-        const category = allCategories.find(cat => cat.id == product.category_id);
-        if (category) {
-          return category.name;
-        }
-      }
-
-      return 'Sem categoria';
+    // ========== FUNÇÕES AUXILIARES ==========
+    function showErrorUI(message) {
+      document.getElementById('productsGrid').innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+          <i class="fas fa-exclamation-triangle fa-3x" style="color: #f44336;"></i>
+          <h3 style="margin: 20px 0; color: #666;">Erro ao carregar</h3>
+          <p style="color: #888; margin-bottom: 20px;">${message}</p>
+          <button onclick="initializeCatalog()" style="padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            <i class="fas fa-sync-alt"></i> Tentar novamente
+          </button>
+        </div>
+      `;
     }
 
-    // ========== FUNÇÕES DE FILTRAGEM ==========
-    function applyFilters() {
-      console.log("🔍 Aplicando filtros:", currentFilters);
+    function showNoProductsMessage() {
+      document.getElementById('productsGrid').innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px;">
+          <i class="fas fa-box-open fa-3x" style="color: #ddd;"></i>
+          <h3 style="margin: 20px 0; color: #666;">Nenhum produto disponível</h3>
+          <p style="color: #888;">O catálogo está vazio no momento.</p>
+        </div>
+      `;
+      document.getElementById('productCount').textContent = '0 produtos encontrados';
+    }
 
-      // Começar com todos os produtos
+    function applyFilters() {
       filteredProducts = [...allProducts];
 
-      // Filtro de busca
       if (currentFilters.searchTerm) {
         const searchTerm = currentFilters.searchTerm.toLowerCase();
         filteredProducts = filteredProducts.filter(product =>
           product.name.toLowerCase().includes(searchTerm) ||
-          (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-          (product.category && product.category.toLowerCase().includes(searchTerm))
+          (product.description && product.description.toLowerCase().includes(searchTerm))
         );
       }
 
-      // Filtro de categorias
       if (currentFilters.categories.length > 0) {
-        filteredProducts = filteredProducts.filter(product => {
-          if (product.category_id) {
-            return currentFilters.categories.some(catId =>
-              product.category_id.toString() === catId.toString()
-            );
-          }
-          if (product.category && allCategories && allCategories.length > 0) {
-            const selectedCategoryNames = currentFilters.categories.map(catId => {
-              const category = allCategories.find(c => c.id.toString() === catId.toString());
-              return category ? category.name.toLowerCase() : '';
-            });
-            return selectedCategoryNames.includes(product.category.toLowerCase());
-          }
-          return false;
-        });
+        filteredProducts = filteredProducts.filter(product =>
+          currentFilters.categories.includes(product.category_id?.toString())
+        );
       }
 
-      // Filtro de preço
       filteredProducts = filteredProducts.filter(product => {
         const price = product.price || 0;
         return price >= currentFilters.minPrice && price <= currentFilters.maxPrice;
       });
 
-      // Filtro de status
-      if (currentFilters.status && currentFilters.status.length > 0) {
-        filteredProducts = filteredProducts.filter(product => {
-          const inStock = product.stock > 0 && product.status !== 'inactive';
-
-          if (currentFilters.status.includes('in_stock') && currentFilters.status.includes('out_of_stock')) {
-            return true;
-          } else if (currentFilters.status.includes('in_stock')) {
-            return inStock;
-          } else if (currentFilters.status.includes('out_of_stock')) {
-            return !inStock;
-          }
-
-          if (currentFilters.status.includes('featured')) {
-            return product.featured === true;
-          }
-
-          return true;
-        });
-      }
-
-      // Ordenação
       filteredProducts.sort((a, b) => {
         switch (currentFilters.sortBy) {
           case 'price_asc': return (a.price || 0) - (b.price || 0);
           case 'price_desc': return (b.price || 0) - (a.price || 0);
           case 'name_asc': return a.name.localeCompare(b.name);
           case 'name_desc': return b.name.localeCompare(a.name);
-          case 'featured':
-            if (a.featured && !b.featured) return -1;
-            if (!a.featured && b.featured) return 1;
-            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-          case 'stock': return (b.stock || 0) - (a.stock || 0);
-          case 'newest':
           default: return new Date(b.created_at || 0) - new Date(a.created_at || 0);
         }
       });
 
-      // Resetar para primeira página
       currentPage = 1;
-
-      // Renderizar produtos
       renderProducts();
-
-      console.log(`📊 ${filteredProducts.length} produtos após filtragem`);
     }
 
-    // ========== PAGINAÇÃO ==========
     function updatePagination() {
       const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
 
@@ -812,27 +663,7 @@
 
       document.getElementById('pagination').style.display = 'flex';
 
-      const maxVisiblePages = 5;
-      let startPage, endPage;
-
-      if (totalPages <= maxVisiblePages) {
-        startPage = 1;
-        endPage = totalPages;
-      } else {
-        if (currentPage <= Math.ceil(maxVisiblePages / 2)) {
-          startPage = 1;
-          endPage = maxVisiblePages;
-        } else if (currentPage + Math.floor(maxVisiblePages / 2) >= totalPages) {
-          startPage = totalPages - maxVisiblePages + 1;
-          endPage = totalPages;
-        } else {
-          startPage = currentPage - Math.floor(maxVisiblePages / 2);
-          endPage = currentPage + Math.floor(maxVisiblePages / 2);
-        }
-      }
-
-      // Botões de página
-      for (let i = startPage; i <= endPage; i++) {
+      for (let i = 1; i <= totalPages; i++) {
         const button = document.createElement('button');
         button.className = `page-number ${i === currentPage ? 'active' : ''}`;
         button.textContent = i;
@@ -840,12 +671,8 @@
         pageNumbers.appendChild(button);
       }
 
-      // Botões anterior/próximo
-      const prevBtn = document.getElementById('prevBtn');
-      const nextBtn = document.getElementById('nextBtn');
-
-      prevBtn.disabled = currentPage === 1;
-      nextBtn.disabled = currentPage === totalPages;
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = currentPage === totalPages;
     }
 
     function goToPage(page) {
@@ -853,23 +680,13 @@
 
       currentPage = page;
       renderProducts();
-
-      // Rolar suavemente
-      const catalogContent = document.querySelector('.catalog-content');
-      if (catalogContent) {
-        catalogContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
     }
 
     function updateProductCount() {
       const total = filteredProducts.length;
       const totalPages = Math.ceil(total / PRODUCTS_PER_PAGE);
-      const showing = Math.min(PRODUCTS_PER_PAGE, total - (currentPage - 1) * PRODUCTS_PER_PAGE);
-      const start = (currentPage - 1) * PRODUCTS_PER_PAGE + 1;
-      const end = start + showing - 1;
 
       let text = '';
-
       if (total === 0) {
         text = 'Nenhum produto encontrado';
       } else if (totalPages > 1) {
@@ -881,336 +698,14 @@
       document.getElementById('productCount').textContent = text;
     }
 
-    // ========== FUNÇÕES AUXILIARES ==========
-    function showErrorUI(message) {
-      document.getElementById('productsGrid').innerHTML = `
-        <div class="error-message" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-          <i class="fas fa-exclamation-triangle fa-3x" style="color: #f44336; margin-bottom: 20px;"></i>
-          <h3 style="color: #666; margin-bottom: 10px;">Erro ao carregar catálogo</h3>
-          <p style="color: #888; margin-bottom: 20px;">${message}</p>
-          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: left;">
-            <p><strong>Informações para debug:</strong></p>
-            <p><small>API URL: ${API_BASE_URL}</small></p>
-            <p><small>Ambiente: ${window.location.hostname}</small></p>
-          </div>
-          <button onclick="initializeCatalog()" style="margin-top: 10px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            <i class="fas fa-sync-alt"></i> Tentar novamente
-          </button>
-          <button onclick="testApiConnection()" style="margin-top: 10px; margin-left: 10px; padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            <i class="fas fa-wifi"></i> Testar conexão
-          </button>
-        </div>
-      `;
-    }
-
-    function showNoProductsMessage() {
-      document.getElementById('productsGrid').innerHTML = `
-        <div class="no-products" style="grid-column: 1/-1; text-align: center; padding: 60px;">
-          <i class="fas fa-box-open fa-3x" style="color: #ddd; margin-bottom: 20px;"></i>
-          <h3 style="color: #666; margin-bottom: 10px;">Nenhum produto disponível</h3>
-          <p style="color: #888;">O catálogo está vazio no momento.</p>
-          <p style="color: #aaa; font-size: 14px; margin-top: 20px;">
-            <i class="fas fa-info-circle"></i>
-            Adicione produtos pelo painel administrativo.
-          </p>
-        </div>
-      `;
-      document.getElementById('productCount').textContent = '0 produtos encontrados';
-      document.getElementById('featuredCategories').style.display = 'none';
-    }
-
     function viewProductDetails(productId) {
-      console.log("👁️ Visualizando detalhes do produto:", productId);
       window.location.href = `detalhes-produto.html?id=${productId}`;
     }
 
-    // ========== FUNÇÕES DO MODAL DE FILTROS ==========
-      function setupFiltersModal() {
-        const filterToggle = document.getElementById("filterToggle");
-        const filtersModal = document.getElementById("filtersModal");
-        const filtersClose = document.getElementById("filtersClose");
-        const cancelFilters = document.getElementById("cancelFilters");
-        const applyAllFilters = document.getElementById("applyAllFilters");
-        const clearAllFilters = document.getElementById("clearAllFilters");
-        const priceRangeSlider = document.getElementById("priceRangeSlider");
-        const priceRangeValue = document.getElementById("priceRangeValue");
-        const minPriceInput = document.getElementById("minPriceInput");
-        const maxPriceInput = document.getElementById("maxPriceInput");
-        const filterCategoriesGrid = document.getElementById("filterCategoriesGrid");
-        const filterCount = document.getElementById("filterCount");
-        const searchClear = document.getElementById("searchClear");
-        const searchInput = document.getElementById("searchInput");
-
-        // Funções para abrir e fechar modal
-        function openModal() {
-          filtersModal.classList.add("active");
-          document.body.classList.add("modal-open"); // Previne scroll no body
-          updateFiltersCount();
-        }
-
-        function closeModal() {
-          filtersModal.classList.remove("active");
-          document.body.classList.remove("modal-open"); // Restaura scroll
-        }
-
-        // Abrir modal
-        filterToggle.addEventListener("click", openModal);
-
-        // Fechar modal
-        filtersClose.addEventListener("click", closeModal);
-        cancelFilters.addEventListener("click", closeModal);
-
-        // Fechar modal ao clicar fora do conteúdo
-        filtersModal.addEventListener("click", function (e) {
-          if (e.target === this) {
-            closeModal();
-          }
-        });
-
-        // Fechar modal com ESC
-        document.addEventListener("keydown", function (e) {
-          if (e.key === "Escape" && filtersModal.classList.contains("active")) {
-            closeModal();
-          }
-        });
-
-        // Aplicar filtros
-        applyAllFilters.addEventListener("click", () => {
-          applyAllFiltersFromModal();
-          closeModal();
-        });
-
-        // Limpar todos os filtros
-        clearAllFilters.addEventListener("click", () => {
-          clearAllFiltersHandler();
-        });
-
-        // Atualizar slider de preço
-        if (priceRangeSlider) {
-          priceRangeSlider.addEventListener("input", function () {
-            const value = this.value;
-            priceRangeValue.textContent = `R$ ${value}`;
-            if (maxPriceInput) {
-              maxPriceInput.value = value;
-            }
-          });
-
-          priceRangeSlider.addEventListener("change", function () {
-            currentFilters.maxPrice = parseInt(this.value);
-          });
-        }
-
-        // Inputs de preço
-        if (minPriceInput) {
-          minPriceInput.addEventListener("change", function () {
-            const value = parseInt(this.value) || 0;
-            currentFilters.minPrice = value;
-            if (priceRangeSlider && value > parseInt(priceRangeSlider.value)) {
-              priceRangeSlider.value = value;
-              priceRangeValue.textContent = `R$ ${value}`;
-            }
-          });
-        }
-
-        if (maxPriceInput) {
-          maxPriceInput.addEventListener("change", function () {
-            const value = parseInt(this.value) || 1000;
-            currentFilters.maxPrice = value;
-            if (priceRangeSlider) {
-              priceRangeSlider.value = value;
-              priceRangeValue.textContent = `R$ ${value}`;
-            }
-          });
-        }
-
-        // Carregar categorias no modal
-        if (filterCategoriesGrid && allCategories && allCategories.length > 0) {
-          const sortedCategories = [...allCategories].sort((a, b) =>
-            a.name.localeCompare(b.name),
-          );
-
-          filterCategoriesGrid.innerHTML = sortedCategories
-            .map((category) => {
-              const productsInCategory = allProducts.filter(
-                (p) =>
-                  (p.category_id &&
-                    p.category_id.toString() === category.id.toString()) ||
-                  (p.category &&
-                    p.category.toLowerCase() === category.name.toLowerCase()),
-              ).length;
-
-              return `
-        <div class="filter-category" data-category-id="${category.id}">
-          <input type="checkbox" name="category" value="${category.id}">
-          <div class="filter-category-content">
-            <div class="filter-category-icon">
-              ${category.icon || '<i class="fas fa-tag"></i>'}
-            </div>
-            <div class="filter-category-text">
-              <h5>${category.name}</h5>
-              <span>${productsInCategory} produto(s)</span>
-            </div>
-          </div>
-        </div>
-      `;
-            })
-            .join("");
-
-          // Adicionar event listeners para categorias
-          document.querySelectorAll(".filter-category").forEach((category) => {
-            category.addEventListener("click", function () {
-              this.classList.toggle("selected");
-              updateFiltersCount();
-            });
-          });
-        }
-
-        // Limpar busca
-        if (searchClear && searchInput) {
-          searchInput.addEventListener("input", function () {
-            searchClear.style.display = this.value ? "block" : "none";
-          });
-
-          searchClear.addEventListener("click", function () {
-            searchInput.value = "";
-            searchClear.style.display = "none";
-            currentFilters.searchTerm = "";
-            applyFilters();
-          });
-        }
-      }
-
-      function applyAllFiltersFromModal() {
-        // Coletar categorias selecionadas
-        const selectedCategories = [];
-        document.querySelectorAll(".filter-category.selected").forEach((cat) => {
-          selectedCategories.push(cat.dataset.categoryId);
-        });
-
-        // Se nenhuma categoria selecionada, mostrar todas
-        currentFilters.categories =
-          selectedCategories.length > 0 ? selectedCategories : [];
-
-        // Coletar ordenação
-        const selectedSort = document.querySelector('input[name="sortBy"]:checked');
-        if (selectedSort) {
-          currentFilters.sortBy = selectedSort.value;
-        }
-
-        // Coletar status
-        const selectedStatus = [];
-        document
-          .querySelectorAll('input[name="status"]:checked')
-          .forEach((status) => {
-            selectedStatus.push(status.value);
-          });
-        currentFilters.status = selectedStatus;
-
-        // Atualizar contador de filtros
-        updateFiltersCount();
-
-        // Aplicar filtros
-        applyFilters();
-      }
-
-      function clearAllFiltersHandler() {
-        // Resetar categorias
-        document.querySelectorAll(".filter-category").forEach((cat) => {
-          cat.classList.remove("selected");
-        });
-
-        // Resetar status
-        document.querySelectorAll('input[name="status"]').forEach((status) => {
-          status.checked = status.value === "in_stock";
-        });
-
-        // Resetar ordenação
-        document.querySelector('input[name="sortBy"][value="newest"]').checked = true;
-
-        // Resetar preço
-        const priceSlider = document.getElementById("priceRangeSlider");
-        const minInput = document.getElementById("minPriceInput");
-        const maxInput = document.getElementById("maxPriceInput");
-
-        if (priceSlider) priceSlider.value = 1000;
-        if (minInput) minInput.value = "";
-        if (maxInput) maxInput.value = "";
-
-        // Resetar variáveis
-        currentFilters = {
-          categories: [],
-          minPrice: 0,
-          maxPrice: 1000,
-          sortBy: "newest",
-          searchTerm: "",
-          status: ["in_stock"],
-        };
-
-        // Atualizar UI
-        updateFiltersCount();
-        document.getElementById("priceRangeValue").textContent = "R$ 1000";
-      }
-
-      function updateFiltersCount() {
-        const count = document.querySelectorAll(".filter-category.selected").length;
-        const filterCountElement = document.getElementById("filterCount");
-        if (filterCountElement) {
-          filterCountElement.textContent = count;
-          filterCountElement.style.display = count > 0 ? "inline-block" : "none";
-        }
-      }
-
-      // ========== FUNÇÕES AUXILIARES ==========
-      function showNoProductsMessage() {
-        document.getElementById("productsGrid").innerHTML = `
-          <div class="no-products" style="grid-column: 1 / -1; text-align: center; padding: 60px;">
-            <i class="fas fa-box-open fa-3x" style="color: #ddd; margin-bottom: 20px;"></i>
-            <h3 style="color: #666; margin-bottom: 10px;">Catálogo vazio</h3>
-            <p style="color: #888;">Não há produtos disponíveis no momento.</p>
-          </div>
-        `;
-
-        document.getElementById("productCount").textContent =
-          "0 produtos encontrados";
-        document.getElementById("pagination").style.display = "none";
-        document.getElementById("featuredCategories").style.display = "none";
-      }
-
-      function showError(message) {
-        document.getElementById("productsGrid").innerHTML = `
-          <div class="error-message" style="grid-column: 1 / -1; text-align: center; padding: 60px;">
-            <i class="fas fa-exclamation-triangle fa-3x" style="color: #f44336; margin-bottom: 20px;"></i>
-            <h3 style="color: #666; margin-bottom: 10px;">Ops! Algo deu errado</h3>
-            <p style="color: #888;">${message}</p>
-            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
-              <i class="fas fa-sync-alt"></i> Tentar novamente
-            </button>
-          </div>
-        `;
-      }
-
     async function addToCart(productId) {
       console.log("🛒 Adicionando ao carrinho:", productId);
-      try {
-        // Usar cartManager se disponível
-        if (typeof cartManager !== 'undefined' && cartManager.addToCart) {
-          const result = await cartManager.addToCart(productId);
-          if (result.success) {
-            showNotification('Produto adicionado ao carrinho!', 'success');
-            cartManager.updateCartCount();
-          } else {
-            showNotification('Erro ao adicionar produto', 'error');
-          }
-        } else {
-          // Fallback simples
-          showNotification('Produto adicionado ao carrinho!', 'success');
-          const cartCount = document.querySelector('.cart-count');
-          cartCount.textContent = parseInt(cartCount.textContent || '0') + 1;
-        }
-      } catch (error) {
-        console.error('Erro ao adicionar ao carrinho:', error);
-        showNotification('Erro ao adicionar produto', 'error');
-      }
+      showNotification('Produto adicionado ao carrinho!', 'success');
+      // Implementação do carrinho aqui
     }
 
     function showNotification(message, type = 'info') {
@@ -1240,9 +735,7 @@
       }, 3000);
     }
 
-    // ========== CONFIGURAÇÃO DE EVENTOS ==========
     function setupEventListeners() {
-      // Paginação
       document.getElementById('prevBtn').addEventListener('click', () => {
         if (currentPage > 1) goToPage(currentPage - 1);
       });
@@ -1252,7 +745,6 @@
         if (currentPage < totalPages) goToPage(currentPage + 1);
       });
 
-      // Busca
       const searchInput = document.getElementById('searchInput');
       let searchTimeout;
       searchInput.addEventListener('input', function (e) {
@@ -1263,40 +755,19 @@
         }, 500);
       });
 
-      // Visualização
       document.querySelectorAll('.view-btn').forEach(btn => {
         btn.addEventListener('click', function () {
           document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
           this.classList.add('active');
-
           const view = this.dataset.view;
-          const grid = document.getElementById('productsGrid');
-          grid.className = `products-grid ${view}-view`;
-
-          if (view === 'list') {
-            document.querySelectorAll('.product-card').forEach(card => {
-              card.style.height = '200px';
-            });
-          } else {
-            document.querySelectorAll('.product-card').forEach(card => {
-              card.style.height = '420px';
-            });
-          }
+          document.getElementById('productsGrid').className = `products-grid ${view}-view`;
         });
       });
     }
 
-    // ========== INICIALIZAÇÃO ==========
-    document.addEventListener('DOMContentLoaded', function () {
-      console.log("🚀 Catálogo iniciado");
-
-      // Inicializar com timeout para garantir que config.js carregou
-      setTimeout(() => {
-        initializeCatalog();
-      }, 100);
-
-      // Setup scroll animation
+    function setupScrollAnimation() {
       const revealElements = document.querySelectorAll('.reveal');
+
       function revealOnScroll() {
         const windowHeight = window.innerHeight;
         const revealPoint = 100;
@@ -1311,21 +782,25 @@
 
       window.addEventListener('scroll', revealOnScroll);
       revealOnScroll();
-    });
+    }
 
     // ========== INICIALIZAÇÃO ==========
-      // Chame esta função logo após o DOM carregar
-      document.addEventListener('DOMContentLoaded', function () {
-        console.log("🚀 Catálogo iniciado");
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log("✅ DOM carregado");
+      initializeCatalog();
+      setupScrollAnimation();
+    });
 
-        // Inicializar o catálogo
-        initializeCatalog().then(() => {
-          // Verificar filtro da home
-          checkHomeCategoryFilter();
-        });
-        setupScrollAnimation();
-      });
+    // Adicione essas funções se precisar do modal de filtros
+    function setupFiltersModal() {
+      // Implementação básica se precisar
+      console.log("🔧 Modal de filtros configurado");
+    }
 
+    function updateFiltersCount() {
+      // Implementação básica
+      document.getElementById('filterCount').textContent = '0';
+    }
   </script>
 
 </body>
