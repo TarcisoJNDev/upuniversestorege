@@ -302,25 +302,27 @@
     // ============================================
     // ===== CONFIGURAÇÃO DA API - PRODUÇÃO ======
     // ============================================
-    // Detecta automaticamente se está em localhost ou produção
     const IS_LOCALHOST = window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1';
 
-    // URLs corretas para cada ambiente
     const API_BASE_URL = IS_LOCALHOST
       ? 'http://localhost:5000/api'
-      : 'https://upuniversestorege.onrender.com/api';  // <<< URL DO SEU RENDER
+      : 'https://upuniversestorege.onrender.com/api';
 
     console.log('🚀 Ambiente detectado:', IS_LOCALHOST ? 'local' : 'produção (Render)');
     console.log('🌐 API Base URL:', API_BASE_URL);
+    console.log('🔗 Frontend Vercel:', window.location.href);
+    console.log('📡 Backend Render:', API_BASE_URL.replace('/api', ''));
+    console.log('💾 Banco Aiven: via backend Render');
 
     // ============================================
-    // ===== API CLIENT COMPLETO E OTIMIZADO =====
+    // ===== API CLIENT ÚNICO E COMPLETO =========
     // ============================================
+    // IMPORTANTE: Sobrescrever qualquer ProductAPI existente
     window.ProductAPI = {
       API_BASE_URL: API_BASE_URL,
 
-      // Headers padrão para JSON
+      // Headers padrão
       getHeaders(includeContentType = true) {
         const headers = {
           'Accept': 'application/json'
@@ -331,7 +333,7 @@
         return headers;
       },
 
-      // Requisição com timeout e tratamento de erro unificado
+      // Requisição com timeout
       async request(endpoint, options = {}, timeout = 30000) {
         const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
         const controller = new AbortController();
@@ -352,7 +354,6 @@
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
 
-          // Verificar se a resposta é JSON
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
             return await response.json();
@@ -374,17 +375,19 @@
       // ========== CATEGORIAS ==========
       async getCategoriesWithProductCount() {
         try {
+          console.log('🏷️ Buscando categorias com contagem...');
           const data = await this.request('/categories/with-count');
+          console.log(`✅ ${data.categories?.length || 0} categorias carregadas`);
           return data.categories || [];
         } catch (error) {
           console.error('❌ Erro ao buscar categorias com contagem:', error);
-          // Fallback para categorias normais
           return this.getAllCategories();
         }
       },
 
       async getAllCategories() {
         try {
+          console.log('🏷️ Buscando categorias...');
           const data = await this.request('/categories');
           return data.categories || [];
         } catch (error) {
@@ -405,12 +408,12 @@
 
       async getProductsByCategory(categoryId) {
         try {
-          // Tenta primeiro pela rota específica de produtos por categoria
+          // Tenta primeiro pela rota específica
           try {
             const data = await this.request(`/categories/${categoryId}/products`);
             return data;
           } catch (error) {
-            // Fallback: tenta buscar por nome da categoria
+            // Fallback: busca por nome da categoria
             const category = await this.getCategoryById(categoryId);
             if (category) {
               return await this.getProductsByCategoryName(category.name);
@@ -435,6 +438,7 @@
 
       async createCategory(data) {
         try {
+          console.log('📤 Criando categoria...');
           const result = await this.request('/categories', {
             method: 'POST',
             body: JSON.stringify(data)
@@ -448,6 +452,7 @@
 
       async updateCategory(id, data) {
         try {
+          console.log(`📤 Atualizando categoria ${id}...`);
           const result = await this.request(`/categories/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
@@ -461,6 +466,7 @@
 
       async deleteCategory(id) {
         try {
+          console.log(`🗑️ Deletando categoria ${id}...`);
           const result = await this.request(`/categories/${id}`, {
             method: 'DELETE'
           });
@@ -469,31 +475,35 @@
           console.error(`❌ Erro ao deletar categoria ${id}:`, error);
           return { success: false, error: error.message };
         }
-      },
-
-      // ========== PRODUTOS ==========
-      async getAllProducts(filters = {}) {
-        try {
-          const params = new URLSearchParams();
-          if (filters.category) params.append('category', filters.category);
-          if (filters.category_id) params.append('category_id', filters.category_id);
-          if (filters.status) params.append('status', filters.status);
-          if (filters.featured) params.append('featured', filters.featured);
-          if (filters.search) params.append('search', filters.search);
-          if (filters.limit) params.append('limit', filters.limit);
-
-          const query = params.toString() ? `?${params.toString()}` : '';
-          const data = await this.request(`/products${query}`);
-          return data.products || [];
-        } catch (error) {
-          console.error('❌ Erro ao buscar produtos:', error);
-          return [];
-        }
       }
     };
 
     // ============================================
-    // ===== SISTEMA DE ÍCONES (mantido igual) ====
+    // ===== TESTE DE CONEXÃO =====
+    // ============================================
+    async function testConnection() {
+      try {
+        console.log('🧪 Testando conexão com o Render...');
+        const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/health`, {
+          signal: AbortSignal.timeout(5000)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ API do Render está online!', data);
+          return true;
+        }
+        throw new Error('Resposta não OK');
+      } catch (error) {
+        console.error('❌ API do Render offline:', error.message);
+        return false;
+      }
+    }
+
+    // Testar conexão ao carregar
+    setTimeout(testConnection, 1000);
+
+    // ============================================
+    // ===== SISTEMA DE ÍCONES =====
     // ============================================
     const fontAwesomeIcons = {
       solid: [
@@ -532,9 +542,11 @@
 
     window.openIconPicker = function () {
       const modal = document.getElementById('iconPickerModal');
-      if (modal) modal.classList.add('show');
-      loadIcons('all');
-      updateIconPreview();
+      if (modal) {
+        modal.classList.add('show');
+        loadIcons('all');
+        updateIconPreview();
+      }
     };
 
     window.closeIconPicker = function () {
@@ -678,24 +690,20 @@
     // ============================================
     document.addEventListener('DOMContentLoaded', async function () {
       console.log('🏷️ Iniciando página de categorias...');
-      console.log('🌐 Conectando à API:', API_BASE_URL);
-      console.log('🔗 Frontend Vercel:', window.location.href);
-      console.log('📡 Backend Render:', API_BASE_URL.replace('/api', ''));
-      console.log('💾 Banco Aiven: via backend Render');
 
-      // === VERIFICAÇÃO DE LOGIN ===
+      // Verificar login
       const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
       if (!isLoggedIn) {
         window.location.href = 'login.html';
         return;
       }
 
-      // === VARIÁVEIS GLOBAIS ===
+      // Variáveis globais
       let allCategories = [];
       let categoryToDelete = null;
       let isEditing = false;
 
-      // === ELEMENTOS DOM ===
+      // Elementos DOM
       const elements = {
         newCategoryBtn: document.getElementById('newCategoryBtn'),
         refreshBtn: document.getElementById('refreshBtn'),
@@ -715,7 +723,7 @@
         categoryId: document.getElementById('categoryId')
       };
 
-      // === FUNÇÕES PRINCIPAIS ===
+      // ========== FUNÇÕES PRINCIPAIS ==========
       async function loadCategories() {
         try {
           console.log('📥 Carregando categorias via Render...');
@@ -723,8 +731,8 @@
           elements.loadingState.style.display = 'block';
           elements.categoriesGrid.style.display = 'none';
 
-          // Usar o ProductAPI já configurado com a URL correta
-          allCategories = await ProductAPI.getCategoriesWithProductCount();
+          // Usar o ProductAPI que definimos acima
+          allCategories = await window.ProductAPI.getCategoriesWithProductCount();
           console.log(`✅ ${allCategories.length} categorias carregadas do banco Aiven via Render`);
 
           // Ordenar categorias
@@ -752,7 +760,6 @@
                           </p>
                           <p style="font-size: 12px; color: #888; margin-bottom: 20px;">
                               API: ${API_BASE_URL}<br>
-                              Frontend: ${window.location.href}<br>
                               Erro: ${error.message || 'Falha na conexão'}
                           </p>
                           <button onclick="window.location.reload()" 
@@ -847,14 +854,14 @@
 
         return `
                   <div class="category-card" data-category-id="${category.id}" style="cursor: pointer;" 
-                       onclick="viewCategoryProducts(${category.id})">
+                       onclick="window.viewCategoryProducts(${category.id})">
                       <div class="category-header">
                           <div class="category-icon" style="color: ${color};">${iconHTML}</div>
                           <div class="category-actions">
-                              <button class="btn-action-small" onclick="editCategory(${category.id}); event.stopPropagation();">
+                              <button class="btn-action-small" onclick="window.editCategory(${category.id}); event.stopPropagation();">
                                   <i class="far fa-edit"></i>
                               </button>
-                              <button class="btn-action-small" onclick="showDeleteModal(${category.id}, '${category.name.replace(/'/g, "\\'")}'); event.stopPropagation();">
+                              <button class="btn-action-small" onclick="window.showDeleteModal(${category.id}, '${category.name.replace(/'/g, "\\'")}'); event.stopPropagation();">
                                   <i class="far fa-trash-alt"></i>
                               </button>
                           </div>
@@ -875,7 +882,7 @@
                           </div>
                           ${productCount > 0 ? `
                               <div style="margin-top: 10px;">
-                                  <button onclick="viewCategoryProducts(${category.id}); event.stopPropagation();" 
+                                  <button onclick="window.viewCategoryProducts(${category.id}); event.stopPropagation();" 
                                           style="width: 100%; padding: 8px; background: rgba(124, 58, 237, 0.1); 
                                                  border: 1px solid rgba(124, 58, 237, 0.3); color: #C084FC; 
                                                  border-radius: 6px; cursor: pointer; font-size: 13px;">
@@ -906,7 +913,7 @@
         showNotification(`Carregando produtos de ${category.name}...`, 'info');
 
         try {
-          const response = await ProductAPI.getProductsByCategory(categoryId);
+          const response = await window.ProductAPI.getProductsByCategory(categoryId);
 
           if (response.products && response.products.length > 0) {
             showCategoryProductsModal(category, response.products);
@@ -1007,7 +1014,7 @@
         return colors[category.id % colors.length];
       }
 
-      // === FORMULÁRIO DE CATEGORIA ===
+      // ========== FORMULÁRIO DE CATEGORIA ==========
       window.showCategoryForm = function () {
         if (elements.categoryForm) {
           elements.categoryForm.classList.add('show');
@@ -1037,7 +1044,7 @@
 
       window.editCategory = async function (id) {
         try {
-          const category = await ProductAPI.getCategoryById(id);
+          const category = await window.ProductAPI.getCategoryById(id);
           if (!category) {
             showNotification('Categoria não encontrada', 'error');
             return;
@@ -1084,7 +1091,7 @@
         }
       };
 
-      // === EVENT LISTENERS DO FORMULÁRIO ===
+      // Gerar slug automaticamente
       if (elements.categoryName) {
         elements.categoryName.addEventListener('input', function () {
           if (!isEditing && elements.categorySlug && !elements.categorySlug.value) {
@@ -1099,6 +1106,7 @@
         });
       }
 
+      // Atualizar ícone preview
       if (elements.iconInput) {
         elements.iconInput.addEventListener('input', function () {
           const value = this.value.trim();
@@ -1112,7 +1120,7 @@
         });
       }
 
-      // === SELEÇÃO DE COR ===
+      // Seletor de cor
       document.querySelectorAll('.color-option').forEach(option => {
         option.addEventListener('click', function () {
           document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
@@ -1123,7 +1131,7 @@
         });
       });
 
-      // === SUBMISSÃO DO FORMULÁRIO ===
+      // Submissão do formulário
       if (elements.categoryFormData) {
         elements.categoryFormData.addEventListener('submit', async function (e) {
           e.preventDefault();
@@ -1156,8 +1164,8 @@
 
           try {
             const result = isEditing
-              ? await ProductAPI.updateCategory(elements.categoryId.value, categoryData)
-              : await ProductAPI.createCategory(categoryData);
+              ? await window.ProductAPI.updateCategory(elements.categoryId.value, categoryData)
+              : await window.ProductAPI.createCategory(categoryData);
 
             if (result.success) {
               showNotification(`Categoria ${isEditing ? 'atualizada' : 'criada'} com sucesso!`, 'success');
@@ -1177,7 +1185,7 @@
         });
       }
 
-      // === MODAL DE EXCLUSÃO ===
+      // ========== MODAL DE EXCLUSÃO ==========
       window.showDeleteModal = function (id, name) {
         categoryToDelete = id;
         const modal = document.getElementById('deleteModal');
@@ -1202,7 +1210,7 @@
         if (!categoryToDelete) return;
 
         try {
-          const result = await ProductAPI.deleteCategory(categoryToDelete);
+          const result = await window.ProductAPI.deleteCategory(categoryToDelete);
 
           if (result.success) {
             showNotification('Categoria excluída com sucesso!', 'success');
@@ -1218,7 +1226,7 @@
         closeDeleteModal();
       };
 
-      // === EVENT LISTENERS PRINCIPAIS ===
+      // ========== EVENT LISTENERS ==========
       if (elements.newCategoryBtn) {
         elements.newCategoryBtn.addEventListener('click', window.showCategoryForm);
       }
@@ -1230,7 +1238,7 @@
         });
       }
 
-      // === CONFIGURAÇÃO DO SELETOR DE ÍCONES ===
+      // Configurar seletor de ícones
       const searchInput = document.getElementById('iconSearch');
       if (searchInput) {
         searchInput.addEventListener('input', function () {
@@ -1260,7 +1268,7 @@
         elements.iconInput.addEventListener('click', window.openIconPicker);
       }
 
-      // === LOGOUT ===
+      // Logout
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
         logoutBtn.addEventListener('click', function () {
@@ -1272,7 +1280,7 @@
         });
       }
 
-      // === ATUALIZAR INFORMAÇÕES DO ADMIN ===
+      // Atualizar informações do admin
       const adminEmail = localStorage.getItem('adminEmail');
       const profileName = document.querySelector('.profile-info h4');
       if (adminEmail && profileName) {
@@ -1284,11 +1292,11 @@
         profileAvatar.textContent = adminEmail.split('@')[0].charAt(0).toUpperCase();
       }
 
-      // === INICIAR CARREGAMENTO ===
+      // ========== INICIAR CARREGAMENTO ==========
       await loadCategories();
     });
 
-    // === ANIMAÇÕES CSS ===
+    // ========== ANIMAÇÕES CSS ==========
     const style = document.createElement('style');
     style.textContent = `
           @keyframes slideIn {
