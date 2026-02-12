@@ -122,28 +122,46 @@ class Category {
   static async create(categoryData) {
     const connection = await pool.getConnection();
     try {
-      // Garantir que TODOS os campos tenham um valor, mesmo que vazio/null
-      const [result] = await connection.query(
-        `INSERT INTO categories 
-       (name, slug, description, image_url, icon, color, parent_id, status, display_order) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          categoryData.name || "",
-          categoryData.slug || "",
-          categoryData.description || null,
-          categoryData.image_url || null,
-          categoryData.icon || "🏷️",
-          categoryData.color || "#7C3AED",
-          categoryData.parent_id || null,
-          categoryData.status || "active",
-          categoryData.display_order !== undefined
-            ? categoryData.display_order
-            : 0,
-        ],
+      console.log(
+        "📥 Category.create - Dados recebidos:",
+        JSON.stringify(categoryData, null, 2),
       );
+
+      // Log da query ANTES de executar
+      const query = `
+      INSERT INTO categories 
+      (name, slug, description, image_url, icon, color, parent_id, status, display_order) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+      const params = [
+        categoryData.name || "",
+        categoryData.slug || "",
+        categoryData.description || null,
+        categoryData.image_url || null,
+        categoryData.icon || "🏷️",
+        categoryData.color || "#7C3AED",
+        categoryData.parent_id || null,
+        categoryData.status || "active",
+        categoryData.display_order !== undefined
+          ? categoryData.display_order
+          : 0,
+      ];
+
+      console.log("📝 Query SQL:", query);
+      console.log("📝 Parâmetros:", JSON.stringify(params, null, 2));
+
+      const [result] = await connection.query(query, params);
+      console.log("✅ Insert realizado, ID:", result.insertId);
+
       return result.insertId;
     } catch (error) {
-      console.error("❌ Erro SQL ao criar categoria:", error);
+      // LOG DETALHADO DO ERRO
+      console.error("❌ ERRO NO SQL:");
+      console.error("Código:", error.code);
+      console.error("Errno:", error.errno);
+      console.error("SQL State:", error.sqlState);
+      console.error("SQL Message:", error.sqlMessage);
+      console.error("Stack:", error.stack);
       throw error;
     } finally {
       connection.release();

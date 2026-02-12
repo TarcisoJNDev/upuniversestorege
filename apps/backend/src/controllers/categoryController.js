@@ -6,6 +6,11 @@ class CategoryController {
   // Criar nova categoria
   async create(req, res) {
     try {
+      console.log("=".repeat(80));
+      console.log("🔥 CATEGORY CREATE - DEBUG COMPLETO");
+      console.log("📦 req.body COMPLETO:", JSON.stringify(req.body, null, 2));
+      console.log("📦 req.headers.content-type:", req.headers["content-type"]);
+      console.log("=".repeat(80));
       console.log("🏷️ Recebendo dados da categoria no backend:", req.body);
 
       const categoryData = { ...req.body };
