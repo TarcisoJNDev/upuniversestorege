@@ -118,26 +118,33 @@ class Category {
     }
   }
 
+  // models/Category.js - Método create corrigido
   static async create(categoryData) {
     const connection = await pool.getConnection();
     try {
+      // Garantir que TODOS os campos tenham um valor, mesmo que vazio/null
       const [result] = await connection.query(
         `INSERT INTO categories 
-         (name, slug, description, image_url, icon, color, parent_id, status, display_order) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (name, slug, description, image_url, icon, color, parent_id, status, display_order) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          categoryData.name,
-          categoryData.slug,
-          categoryData.description || "",
-          categoryData.image_url || "",
+          categoryData.name || "",
+          categoryData.slug || "",
+          categoryData.description || null,
+          categoryData.image_url || null,
           categoryData.icon || "🏷️",
           categoryData.color || "#7C3AED",
           categoryData.parent_id || null,
           categoryData.status || "active",
-          categoryData.display_order || 1,
+          categoryData.display_order !== undefined
+            ? categoryData.display_order
+            : 0,
         ],
       );
       return result.insertId;
+    } catch (error) {
+      console.error("❌ Erro SQL ao criar categoria:", error);
+      throw error;
     } finally {
       connection.release();
     }

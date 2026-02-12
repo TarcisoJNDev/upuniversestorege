@@ -6,20 +6,20 @@ class CategoryController {
   // Criar nova categoria
   async create(req, res) {
     try {
-      console.log("🏷️ Recebendo dados da categoria...");
-      console.log("📄 Body:", req.body);
+      console.log("🏷️ Recebendo dados da categoria no backend:", req.body);
 
       const categoryData = { ...req.body };
 
-      if (!categoryData.name) {
+      // --- VALIDAÇÃO ROBUSTA ---
+      if (!categoryData.name || !categoryData.name.trim()) {
         return res.status(400).json({
           success: false,
           error: "Nome da categoria é obrigatório",
         });
       }
 
-      // Gerar slug automático
-      if (!categoryData.slug) {
+      // Gerar slug automático se não veio ou está vazio
+      if (!categoryData.slug || !categoryData.slug.trim()) {
         categoryData.slug = categoryData.name
           .toLowerCase()
           .normalize("NFD")
@@ -30,20 +30,31 @@ class CategoryController {
           .trim();
       }
 
-      if (categoryData.parent_id === "") {
-        categoryData.parent_id = null;
+      // --- GARANTIR QUE TODOS OS CAMPOS TENHAM VALORES PADRÃO ---
+      // Isso é CRÍTICO! Seu banco pode ter colunas NOT NULL sem valor padrão.
+      const safeCategoryData = {
+        name: categoryData.name.trim(),
+        slug: categoryData.slug,
+        description: categoryData.description || null,
+        image_url: categoryData.image_url || null,
+        icon: categoryData.icon || "🏷️", // Valor padrão
+        color: categoryData.color || "#7C3AED", // Valor padrão
+        parent_id: categoryData.parent_id || null,
+        status: categoryData.status || "active",
+        display_order: categoryData.display_order || 0,
+      };
+
+      // Remover parent_id se for string vazia para evitar erro de chave estrangeira
+      if (safeCategoryData.parent_id === "") {
+        safeCategoryData.parent_id = null;
       }
 
-      const existingCategory = await Category.findBySlug(categoryData.slug);
-      if (existingCategory) {
-        return res.status(400).json({
-          success: false,
-          error: "Slug já está em uso",
-        });
-      }
+      console.log("💾 Dados tratados para salvar:", safeCategoryData);
 
-      const categoryId = await Category.create(categoryData);
+      const categoryId = await Category.create(safeCategoryData);
       const category = await Category.findById(categoryId);
+
+      console.log("✅ Categoria criada com ID:", categoryId);
 
       res.status(201).json({
         success: true,
@@ -51,11 +62,22 @@ class CategoryController {
         category,
       });
     } catch (error) {
-      console.error("❌ Erro ao criar categoria:", error);
+      console.error("❌ ERRO CRÍTICO NO BACKEND AO CRIAR CATEGORIA:", error);
+      console.error("Stack:", error.stack);
+
+      // Mensagem de erro mais específica
+      let errorMessage = "Erro ao criar categoria no servidor";
+      if (error.code === "ER_NO_DEFAULT_FOR_FIELD") {
+        errorMessage = "Campo obrigatório não preenchido no banco de dados";
+      } else if (error.code === "ER_DUP_ENTRY") {
+        errorMessage = "Já existe uma categoria com este slug ou nome";
+      }
+
       res.status(500).json({
         success: false,
-        error: "Erro ao criar categoria",
-        details: error.message,
+        error: errorMessage,
+        details:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
       });
     }
   }
