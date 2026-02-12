@@ -1157,6 +1157,19 @@
               return;
             }
 
+            let iconValue = elements.iconInput?.value.trim();
+
+            if (!iconValue) {
+              iconValue = '🏷️'; // Padrão: emoji de etiqueta
+            } else if (iconValue.includes('fa-')) {
+              // Extrair APENAS o nome do ícone FontAwesome, sem o prefixo fas/far/fab
+              const match = iconValue.match(/(fa-[a-zA-Z0-9-]+)/);
+              if (match) {
+                iconValue = match[1]; // Ex: "fa-tag" em vez de "fas fa-tag"
+                console.log(`✅ Ícone FontAwesome normalizado: ${iconValue}`);
+              }
+            }
+
             const categoryData = {
               name: elements.categoryName.value.trim(),
               slug: elements.categorySlug.value.trim(),
@@ -1164,7 +1177,7 @@
               parent_id: elements.parentCategorySelect?.value || null,
               image_url: document.getElementById('categoryImage')?.value.trim() || null,
               // 🔴🔴🔴 CORREÇÃO AQUI: NUNCA ENVIAR STRING VAZIA 🔴🔴🔴
-              icon: elements.iconInput?.value.trim() || '🏷️',  // ← VALOR PADRÃO SE ESTIVER VAZIO
+              icon: iconValue,  // ← VALOR PADRÃO SE ESTIVER VAZIO
               color: elements.selectedColor?.value || '#7C3AED',
               status: document.getElementById('isActive')?.checked ? 'active' : 'inactive',
               display_order: parseInt(document.getElementById('displayOrder')?.value) || 0
