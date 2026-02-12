@@ -108,7 +108,7 @@ const categoryRoutes = require("./src/routes/categoryRoutes");
 
 // Usar rotas
 app.use("/api", productRoutes);
-app.use("/api", categoryRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // Rota para uploads
 app.get("/uploads/:filename", (req, res) => {
