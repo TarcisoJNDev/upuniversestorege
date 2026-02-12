@@ -1137,55 +1137,66 @@
         elements.categoryFormData.addEventListener('submit', async function (e) {
           e.preventDefault();
 
-          // 🔴🔴🔴 ADICIONE ESTA LINHA - IMPEDE CLIQUE DUPLO 🔴🔴🔴
-          if (this.classList.contains('is-submitting')) return;
-          this.classList.add('is-submitting');
-
-          if (!elements.categoryName.value.trim()) {
-            showNotification('Nome da categoria é obrigatório', 'error');
+          // Impedir clique duplo
+          if (this.hasAttribute('data-submitting') && this.getAttribute('data-submitting') === 'true') {
+            console.log('⏳ Requisição já em andamento');
             return;
           }
-
-          if (!elements.categorySlug.value.trim()) {
-            showNotification('Slug da categoria é obrigatório', 'error');
-            return;
-          }
-
-          const categoryData = {
-            name: elements.categoryName.value.trim(),
-            slug: elements.categorySlug.value.trim(),
-            description: elements.categoryDescription?.value.trim() || '',
-            parent_id: elements.parentCategorySelect?.value || null,
-            image_url: document.getElementById('categoryImage')?.value.trim() || null,
-            icon: elements.iconInput?.value.trim() || '🏺',
-            color: elements.selectedColor?.value || '#C084FC',
-            status: document.getElementById('isActive')?.checked ? 'active' : 'inactive',
-            display_order: parseInt(document.getElementById('displayOrder')?.value) || 1
-          };
-
-          const originalHTML = elements.submitBtn.innerHTML;
-          elements.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-          elements.submitBtn.disabled = true;
+          this.setAttribute('data-submitting', 'true');
 
           try {
+            if (!elements.categoryName.value.trim()) {
+              showNotification('Nome da categoria é obrigatório', 'error');
+              this.removeAttribute('data-submitting');
+              return;
+            }
+
+            if (!elements.categorySlug.value.trim()) {
+              showNotification('Slug da categoria é obrigatório', 'error');
+              this.removeAttribute('data-submitting');
+              return;
+            }
+
+            const categoryData = {
+              name: elements.categoryName.value.trim(),
+              slug: elements.categorySlug.value.trim(),
+              description: elements.categoryDescription?.value.trim() || '',
+              parent_id: elements.parentCategorySelect?.value || null,
+              image_url: document.getElementById('categoryImage')?.value.trim() || null,
+              // 🔴🔴🔴 CORREÇÃO AQUI: NUNCA ENVIAR STRING VAZIA 🔴🔴🔴
+              icon: elements.iconInput?.value.trim() || '🏷️',  // ← VALOR PADRÃO SE ESTIVER VAZIO
+              color: elements.selectedColor?.value || '#7C3AED',
+              status: document.getElementById('isActive')?.checked ? 'active' : 'inactive',
+              display_order: parseInt(document.getElementById('displayOrder')?.value) || 0
+            };
+
+            console.log('📤 Enviando categoria com ícone:', categoryData.icon);
+
+            const originalHTML = elements.submitBtn.innerHTML;
+            elements.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            elements.submitBtn.disabled = true;
+
             const result = isEditing
               ? await window.ProductAPI.updateCategory(elements.categoryId.value, categoryData)
               : await window.ProductAPI.createCategory(categoryData);
 
             if (result.success) {
-              showNotification(`Categoria ${isEditing ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+              showNotification(`✅ Categoria ${isEditing ? 'atualizada' : 'criada'} com sucesso!`, 'success');
               await loadCategories();
               window.hideCategoryForm();
             } else {
-              showNotification(`Erro: ${result.error}`, 'error');
+              showNotification(`❌ Erro: ${result.error}`, 'error');
               elements.submitBtn.innerHTML = originalHTML;
               elements.submitBtn.disabled = false;
             }
+
           } catch (error) {
             console.error('❌ Erro no envio:', error);
-            showNotification(`Erro: ${error.message}`, 'error');
-            elements.submitBtn.innerHTML = originalHTML;
+            showNotification(`❌ Erro: ${error.message}`, 'error');
+            elements.submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Categoria';
             elements.submitBtn.disabled = false;
+          } finally {
+            this.removeAttribute('data-submitting');
           }
         });
       }
