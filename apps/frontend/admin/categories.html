@@ -299,1068 +299,770 @@
   </div>
 
   <script>
-    // ========== CONFIGURAÇÃO DA API ==========
-      const API_BASE_URL = API_CONFIG.BASE_URL;
+    // ============================================
+    // ===== CONFIGURAÇÃO DA API - PRODUÇÃO ======
+    // ============================================
+    // Detecta automaticamente se está em localhost ou produção
+    const IS_LOCALHOST = window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
 
-        // Atualizar TODAS as chamadas fetch para usar getApiUrl()
-        async function getCategoriesWithProductCount() {
+    // URLs corretas para cada ambiente
+    const API_BASE_URL = IS_LOCALHOST
+      ? 'http://localhost:5000/api'
+      : 'https://upuniversestorege.onrender.com/api';  // <<< URL DO SEU RENDER
+
+    console.log('🚀 Ambiente detectado:', IS_LOCALHOST ? 'local' : 'produção (Render)');
+    console.log('🌐 API Base URL:', API_BASE_URL);
+
+    // ============================================
+    // ===== API CLIENT COMPLETO E OTIMIZADO =====
+    // ============================================
+    window.ProductAPI = {
+      API_BASE_URL: API_BASE_URL,
+
+      // Headers padrão para JSON
+      getHeaders(includeContentType = true) {
+        const headers = {
+          'Accept': 'application/json'
+        };
+        if (includeContentType) {
+          headers['Content-Type'] = 'application/json';
+        }
+        return headers;
+      },
+
+      // Requisição com timeout e tratamento de erro unificado
+      async request(endpoint, options = {}, timeout = 30000) {
+        const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        try {
+          console.log(`📡 ${options.method || 'GET'} ${url}`);
+
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+            headers: this.getHeaders(!(options.body instanceof FormData))
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          // Verificar se a resposta é JSON
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+          }
+
+          const text = await response.text();
           try {
-            const url = getApiUrl(API_CONFIG.ENDPOINTS.CATEGORIES_WITH_COUNT);
-            console.log("🌐 Chamando API:", url);
-
-            const response = await fetch(url, {
-              headers: { 'Content-Type': 'application/json' },
-              signal: AbortSignal.timeout(30000)
-            });
-
-            if (!response.ok) {
-              throw new Error(`Erro ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            return data.categories || [];
-
-          } catch (error) {
-            console.error('❌ Erro:', error);
-            showNotification('Erro ao carregar categorias', 'error');
-            return [];
+            return JSON.parse(text);
+          } catch {
+            return { success: false, error: 'Resposta não JSON' };
           }
+        } catch (error) {
+          clearTimeout(timeoutId);
+          console.error(`❌ Erro na requisição ${url}:`, error);
+          throw error;
         }
+      },
 
-    // Função para buscar produtos por categoria
-    async function getProductsByCategory(categoryId) {
-      try {
-        const url = `${API_BASE_URL}/categories/${categoryId}/products`;
-        console.log("🌐 Chamando API:", url);
-
-        const response = await fetch(url, getAPIConfig());
-
-        if (!response.ok) {
-          // Se der 404, tente usar o nome da categoria
-          const category = await getCategoryById(categoryId);
-          if (category) {
-            console.log("🔄 Tentando buscar por nome da categoria...");
-            return await getProductsByCategoryName(category.name);
-          }
-          throw new Error('Erro ao buscar produtos da categoria');
+      // ========== CATEGORIAS ==========
+      async getCategoriesWithProductCount() {
+        try {
+          const data = await this.request('/categories/with-count');
+          return data.categories || [];
+        } catch (error) {
+          console.error('❌ Erro ao buscar categorias com contagem:', error);
+          // Fallback para categorias normais
+          return this.getAllCategories();
         }
+      },
 
-        const data = await response.json();
-        console.log("📦 Produtos retornados:", data);
-        return data;
-      } catch (error) {
-        console.error('Erro ao buscar produtos por categoria:', error);
-        throw error;
-      }
-    }
-
-    // Função auxiliar: buscar produtos pelo NOME da categoria (fallback)
-    async function getProductsByCategoryName(categoryName) {
-      try {
-        const url = `${API_BASE_URL}/products/category/${encodeURIComponent(categoryName)}`;
-        console.log("🔄 Chamando API por nome:", url);
-
-        const response = await fetch(url, getAPIConfig());
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar produtos por nome da categoria');
+      async getAllCategories() {
+        try {
+          const data = await this.request('/categories');
+          return data.categories || [];
+        } catch (error) {
+          console.error('❌ Erro ao buscar categorias:', error);
+          return [];
         }
+      },
 
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error('Erro ao buscar produtos por nome:', error);
-        return { products: [] };
-      }
-    }
-
-    
-    // Função auxiliar: buscar categoria por ID
-    async function getCategoryById(categoryId) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`, getAPIConfig());
-
-        if (!response.ok) {
+      async getCategoryById(id) {
+        try {
+          const data = await this.request(`/categories/${id}`);
+          return data.category || null;
+        } catch (error) {
+          console.error(`❌ Erro ao buscar categoria ${id}:`, error);
           return null;
         }
+      },
 
-        const data = await response.json();
-        return data.category;
-      } catch (error) {
-        console.error('Erro ao buscar categoria:', error);
-        return null;
+      async getProductsByCategory(categoryId) {
+        try {
+          // Tenta primeiro pela rota específica de produtos por categoria
+          try {
+            const data = await this.request(`/categories/${categoryId}/products`);
+            return data;
+          } catch (error) {
+            // Fallback: tenta buscar por nome da categoria
+            const category = await this.getCategoryById(categoryId);
+            if (category) {
+              return await this.getProductsByCategoryName(category.name);
+            }
+            return { products: [] };
+          }
+        } catch (error) {
+          console.error('❌ Erro ao buscar produtos por categoria:', error);
+          return { products: [] };
+        }
+      },
+
+      async getProductsByCategoryName(categoryName) {
+        try {
+          const data = await this.request(`/products/category/${encodeURIComponent(categoryName)}`);
+          return data;
+        } catch (error) {
+          console.error('❌ Erro ao buscar produtos por nome:', error);
+          return { products: [] };
+        }
+      },
+
+      async createCategory(data) {
+        try {
+          const result = await this.request('/categories', {
+            method: 'POST',
+            body: JSON.stringify(data)
+          });
+          return result.success ? result : { success: false, error: result.error || 'Erro ao criar categoria' };
+        } catch (error) {
+          console.error('❌ Erro ao criar categoria:', error);
+          return { success: false, error: error.message };
+        }
+      },
+
+      async updateCategory(id, data) {
+        try {
+          const result = await this.request(`/categories/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+          });
+          return result.success ? result : { success: false, error: result.error || 'Erro ao atualizar categoria' };
+        } catch (error) {
+          console.error(`❌ Erro ao atualizar categoria ${id}:`, error);
+          return { success: false, error: error.message };
+        }
+      },
+
+      async deleteCategory(id) {
+        try {
+          const result = await this.request(`/categories/${id}`, {
+            method: 'DELETE'
+          });
+          return result.success ? result : { success: false, error: result.error || 'Erro ao deletar categoria' };
+        } catch (error) {
+          console.error(`❌ Erro ao deletar categoria ${id}:`, error);
+          return { success: false, error: error.message };
+        }
+      },
+
+      // ========== PRODUTOS ==========
+      async getAllProducts(filters = {}) {
+        try {
+          const params = new URLSearchParams();
+          if (filters.category) params.append('category', filters.category);
+          if (filters.category_id) params.append('category_id', filters.category_id);
+          if (filters.status) params.append('status', filters.status);
+          if (filters.featured) params.append('featured', filters.featured);
+          if (filters.search) params.append('search', filters.search);
+          if (filters.limit) params.append('limit', filters.limit);
+
+          const query = params.toString() ? `?${params.toString()}` : '';
+          const data = await this.request(`/products${query}`);
+          return data.products || [];
+        } catch (error) {
+          console.error('❌ Erro ao buscar produtos:', error);
+          return [];
+        }
+      }
+    };
+
+    // ============================================
+    // ===== SISTEMA DE ÍCONES (mantido igual) ====
+    // ============================================
+    const fontAwesomeIcons = {
+      solid: [
+        'fa-tag', 'fa-tags', 'fa-box', 'fa-cube', 'fa-cubes', 'fa-gem', 'fa-ring',
+        'fa-home', 'fa-store', 'fa-shopping-cart', 'fa-shopping-bag', 'fa-gift',
+        'fa-star', 'fa-heart', 'fa-thumbs-up', 'fa-fire', 'fa-bolt', 'fa-magic',
+        'fa-palette', 'fa-brush', 'fa-image', 'fa-camera', 'fa-photo-film',
+        'fa-toolbox', 'fa-wrench', 'fa-screwdriver', 'fa-hammer', 'fa-ruler',
+        'fa-robot', 'fa-gamepad', 'fa-dice', 'fa-puzzle-piece', 'fa-chess',
+        'fa-book', 'fa-graduation-cap', 'fa-microscope', 'fa-atom',
+        'fa-car', 'fa-bicycle', 'fa-motorcycle', 'fa-plane', 'fa-rocket',
+        'fa-utensils', 'fa-mug-hot', 'fa-pizza-slice', 'fa-cake-candles',
+        'fa-shirt', 'fa-hat-cowboy', 'fa-glasses', 'fa-watch', 'fa-ring'
+      ],
+      regular: [
+        'fa-clock', 'fa-calendar', 'fa-flag', 'fa-bookmark', 'fa-star', 'fa-heart',
+        'fa-comment', 'fa-envelope', 'fa-folder', 'fa-file', 'fa-image', 'fa-user'
+      ],
+      brands: [
+        'fa-apple', 'fa-windows', 'fa-android', 'fa-playstation', 'fa-xbox',
+        'fa-steam', 'fa-spotify', 'fa-youtube', 'fa-twitch', 'fa-discord'
+      ]
+    };
+
+    const popularEmojis = [
+      '🏺', '🎨', '🖼️', '📸', '🔧', '⚙️', '🧩', '🎮', '🤖', '🚗',
+      '✈️', '🚀', '📚', '🎓', '🔬', '⚗️', '🍕', '☕', '🎂', '👕',
+      '👒', '👓', '⌚', '💍', '🏠', '🏪', '🛒', '🎁', '⭐', '❤️',
+      '🔥', '⚡', '✨', '🎭', '🎪', '🏆', '🎯', '🧸', '🎲', '♟️',
+      '🎧', '🎸', '🥁', '🎺', '🎬', '📺', '🎥', '🎙️', '📻', '📱'
+    ];
+
+    let selectedIconType = 'fa';
+    let selectedIconValue = 'fa-tag';
+    let selectedIconClass = 'fas fa-tag';
+
+    window.openIconPicker = function () {
+      const modal = document.getElementById('iconPickerModal');
+      if (modal) modal.classList.add('show');
+      loadIcons('all');
+      updateIconPreview();
+    };
+
+    window.closeIconPicker = function () {
+      const modal = document.getElementById('iconPickerModal');
+      if (modal) modal.classList.remove('show');
+    };
+
+    function loadIcons(category) {
+      const grid = document.getElementById('iconsGrid');
+      if (!grid) return;
+
+      grid.innerHTML = '';
+
+      const addIcon = (type, value, html, fullClass) => {
+        const div = document.createElement('div');
+        div.className = 'icon-item';
+        div.setAttribute('data-type', type);
+        div.setAttribute('data-value', value);
+        div.innerHTML = html;
+        div.onclick = () => selectIconInGrid(value, type, fullClass || value);
+        grid.appendChild(div);
+      };
+
+      if (category === 'all' || category === 'emoji') {
+        popularEmojis.forEach(emoji => {
+          addIcon('emoji', emoji, `<div style="font-size: 24px;">${emoji}</div><div class="icon-name">Emoji</div>`);
+        });
+      }
+
+      if (category === 'all' || category === 'solid') {
+        fontAwesomeIcons.solid.forEach(icon => {
+          addIcon('fa', icon, `<i class="fas ${icon}"></i><div class="icon-name">${icon}</div>`, `fas ${icon}`);
+        });
+      }
+
+      if (category === 'all' || category === 'regular') {
+        fontAwesomeIcons.regular.forEach(icon => {
+          addIcon('fa', icon, `<i class="far ${icon}"></i><div class="icon-name">${icon}</div>`, `far ${icon}`);
+        });
+      }
+
+      if (category === 'all' || category === 'brands') {
+        fontAwesomeIcons.brands.forEach(icon => {
+          addIcon('fa', icon, `<i class="fab ${icon}"></i><div class="icon-name">${icon}</div>`, `fab ${icon}`);
+        });
       }
     }
 
-    // ========== INTEGRAR COM ProductAPI EXISTENTE ==========
-    // Verificar se já existe um ProductAPI e adicionar nossos métodos
-    if (typeof ProductAPI !== 'undefined') {
-      // Adicionar métodos ao ProductAPI existente
-      ProductAPI.getCategoriesWithProductCount = getCategoriesWithProductCount;
-      ProductAPI.getProductsByCategory = getProductsByCategory;
-      ProductAPI.API_BASE_URL = API_BASE_URL;
-    } else {
-      // Se não existir, criar objeto global
-      window.ProductAPI = {
-        getCategoriesWithProductCount,
-        getProductsByCategory,
-        API_BASE_URL,
+    function selectIconInGrid(value, type, fullClass) {
+      document.querySelectorAll('.icon-item.selected').forEach(item => item.classList.remove('selected'));
 
-        // Métodos básicos que devem existir (se não existirem, crie fallbacks)
-        getCategoryById: getCategoryById || async function (id) {
-          try {
-            const response = await fetch(`${API_BASE_URL}/categories/${id}`, getAPIConfig());
-            const data = await response.json();
-            return data.category;
-          } catch (error) {
-            console.error('Erro no fallback getCategoryById:', error);
-            return null;
-          }
-        },
-
-        updateCategory: ProductAPI?.updateCategory || async function (id, data) {
-          try {
-            const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
-              method: 'PUT',
-              ...getAPIConfig(),
-              body: JSON.stringify(data)
-            });
-            return await response.json();
-          } catch (error) {
-            console.error('Erro no fallback updateCategory:', error);
-            return { success: false, error: error.message };
-          }
-        },
-
-        createCategory: ProductAPI?.createCategory || async function (data) {
-          try {
-            const response = await fetch(`${API_BASE_URL}/categories`, {
-              method: 'POST',
-              ...getAPIConfig(),
-              body: JSON.stringify(data)
-            });
-            return await response.json();
-          } catch (error) {
-            console.error('Erro no fallback createCategory:', error);
-            return { success: false, error: error.message };
-          }
-        },
-
-        deleteCategory: ProductAPI?.deleteCategory || async function (id) {
-          try {
-            const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
-              method: 'DELETE',
-              ...getAPIConfig()
-            });
-            return await response.json();
-          } catch (error) {
-            console.error('Erro no fallback deleteCategory:', error);
-            return { success: false, error: error.message };
-          }
+      document.querySelectorAll(`.icon-item[data-value="${value}"]`).forEach(item => {
+        if (item.getAttribute('data-type') === type) {
+          item.classList.add('selected');
         }
-      };
-    }
-
-    // ========== SISTEMA DE SELEÇÃO DE ÍCONES ==========
-
-      // Lista de ícones FontAwesome populares
-      const fontAwesomeIcons = {
-        solid: [
-          'fa-tag', 'fa-tags', 'fa-box', 'fa-cube', 'fa-cubes', 'fa-gem', 'fa-ring',
-          'fa-home', 'fa-store', 'fa-shopping-cart', 'fa-shopping-bag', 'fa-gift',
-          'fa-star', 'fa-heart', 'fa-thumbs-up', 'fa-fire', 'fa-bolt', 'fa-magic',
-          'fa-palette', 'fa-brush', 'fa-image', 'fa-camera', 'fa-photo-film',
-          'fa-toolbox', 'fa-wrench', 'fa-screwdriver', 'fa-hammer', 'fa-ruler',
-          'fa-robot', 'fa-gamepad', 'fa-dice', 'fa-puzzle-piece', 'fa-chess',
-          'fa-book', 'fa-graduation-cap', 'fa-microscope', 'fa-atom',
-          'fa-car', 'fa-bicycle', 'fa-motorcycle', 'fa-plane', 'fa-rocket',
-          'fa-utensils', 'fa-mug-hot', 'fa-pizza-slice', 'fa-cake-candles',
-          'fa-shirt', 'fa-hat-cowboy', 'fa-glasses', 'fa-watch', 'fa-ring'
-        ],
-        regular: [
-          'fa-clock', 'fa-calendar', 'fa-flag', 'fa-bookmark', 'fa-star', 'fa-heart',
-          'fa-comment', 'fa-envelope', 'fa-folder', 'fa-file', 'fa-image', 'fa-user'
-        ],
-        brands: [
-          'fa-apple', 'fa-windows', 'fa-android', 'fa-playstation', 'fa-xbox',
-          'fa-steam', 'fa-spotify', 'fa-youtube', 'fa-twitch', 'fa-discord'
-        ]
-      };
-
-      // Emojis populares para categorias
-      const popularEmojis = [
-        '🏺', '🎨', '🖼️', '📸', '🔧', '⚙️', '🧩', '🎮', '🤖', '🚗',
-        '✈️', '🚀', '📚', '🎓', '🔬', '⚗️', '🍕', '☕', '🎂', '👕',
-        '👒', '👓', '⌚', '💍', '🏠', '🏪', '🛒', '🎁', '⭐', '❤️',
-        '🔥', '⚡', '✨', '🎭', '🎪', '🏆', '🎯', '🧸', '🎲', '♟️',
-        '🎧', '🎸', '🥁', '🎺', '🎬', '📺', '🎥', '🎙️', '📻', '📱',
-        '💻', '🖥️', '⌨️', '🖱️', '📞', '📠', '📹', '🔍', '💡', '🔦',
-        '🕯️', '🧭', '⏰', '⏲️', '📅', '📍', '📌', '🖇️', '📎', '✂️',
-        '📏', '📐', '🧮', '📊', '📈', '📉', '📋', '📁', '📂', '🗂️',
-        '🗃️', '🗄️', '🗑️', '🔒', '🔑', '🗝️', '🔨', '⛏️', '⚒️', '🛠️',
-        '🗡️', '⚔️', '🔫', '🏹', '🛡️', '🔧', '🔩', '⚙️', '🗜️', '⚖️',
-        '🔗', '⛓️', '🧰', '🧲', '⚗️', '🧪', '🧫', '🧬', '🔬', '🔭',
-        '📡', '💉', '💊', '🩹', '🩺', '🚪', '🪑', '🛋️', '🛏️', '🛌',
-        '🧺', '🧻', '🚽', '🚿', '🛁', '🪒', '🧴', '🧷', '🧹', '🧽',
-        '🧼', '🪥', '🪒', '🧺', '🛒', '🚲', '🛵', '🏍️', '🚗', '🚕',
-        '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛',
-        '🚜', '🛻', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃',
-        '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊',
-        '🚉', '✈️', '🛫', '🛬', '🛩️', '💺', '🛰️', '🚀', '🛸', '🚁',
-        '🛶', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🚧', '⛽',
-        '🚏', '🚦', '🚥', '🗺️', '🧭', '🎠', '🎡', '🎢', '🚂', '🎪'
-      ];
-
-      // Variáveis para controle do seletor de ícones
-      let selectedIconType = 'fa'; // 'fa' ou 'emoji'
-      let selectedIconValue = 'fa-tag';
-      let selectedIconClass = 'fas fa-tag';
-
-      // Função para abrir o seletor de ícones
-      window.openIconPicker = function () {
-        const modal = document.getElementById('iconPickerModal');
-        modal.classList.add('show');
-
-        // Carregar ícones
-        loadIcons('all');
-
-        // Atualizar preview com ícone atual
-        const currentIcon = document.getElementById('iconPreview').innerHTML;
-        const currentInput = document.getElementById('iconInput').value;
-
-        if (currentIcon.includes('fa-')) {
-          // É um FontAwesome
-          selectedIconType = 'fa';
-          selectedIconValue = currentInput || 'fa-tag';
-          selectedIconClass = currentInput.includes('fa-') ? currentInput : `fas ${currentInput}`;
-        } else {
-          // É um emoji
-          selectedIconType = 'emoji';
-          selectedIconValue = currentIcon;
-          selectedIconClass = currentIcon;
-        }
-
-        updateIconPreview();
-      };
-
-      // Função para fechar o seletor
-      function closeIconPicker() {
-        const modal = document.getElementById('iconPickerModal');
-        modal.classList.remove('show');
-      }
-
-      // Função para carregar ícones na grid
-      function loadIcons(category) {
-        const grid = document.getElementById('iconsGrid');
-        grid.innerHTML = '';
-
-        let icons = [];
-
-        if (category === 'all' || category === 'emoji') {
-          // Adicionar emojis
-          popularEmojis.forEach(emoji => {
-            const div = document.createElement('div');
-            div.className = 'icon-item';
-            div.setAttribute('data-type', 'emoji');
-            div.setAttribute('data-value', emoji);
-            div.innerHTML = `
-        <div style="font-size: 24px;">${emoji}</div>
-        <div class="icon-name">Emoji</div>
-      `;
-            div.onclick = () => selectIconInGrid(emoji, 'emoji', emoji);
-            grid.appendChild(div);
-          });
-        }
-
-        if (category === 'all' || category === 'solid') {
-          fontAwesomeIcons.solid.forEach(icon => {
-            const div = document.createElement('div');
-            div.className = 'icon-item';
-            div.setAttribute('data-type', 'fa');
-            div.setAttribute('data-value', icon);
-            div.innerHTML = `
-        <i class="fas ${icon}"></i>
-        <div class="icon-name">${icon}</div>
-      `;
-            div.onclick = () => selectIconInGrid(icon, 'fa', `fas ${icon}`);
-            grid.appendChild(div);
-          });
-        }
-
-        if (category === 'all' || category === 'regular') {
-          fontAwesomeIcons.regular.forEach(icon => {
-            const div = document.createElement('div');
-            div.className = 'icon-item';
-            div.setAttribute('data-type', 'fa');
-            div.setAttribute('data-value', icon);
-            div.innerHTML = `
-        <i class="far ${icon}"></i>
-        <div class="icon-name">${icon}</div>
-      `;
-            div.onclick = () => selectIconInGrid(icon, 'fa', `far ${icon}`);
-            grid.appendChild(div);
-          });
-        }
-
-        if (category === 'all' || category === 'brands') {
-          fontAwesomeIcons.brands.forEach(icon => {
-            const div = document.createElement('div');
-            div.className = 'icon-item';
-            div.setAttribute('data-type', 'fa');
-            div.setAttribute('data-value', icon);
-            div.innerHTML = `
-        <i class="fab ${icon}"></i>
-        <div class="icon-name">${icon}</div>
-      `;
-            div.onclick = () => selectIconInGrid(icon, 'fa', `fab ${icon}`);
-            grid.appendChild(div);
-          });
-        }
-      }
-
-      // Função para selecionar ícone na grid
-      function selectIconInGrid(value, type, fullClass) {
-        // Remover seleção anterior
-        document.querySelectorAll('.icon-item.selected').forEach(item => {
-          item.classList.remove('selected');
-        });
-
-        // Selecionar novo
-        const items = document.querySelectorAll(`.icon-item[data-value="${value}"]`);
-        items.forEach(item => {
-          if (item.getAttribute('data-type') === type) {
-            item.classList.add('selected');
-          }
-        });
-
-        // Atualizar variáveis
-        selectedIconType = type;
-        selectedIconValue = value;
-        selectedIconClass = fullClass;
-
-        // Atualizar preview
-        updateIconPreview();
-      }
-
-      // Atualizar preview do ícone selecionado
-      function updateIconPreview() {
-        const previewIcon = document.getElementById('previewIcon');
-        const previewName = document.getElementById('previewName');
-        const previewCode = document.getElementById('previewCode');
-
-        if (selectedIconType === 'emoji') {
-          previewIcon.parentElement.innerHTML = `<div style="font-size: 32px;">${selectedIconValue}</div>`;
-          previewName.textContent = 'Emoji';
-          previewCode.textContent = selectedIconValue;
-        } else {
-          previewIcon.parentElement.innerHTML = `<i class="${selectedIconClass}" style="font-size: 32px;"></i>`;
-          previewName.textContent = selectedIconValue;
-          previewCode.textContent = selectedIconClass;
-        }
-      }
-
-      // Função para selecionar o ícone e aplicar ao formulário
-      function selectIcon() {
-        const iconPreview = document.getElementById('iconPreview');
-        const iconInput = document.getElementById('iconInput');
-
-        if (selectedIconType === 'emoji') {
-          iconPreview.innerHTML = selectedIconValue;
-          iconInput.value = selectedIconValue;
-        } else {
-          // Para FontAwesome, mostrar o ícone no preview
-          iconPreview.innerHTML = `<i class="${selectedIconClass}"></i>`;
-          iconInput.value = selectedIconClass.includes(' ') ? selectedIconClass : `fas ${selectedIconClass}`;
-        }
-
-        closeIconPicker();
-        showNotification('Ícone selecionado com sucesso!', 'success');
-      }
-
-    // Busca de ícones
-      document.addEventListener('DOMContentLoaded', function () {
-        // Configurar busca
-        const searchInput = document.getElementById('iconSearch');
-        if (searchInput) {
-          searchInput.addEventListener('input', function () {
-            const searchTerm = this.value.toLowerCase();
-            const items = document.querySelectorAll('.icon-item');
-
-            items.forEach(item => {
-              const iconName = item.getAttribute('data-value').toLowerCase();
-              const iconType = item.querySelector('.icon-name')?.textContent.toLowerCase() || '';
-
-              if (iconName.includes(searchTerm) || iconType.includes(searchTerm)) {
-                item.style.display = 'flex';
-              } else {
-                item.style.display = 'none';
-              }
-            });
-          });
-        }
-
-        // Configurar categorias
-        const categoryBtns = document.querySelectorAll('.category-btn');
-        categoryBtns.forEach(btn => {
-          btn.addEventListener('click', function () {
-            categoryBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            const category = this.getAttribute('data-category');
-            loadIcons(category);
-          });
-        });
-
-        
-
-        // Tornar o preview do ícone clicável
-        const iconPreview = document.getElementById('iconPreview');
-        if (iconPreview) {
-          iconPreview.style.cursor = 'pointer';
-          iconPreview.addEventListener('click', openIconPicker);
-        }
-
-        // Também tornar o input clicável
-        const iconInput = document.getElementById('iconInput');
-        if (iconInput) {
-          iconInput.readOnly = true;
-          iconInput.style.cursor = 'pointer';
-          iconInput.addEventListener('click', openIconPicker);
-        }
-
-        
       });
 
-      // === FUNÇÕES PRINCIPAIS ===
+      selectedIconType = type;
+      selectedIconValue = value;
+      selectedIconClass = fullClass;
+      updateIconPreview();
+    }
 
-        // Carregar categorias da API
-        async function loadCategories() {
-          // ... seu código existente ...
-        }
+    function updateIconPreview() {
+      const previewIcon = document.getElementById('previewIcon');
+      const previewName = document.getElementById('previewName');
+      const previewCode = document.getElementById('previewCode');
 
-        // Atualizar select de categorias pai
-        function updateParentCategorySelect() {
-          // ... seu código existente ...
-        }
+      if (!previewIcon || !previewName || !previewCode) return;
 
-        // ========== ADICIONE O EVENT LISTENER AQUI ==========
+      if (selectedIconType === 'emoji') {
+        previewIcon.parentElement.innerHTML = `<div style="font-size: 32px;">${selectedIconValue}</div>`;
+        previewName.textContent = 'Emoji';
+        previewCode.textContent = selectedIconValue;
+      } else {
+        previewIcon.parentElement.innerHTML = `<i class="${selectedIconClass}" style="font-size: 32px;"></i>`;
+        previewName.textContent = selectedIconValue;
+        previewCode.textContent = selectedIconClass;
+      }
+    }
 
-        // Este código deve vir APÓS as variáveis serem definidas e ANTES do event listener existente
-        document.addEventListener('DOMContentLoaded', function () {
-          // Configurar busca
-          const searchInput = document.getElementById('iconSearch');
-          if (searchInput) {
-            searchInput.addEventListener('input', function () {
-              // ... código existente ...
-            });
-          }
+    window.selectIcon = function () {
+      const iconPreview = document.getElementById('iconPreview');
+      const iconInput = document.getElementById('iconInput');
 
-          // Configurar categorias
-          const categoryBtns = document.querySelectorAll('.category-btn');
-          categoryBtns.forEach(btn => {
-            btn.addEventListener('click', function () {
-              // ... código existente ...
-            });
-          });
+      if (!iconPreview || !iconInput) return;
 
-          // ========== ADICIONE ESTA PARTE ==========
-          // Tornar o preview do ícone clicável
-          const iconPreview = document.getElementById('iconPreview');
-          const iconInput = document.getElementById('iconInput');
+      if (selectedIconType === 'emoji') {
+        iconPreview.innerHTML = selectedIconValue;
+        iconInput.value = selectedIconValue;
+      } else {
+        iconPreview.innerHTML = `<i class="${selectedIconClass}"></i>`;
+        iconInput.value = selectedIconClass.includes(' ') ? selectedIconClass : `fas ${selectedIconClass}`;
+      }
 
-          if (iconPreview && iconInput) {
-            // Preview clicável
-            iconPreview.style.cursor = 'pointer';
-            iconPreview.addEventListener('click', openIconPicker);
+      closeIconPicker();
+      showNotification('Ícone selecionado com sucesso!', 'success');
+    };
 
-            // Input também clicável
-            iconInput.readOnly = true;
-            iconInput.style.cursor = 'pointer';
-            iconInput.addEventListener('click', openIconPicker);
+    // ============================================
+    // ===== NOTIFICAÇÕES =====
+    // ============================================
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              background: linear-gradient(135deg, #1a002b, #0b0015);
+              border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
+              color: white;
+              padding: 15px 25px;
+              border-radius: 12px;
+              display: flex;
+              align-items: center;
+              gap: 15px;
+              z-index: 10000;
+              animation: slideIn 0.3s ease;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+              max-width: 400px;
+          `;
 
-            // ========== ADICIONE ESTE EVENT LISTENER ==========
-            // Atualizar ícone preview em tempo real quando digitar manualmente
-            iconInput.addEventListener('input', function () {
-              const value = this.value.trim();
-              if (value.includes('fa-')) {
-                // Se for FontAwesome
-                iconPreview.innerHTML = `<i class="${value}"></i>`;
-              } else if (value) {
-                // Se for emoji ou texto
-                iconPreview.innerHTML = value;
-              }
-            });
-            // =================================================
-          }
-        });
-    document.addEventListener('DOMContentLoaded', function () {
-      // Adiciona o script do dashboard para logout e perfil
+      const icon = type === 'success' ? 'check-circle' :
+        type === 'error' ? 'exclamation-circle' :
+          type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+
+      notification.innerHTML = `
+              <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
+              <span>${message}</span>
+          `;
+
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 4000);
+    }
+
+    // ============================================
+    // ===== INICIALIZAÇÃO PRINCIPAL =====
+    // ============================================
+    document.addEventListener('DOMContentLoaded', async function () {
+      console.log('🏷️ Iniciando página de categorias...');
+      console.log('🌐 Conectando à API:', API_BASE_URL);
+      console.log('🔗 Frontend Vercel:', window.location.href);
+      console.log('📡 Backend Render:', API_BASE_URL.replace('/api', ''));
+      console.log('💾 Banco Aiven: via backend Render');
+
+      // === VERIFICAÇÃO DE LOGIN ===
       const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
       if (!isLoggedIn) {
         window.location.href = 'login.html';
         return;
       }
 
-      // Logout
-      const logoutBtn = document.getElementById('logoutBtn');
-      logoutBtn.addEventListener('click', function () {
-        if (confirm('Tem certeza que deseja sair?')) {
-          localStorage.removeItem('adminLoggedIn');
-          localStorage.removeItem('adminEmail');
-          window.location.href = 'login.html';
-        }
-      });
-
-      // Update admin name from localStorage
-      const adminEmail = localStorage.getItem('adminEmail');
-      const profileName = document.querySelector('.profile-info h4');
-      if (adminEmail) {
-        profileName.textContent = adminEmail.split('@')[0];
-      }
-
-      // Atualizar avatar com primeira letra do nome
-      const profileAvatar = document.querySelector('.profile-avatar');
-      if (adminEmail && profileAvatar) {
-        const firstName = adminEmail.split('@')[0];
-        profileAvatar.textContent = firstName.charAt(0).toUpperCase();
-      }
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-      console.log("🏷️ Iniciando página de categorias...");
-
-      // Verificar login
-      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-      if (!isLoggedIn) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      // Variáveis globais
+      // === VARIÁVEIS GLOBAIS ===
       let allCategories = [];
       let categoryToDelete = null;
       let isEditing = false;
 
-      // Elementos DOM
-      const newCategoryBtn = document.getElementById('newCategoryBtn');
-      const refreshBtn = document.getElementById('refreshBtn');
-      const categoryForm = document.getElementById('categoryForm');
-      const categoryFormData = document.getElementById('categoryFormData');
-      const categoriesGrid = document.getElementById('categoriesGrid');
-      const loadingState = document.getElementById('loadingState');
-      const parentCategorySelect = document.getElementById('parentCategory');
-      const categoryNameInput = document.getElementById('categoryName');
-      const categorySlugInput = document.getElementById('categorySlug');
-      const iconPreview = document.getElementById('iconPreview');
-      const iconInput = document.getElementById('iconInput');
-      const colorPicker = document.getElementById('colorPicker');
-      const selectedColorInput = document.getElementById('selectedColor');
-      const formTitle = document.getElementById('formTitle');
-      const submitBtn = document.getElementById('submitBtn');
-      const categoryIdInput = document.getElementById('categoryId');
+      // === ELEMENTOS DOM ===
+      const elements = {
+        newCategoryBtn: document.getElementById('newCategoryBtn'),
+        refreshBtn: document.getElementById('refreshBtn'),
+        categoryForm: document.getElementById('categoryForm'),
+        categoryFormData: document.getElementById('categoryFormData'),
+        categoriesGrid: document.getElementById('categoriesGrid'),
+        loadingState: document.getElementById('loadingState'),
+        parentCategorySelect: document.getElementById('parentCategory'),
+        categoryName: document.getElementById('categoryName'),
+        categorySlug: document.getElementById('categorySlug'),
+        categoryDescription: document.getElementById('categoryDescription'),
+        iconPreview: document.getElementById('iconPreview'),
+        iconInput: document.getElementById('iconInput'),
+        selectedColor: document.getElementById('selectedColor'),
+        formTitle: document.getElementById('formTitle'),
+        submitBtn: document.getElementById('submitBtn'),
+        categoryId: document.getElementById('categoryId')
+      };
 
       // === FUNÇÕES PRINCIPAIS ===
-
-      // Carregar categorias da API
       async function loadCategories() {
         try {
-          console.log("📥 Carregando categorias da API...");
+          console.log('📥 Carregando categorias via Render...');
 
-          // Mostrar loading
-          loadingState.style.display = 'block';
-          categoriesGrid.style.display = 'none';
-          categoriesGrid.innerHTML = '';
+          elements.loadingState.style.display = 'block';
+          elements.categoriesGrid.style.display = 'none';
 
-          // DEBUG: Testar a API primeiro
-          console.log("🧪 Testando API...");
-          const testResponse = await fetch('http://localhost:5000/api/categories/with-count');
-          const testData = await testResponse.json();
-          console.log("📊 Teste API - Resposta:", testData);
-          console.log("📊 Teste API - Primeira categoria:", testData.categories ? testData.categories[0] : 'Nenhuma');
-
-          // Buscar categorias COM CONTAGEM DE PRODUTOS
+          // Usar o ProductAPI já configurado com a URL correta
           allCategories = await ProductAPI.getCategoriesWithProductCount();
+          console.log(`✅ ${allCategories.length} categorias carregadas do banco Aiven via Render`);
 
-          console.log(`✅ ${allCategories.length} categorias carregadas`);
-
-          // DEBUG: Mostrar detalhes das primeiras 3 categorias
-          if (allCategories.length > 0) {
-            console.log("🔍 Detalhes das categorias:");
-            allCategories.slice(0, 3).forEach((cat, index) => {
-              console.log(`  ${index + 1}. ${cat.name}: product_count = ${cat.product_count} (tipo: ${typeof cat.product_count})`);
-            });
-          }
-
-          // Ordenar categorias (principais primeiro, depois subcategorias)
+          // Ordenar categorias
           allCategories.sort((a, b) => {
-            // Categorias principais primeiro (sem parent_id)
             if (!a.parent_id && b.parent_id) return -1;
             if (a.parent_id && !b.parent_id) return 1;
-
-            // Ordenar por nome
-            return a.name.localeCompare(b.name);
+            return (a.name || '').localeCompare(b.name || '');
           });
 
-          // Atualizar select de categorias pai
           updateParentCategorySelect();
-
-          // Renderizar categorias
           renderCategories();
 
-          // Esconder loading
-          loadingState.style.display = 'none';
-          categoriesGrid.style.display = 'grid';
+          elements.loadingState.style.display = 'none';
+          elements.categoriesGrid.style.display = 'grid';
 
         } catch (error) {
-          console.error("❌ Erro ao carregar categorias:", error);
-          showNotification('Erro ao carregar categorias: ' + error.message, 'error');
+          console.error('❌ Erro ao carregar categorias:', error);
 
-          loadingState.innerHTML = `
-      <div style="color: #f44336;">
-        <i class="fas fa-exclamation-triangle fa-2x"></i>
-        <p style="margin-top: 10px;">Erro ao carregar categorias</p>
-        <p style="font-size: 12px; color: #aaa;">${error.message}</p>
-        <p style="font-size: 12px; color: #aaa;">Verifique se o servidor está rodando em http://localhost:5000</p>
-        <button onclick="loadCategories()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer;">
-          <i class="fas fa-sync-alt"></i> Tentar novamente
-        </button>
-        <button onclick="testAPI()" style="margin-top: 10px; margin-left: 10px; padding: 8px 15px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">
-          <i class="fas fa-bug"></i> Testar API
-        </button>
-      </div>
-    `;
+          elements.loadingState.innerHTML = `
+                      <div style="color: #f44336; text-align: center; padding: 40px;">
+                          <i class="fas fa-exclamation-triangle fa-2x"></i>
+                          <h3 style="margin: 15px 0; color: white;">Erro de Conexão</h3>
+                          <p style="color: #aaa; margin-bottom: 10px;">
+                              Não foi possível conectar ao servidor no Render.
+                          </p>
+                          <p style="font-size: 12px; color: #888; margin-bottom: 20px;">
+                              API: ${API_BASE_URL}<br>
+                              Frontend: ${window.location.href}<br>
+                              Erro: ${error.message || 'Falha na conexão'}
+                          </p>
+                          <button onclick="window.location.reload()" 
+                                  style="padding: 10px 20px; background: #7C3AED; color: white; 
+                                         border: none; border-radius: 5px; cursor: pointer;">
+                              <i class="fas fa-sync-alt"></i> Tentar Novamente
+                          </button>
+                      </div>
+                  `;
+          elements.loadingState.style.display = 'block';
+          elements.categoriesGrid.style.display = 'none';
         }
       }
 
-      // Adicione esta função de teste
-      async function testAPI() {
-        try {
-          console.log("🧪 Testando todas as APIs...");
-
-          // Teste 1: Health check
-          const health = await fetch('http://localhost:5000/api/health');
-          console.log("✅ Health check:", await health.json());
-
-          // Teste 2: Categorias normais
-          const categories = await fetch('http://localhost:5000/api/categories');
-          const catData = await categories.json();
-          console.log("✅ Categorias normais:", catData.categories ? catData.categories.length : 0, "categorias");
-
-          // Teste 3: Categorias com contagem
-          const withCount = await fetch('http://localhost:5000/api/categories/with-count');
-          const countData = await withCount.json();
-          console.log("✅ Categorias com contagem:", countData.categories ? countData.categories.length : 0, "categorias");
-
-          if (countData.categories && countData.categories.length > 0) {
-            console.log("📊 Exemplo de categoria com contagem:", {
-              name: countData.categories[0].name,
-              product_count: countData.categories[0].product_count,
-              id: countData.categories[0].id
-            });
-          }
-
-          alert('Teste completo! Verifique o console para detalhes.');
-        } catch (error) {
-          console.error('❌ Erro no teste da API:', error);
-          alert('Erro ao testar API: ' + error.message);
-        }
-      }
-
-      // Atualizar select de categorias pai
       function updateParentCategorySelect() {
-        parentCategorySelect.innerHTML = '<option value="">Nenhuma (Categoria Principal)</option>';
+        if (!elements.parentCategorySelect) return;
 
-        // Adicionar apenas categorias principais (sem parent_id)
+        elements.parentCategorySelect.innerHTML = '<option value="">Nenhuma (Categoria Principal)</option>';
+
         const mainCategories = allCategories.filter(cat => !cat.parent_id);
-
         mainCategories.forEach(category => {
-          // Não permitir que uma categoria seja pai dela mesma (quando editar)
           const option = document.createElement('option');
           option.value = category.id;
           option.textContent = category.name;
-          parentCategorySelect.appendChild(option);
+          elements.parentCategorySelect.appendChild(option);
         });
       }
 
-      // Renderizar categorias no grid
       function renderCategories() {
+        if (!elements.categoriesGrid) return;
+
         if (allCategories.length === 0) {
-          categoriesGrid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-              <i class="fas fa-tags fa-3x" style="color: #7C3AED; opacity: 0.5;"></i>
-              <h3 style="margin-top: 20px; color: #aaa;">Nenhuma categoria encontrada</h3>
-              <p style="color: #888; margin-top: 10px;">Crie sua primeira categoria para organizar os produtos</p>
-              <button onclick="showCategoryForm()" style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                <i class="fas fa-plus"></i> Criar Primeira Categoria
-              </button>
-            </div>
-          `;
+          elements.categoriesGrid.innerHTML = `
+                      <div style="grid-column: 1 / -1; text-align: center; padding: 60px;">
+                          <i class="fas fa-tags fa-3x" style="color: #7C3AED; opacity: 0.5;"></i>
+                          <h3 style="margin-top: 20px; color: #aaa;">Nenhuma categoria encontrada</h3>
+                          <p style="color: #888; margin-top: 10px;">Crie sua primeira categoria no banco Aiven</p>
+                          <button onclick="window.showCategoryForm()" 
+                                  style="margin-top: 20px; padding: 12px 24px; background: #7C3AED; 
+                                         color: white; border: none; border-radius: 8px; cursor: pointer;">
+                              <i class="fas fa-plus"></i> Criar Primeira Categoria
+                          </button>
+                      </div>
+                  `;
           return;
         }
 
         let gridHTML = '';
-
-        // Separar categorias principais e subcategorias
         const mainCategories = allCategories.filter(cat => !cat.parent_id);
         const subCategories = allCategories.filter(cat => cat.parent_id);
 
-        // Renderizar categorias principais
         mainCategories.forEach(category => {
           gridHTML += createCategoryCard(category);
 
-          // Renderizar subcategorias desta categoria
           const categorySubCategories = subCategories.filter(sub => sub.parent_id == category.id);
           if (categorySubCategories.length > 0) {
-            gridHTML += `<div style="grid-column: 1 / -1; margin: 20px 0 10px 0; padding-left: 20px;">
-                          <h4 style="color: #aaa; font-size: 14px; border-left: 3px solid ${getCategoryColor(category)}; padding-left: 10px;">
-                            <i class="fas fa-sitemap"></i> Subcategorias de ${category.name}
-                          </h4>
-                        </div>`;
+            gridHTML += `
+                          <div style="grid-column: 1 / -1; margin: 20px 0 10px 0; padding-left: 20px;">
+                              <h4 style="color: #aaa; font-size: 14px; border-left: 3px solid ${getCategoryColor(category)}; padding-left: 10px;">
+                                  <i class="fas fa-sitemap"></i> Subcategorias de ${category.name}
+                              </h4>
+                          </div>
+                      `;
 
             categorySubCategories.forEach(subCategory => {
-              gridHTML += createCategoryCard(subCategory, true);
+              gridHTML += createCategoryCard(subCategory);
             });
           }
         });
 
-        categoriesGrid.innerHTML = gridHTML;
+        elements.categoriesGrid.innerHTML = gridHTML;
       }
 
-      window.viewCategoryProducts = async function (categoryId, event = null) {
-        if (event) event.stopPropagation();
-
-        try {
-          const category = allCategories.find(c => c.id == categoryId);
-          if (!category) {
-            showNotification('Categoria não encontrada', 'error');
-            return;
-          }
-
-          console.log(`📦 Carregando produtos da categoria "${category.name}"...`);
-
-          // Mostrar loading
-          showNotification(`Carregando produtos de ${category.name}...`, 'info');
-
-          // Buscar produtos da categoria
-          const response = await ProductAPI.getProductsByCategory(categoryId);
-
-          if (response.products && response.products.length > 0) {
-            // Abrir modal com os produtos
-            showCategoryProductsModal(category, response.products);
-          } else {
-            showNotification(`Nenhum produto encontrado na categoria "${category.name}"`, 'warning');
-          }
-
-        } catch (error) {
-          console.error('❌ Erro ao carregar produtos da categoria:', error);
-          showNotification('Erro ao carregar produtos', 'error');
-        }
-      };
-
-      // Função para mostrar modal com produtos da categoria
-      function showCategoryProductsModal(category, products) {
-        // Criar modal
-        const modal = document.createElement('div');
-        modal.className = 'modal show';
-        modal.innerHTML = `
-    <div class="modal-content" style="max-width: 800px; max-height: 80vh;">
-      <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
-        <i class="fas fa-times"></i>
-      </button>
-      <h2 class="modal-title">
-        <i class="fas fa-tags" style="color: ${category.color || '#7C3AED'}"></i>
-        Produtos: ${category.name}
-      </h2>
-      <p style="color: #aaa; margin-bottom: 20px;">
-        ${category.description || ''}
-        <br>
-        <small>Total: ${products.length} produto(s)</small>
-      </p>
-      
-      <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="background: rgba(124, 58, 237, 0.1);">
-              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Produto</th>
-              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Preço</th>
-              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Estoque</th>
-              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Status</th>
-              <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(124, 58, 237, 0.3);">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${products.map(product => `
-              <tr>
-                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    ${product.image_url ?
-            `<img src="${product.image_url}" alt="${product.name}" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover;">` :
-            `<div style="width: 40px; height: 40px; background: rgba(124, 58, 237, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-cube"></i>
-                      </div>`
-          }
-                    <div>
-                      <strong>${product.name}</strong><br>
-                      <small style="color: #aaa;">${product.sku || `ID: ${product.id}`}</small>
-                    </div>
-                  </div>
-                </td>
-                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
-                  R$ ${parseFloat(product.price).toFixed(2)}
-                </td>
-                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
-                  ${product.stock} un.
-                </td>
-                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
-                  <span style="padding: 3px 8px; border-radius: 4px; font-size: 12px; background: ${product.status === 'active' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'}; color: ${product.status === 'active' ? '#4CAF50' : '#f44336'}">
-                    ${product.status === 'active' ? 'Ativo' : 'Inativo'}
-                  </span>
-                </td>
-                <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
-                  <button onclick="window.location.href='product-form.html?edit=${product.id}'" 
-                          style="padding: 5px 10px; background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); color: #C084FC; border-radius: 4px; cursor: pointer;">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-      
-      <div class="modal-actions">
-        <button class="btn-modal cancel" onclick="this.parentElement.parentElement.remove()">
-          Fechar
-        </button>
-        <button class="btn-modal" style="background: linear-gradient(135deg, #DF38FF, #7C3AED);" 
-                onclick="window.location.href='products.html?category=${encodeURIComponent(category.name)}'">
-          <i class="fas fa-external-link-alt"></i> Ver todos na página de produtos
-        </button>
-      </div>
-    </div>
-  `;
-
-        document.body.appendChild(modal);
-      }
-
-      function createCategoryCard(category, isSubcategory = false) {
+      function createCategoryCard(category) {
         const parentCategory = category.parent_id ?
           allCategories.find(cat => cat.id == category.parent_id) : null;
 
-        // USAR A CONTAGEM REAL DA API - ESSA É A MUDANÇA PRINCIPAL!
-        const productCount = category.product_count || 0; // ← MUDE ESTA LINHA
-        const salesCount = 0;   // Você pode implementar contagem de vendas depois
-
-        // Cor da categoria (se tiver, senão padrão)
+        const productCount = category.product_count || 0;
         const color = getCategoryColor(category);
 
-        // Ícone da categoria
         let iconHTML = '🏺';
         if (category.icon) {
-          if (category.icon.includes('fa-')) {
-            // Se for um ícone FontAwesome
-            iconHTML = `<i class="fas ${category.icon}"></i>`;
-          } else {
-            // Se for emoji ou texto
-            iconHTML = category.icon;
-          }
+          iconHTML = category.icon.includes('fa-')
+            ? `<i class="${category.icon}"></i>`
+            : category.icon;
         }
 
-        // Status
         const isActive = category.status !== 'inactive';
         const statusClass = isActive ? 'status-active' : 'status-inactive';
         const statusIcon = isActive ? 'fas fa-check-circle' : 'fas fa-times-circle';
         const statusText = isActive ? 'Ativa' : 'Inativa';
 
-        // Adicionar link para ver produtos se houver algum
-        const viewProductsLink = productCount > 0 ? `
-    <div style="margin-top: 10px;">
-      <button onclick="viewCategoryProducts(${category.id})" 
-              style="width: 100%; padding: 8px; background: rgba(124, 58, 237, 0.1); 
-                     border: 1px solid rgba(124, 58, 237, 0.3); color: #C084FC; 
-                     border-radius: 6px; cursor: pointer; font-size: 13px;">
-        <i class="fas fa-eye"></i> Ver ${productCount} produto(s)
-      </button>
-    </div>
-  ` : '';
-
         return `
-<div class="category-card" data-category-id="${category.id}" style="cursor: pointer;" onclick="viewCategoryProducts(${category.id})">
-  <div class="category-header">
-    <div class="category-icon" style="color: ${color};">
-      ${iconHTML}
-    </div>
-    <div class="category-actions">
-      <button class="btn-action-small" onclick="editCategory(${category.id}); event.stopPropagation();">
-        <i class="far fa-edit"></i>
-      </button>
-      <button class="btn-action-small" onclick="showDeleteModal(${category.id}, '${category.name.replace(/'/g, "\\'")}'); event.stopPropagation();">
-        <i class="far fa-trash-alt"></i>
-      </button>
-    </div>
-  </div>
-  <div class="category-content">
-    ${parentCategory ? `
-      <div class="parent-category-badge" style="color: ${color};">
-        <i class="fas fa-tags"></i> ${parentCategory.name}
-      </div>
-    ` : ''}
-    
-    <h3>${category.name}</h3>
-    <p class="category-description">
-      ${category.description || 'Sem descrição'}
-    </p>
-    
-    <div class="category-stats">
-      <div class="stat-item">
-        <span class="stat-number" style="color: ${productCount > 0 ? '#C084FC' : '#aaa'};">${productCount}</span>
-        <span class="stat-label">Produtos</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">${salesCount}</span>
-        <span class="stat-label">Vendas</span>
-      </div>
-    </div>
-    
-    ${viewProductsLink}
-    
-    <div class="category-footer">
-      <span class="category-status ${statusClass}">
-        <i class="${statusIcon}"></i>
-        ${statusText}
-      </span>
-      <span class="category-slug">
-        ${category.slug}
-      </span>
-    </div>
-  </div>
-</div>
-`;
+                  <div class="category-card" data-category-id="${category.id}" style="cursor: pointer;" 
+                       onclick="viewCategoryProducts(${category.id})">
+                      <div class="category-header">
+                          <div class="category-icon" style="color: ${color};">${iconHTML}</div>
+                          <div class="category-actions">
+                              <button class="btn-action-small" onclick="editCategory(${category.id}); event.stopPropagation();">
+                                  <i class="far fa-edit"></i>
+                              </button>
+                              <button class="btn-action-small" onclick="showDeleteModal(${category.id}, '${category.name.replace(/'/g, "\\'")}'); event.stopPropagation();">
+                                  <i class="far fa-trash-alt"></i>
+                              </button>
+                          </div>
+                      </div>
+                      <div class="category-content">
+                          ${parentCategory ? `
+                              <div class="parent-category-badge" style="color: ${color};">
+                                  <i class="fas fa-tags"></i> ${parentCategory.name}
+                              </div>
+                          ` : ''}
+                          <h3>${category.name}</h3>
+                          <p class="category-description">${category.description || 'Sem descrição'}</p>
+                          <div class="category-stats">
+                              <div class="stat-item">
+                                  <span class="stat-number" style="color: ${productCount > 0 ? '#C084FC' : '#aaa'};">${productCount}</span>
+                                  <span class="stat-label">Produtos</span>
+                              </div>
+                          </div>
+                          ${productCount > 0 ? `
+                              <div style="margin-top: 10px;">
+                                  <button onclick="viewCategoryProducts(${category.id}); event.stopPropagation();" 
+                                          style="width: 100%; padding: 8px; background: rgba(124, 58, 237, 0.1); 
+                                                 border: 1px solid rgba(124, 58, 237, 0.3); color: #C084FC; 
+                                                 border-radius: 6px; cursor: pointer; font-size: 13px;">
+                                      <i class="fas fa-eye"></i> Ver ${productCount} produto(s)
+                                  </button>
+                              </div>
+                          ` : ''}
+                          <div class="category-footer">
+                              <span class="category-status ${statusClass}">
+                                  <i class="${statusIcon}"></i> ${statusText}
+                              </span>
+                              <span class="category-slug">${category.slug}</span>
+                          </div>
+                      </div>
+                  </div>
+              `;
       }
 
-      // E na função renderCategories, use esta lógica para separar melhor:
-      function renderCategories() {
-        if (allCategories.length === 0) {
-          categoriesGrid.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-tags fa-3x"></i>
-        <h3>Nenhuma categoria encontrada</h3>
-        <p>Crie sua primeira categoria para organizar os produtos</p>
-        <button onclick="showCategoryForm()">
-          <i class="fas fa-plus"></i> Criar Primeira Categoria
-        </button>
-      </div>
-    `;
+      window.viewCategoryProducts = async function (categoryId, event = null) {
+        if (event) event.stopPropagation();
+
+        const category = allCategories.find(c => c.id == categoryId);
+        if (!category) {
+          showNotification('Categoria não encontrada', 'error');
           return;
         }
 
-        let gridHTML = '';
+        showNotification(`Carregando produtos de ${category.name}...`, 'info');
 
-        // Separar categorias principais e subcategorias
-        const mainCategories = allCategories.filter(cat => !cat.parent_id);
-        const subCategories = allCategories.filter(cat => cat.parent_id);
+        try {
+          const response = await ProductAPI.getProductsByCategory(categoryId);
 
-        // Renderizar categorias principais
-        mainCategories.forEach(category => {
-          gridHTML += createCategoryCard(category);
-
-          // Renderizar subcategorias desta categoria
-          const categorySubCategories = subCategories.filter(sub => sub.parent_id == category.id);
-          if (categorySubCategories.length > 0) {
-            gridHTML += `
-        <div class="subcategories-section" style="border-left-color: ${getCategoryColor(category)};">
-          <h4>
-            <i class="fas fa-sitemap"></i> Subcategorias de ${category.name}
-          </h4>
-          <div class="subcategories-grid">
-      `;
-
-            categorySubCategories.forEach(subCategory => {
-              gridHTML += createCategoryCard(subCategory);
-            });
-
-            gridHTML += `
-          </div>
-        </div>
-      `;
+          if (response.products && response.products.length > 0) {
+            showCategoryProductsModal(category, response.products);
+          } else {
+            showNotification(`Nenhum produto encontrado na categoria "${category.name}"`, 'warning');
           }
-        });
+        } catch (error) {
+          console.error('❌ Erro ao carregar produtos:', error);
+          showNotification('Erro ao carregar produtos', 'error');
+        }
+      };
 
-        categoriesGrid.innerHTML = gridHTML;
+      function showCategoryProductsModal(category, products) {
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.innerHTML = `
+                  <div class="modal-content" style="max-width: 800px; max-height: 80vh;">
+                      <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+                          <i class="fas fa-times"></i>
+                      </button>
+                      <h2 class="modal-title">
+                          <i class="fas fa-tags" style="color: ${category.color || '#7C3AED'}"></i>
+                          Produtos: ${category.name}
+                      </h2>
+                      <p style="color: #aaa; margin-bottom: 20px;">
+                          ${category.description || ''}<br>
+                          <small>Total: ${products.length} produto(s)</small>
+                      </p>
+                      <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                          <table style="width: 100%; border-collapse: collapse;">
+                              <thead>
+                                  <tr style="background: rgba(124, 58, 237, 0.1);">
+                                      <th style="padding: 10px; text-align: left;">Produto</th>
+                                      <th style="padding: 10px; text-align: left;">Preço</th>
+                                      <th style="padding: 10px; text-align: left;">Estoque</th>
+                                      <th style="padding: 10px; text-align: left;">Status</th>
+                                      <th style="padding: 10px; text-align: left;">Ações</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  ${products.map(product => {
+          const imageUrl = product.image_url || '';
+          return `
+                                          <tr>
+                                              <td style="padding: 10px; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
+                                                  <div style="display: flex; align-items: center; gap: 10px;">
+                                                      ${imageUrl ?
+              `<img src="${imageUrl.startsWith('http') ? imageUrl : `https://upuniversestorege.onrender.com${imageUrl}`}" 
+                                                                alt="${product.name}" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover;">` :
+              `<div style="width: 40px; height: 40px; background: rgba(124, 58, 237, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+                                                              <i class="fas fa-cube"></i>
+                                                           </div>`
+            }
+                                                      <div>
+                                                          <strong>${product.name}</strong><br>
+                                                          <small style="color: #aaa;">${product.sku || `ID: ${product.id}`}</small>
+                                                      </div>
+                                                  </div>
+                                              </td>
+                                              <td style="padding: 10px;">R$ ${parseFloat(product.price).toFixed(2)}</td>
+                                              <td style="padding: 10px;">${product.stock} un.</td>
+                                              <td style="padding: 10px;">
+                                                  <span style="padding: 3px 8px; border-radius: 4px; font-size: 12px; 
+                                                             background: ${product.status === 'active' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'}; 
+                                                             color: ${product.status === 'active' ? '#4CAF50' : '#f44336'}">
+                                                      ${product.status === 'active' ? 'Ativo' : 'Inativo'}
+                                                  </span>
+                                              </td>
+                                              <td style="padding: 10px;">
+                                                  <button onclick="window.location.href='product-form.html?edit=${product.id}'" 
+                                                          style="padding: 5px 10px; background: rgba(124, 58, 237, 0.1); 
+                                                                 border: 1px solid rgba(124, 58, 237, 0.3); color: #C084FC; 
+                                                                 border-radius: 4px; cursor: pointer;">
+                                                      <i class="fas fa-edit"></i>
+                                                  </button>
+                                              </td>
+                                          </tr>
+                                      `;
+        }).join('')}
+                              </tbody>
+                          </table>
+                      </div>
+                      <div class="modal-actions">
+                          <button class="btn-modal cancel" onclick="this.parentElement.parentElement.remove()">Fechar</button>
+                          <button class="btn-modal" style="background: linear-gradient(135deg, #DF38FF, #7C3AED);" 
+                                  onclick="window.location.href='products.html?category=${encodeURIComponent(category.name)}'">
+                              <i class="fas fa-external-link-alt"></i> Ver todos
+                          </button>
+                      </div>
+                  </div>
+              `;
+        document.body.appendChild(modal);
       }
 
-      // Obter cor da categoria
       function getCategoryColor(category) {
-        // Se a categoria tiver uma cor salva, usar
         if (category.color) return category.color;
-
-        // Se não, usar cor baseada no ID
-        const colors = [
-          '#C084FC', '#DF38FF', '#7C3AED', '#4CAF50',
-          '#2196F3', '#FFC107', '#F44336', '#9C27B0'
-        ];
+        const colors = ['#C084FC', '#DF38FF', '#7C3AED', '#4CAF50', '#2196F3', '#FFC107', '#F44336', '#9C27B0'];
         return colors[category.id % colors.length];
       }
 
       // === FORMULÁRIO DE CATEGORIA ===
-
-      // Mostrar formulário
       window.showCategoryForm = function () {
-        categoryForm.classList.add('show');
-        newCategoryBtn.style.display = 'none';
-        isEditing = false;
-        formTitle.textContent = 'Nova Categoria';
-        submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Categoria';
+        if (elements.categoryForm) {
+          elements.categoryForm.classList.add('show');
+          if (elements.newCategoryBtn) elements.newCategoryBtn.style.display = 'none';
+          isEditing = false;
+          elements.formTitle.textContent = 'Nova Categoria';
+          elements.submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Categoria';
+        }
       };
 
-      // Esconder formulário
       window.hideCategoryForm = function () {
-        categoryForm.classList.remove('show');
-        newCategoryBtn.style.display = 'flex';
-        categoryFormData.reset();
-        categoryIdInput.value = '';
-        iconPreview.innerHTML = '🏺';
-        iconPreview.style.color = '#C084FC';
-        selectedColorInput.value = '#C084FC';
-        parentCategorySelect.value = '';
-        isEditing = false;
+        if (elements.categoryForm) {
+          elements.categoryForm.classList.remove('show');
+          if (elements.newCategoryBtn) elements.newCategoryBtn.style.display = 'flex';
+          elements.categoryFormData.reset();
+          elements.categoryId.value = '';
+          if (elements.iconPreview) {
+            elements.iconPreview.innerHTML = '🏺';
+            elements.iconPreview.style.color = '#C084FC';
+          }
+          if (elements.iconInput) elements.iconInput.value = '';
+          if (elements.selectedColor) elements.selectedColor.value = '#C084FC';
+          if (elements.parentCategorySelect) elements.parentCategorySelect.value = '';
+          isEditing = false;
+        }
       };
 
-      // Editar categoria
       window.editCategory = async function (id) {
         try {
-          console.log(`✏️ Editando categoria #${id}...`);
-
           const category = await ProductAPI.getCategoryById(id);
           if (!category) {
             showNotification('Categoria não encontrada', 'error');
             return;
           }
 
-          // Preencher formulário
-          categoryIdInput.value = category.id;
-          categoryNameInput.value = category.name;
-          categorySlugInput.value = category.slug;
-          categoryDescription.value = category.description || '';
-          parentCategorySelect.value = category.parent_id || '';
+          elements.categoryId.value = category.id;
+          elements.categoryName.value = category.name;
+          elements.categorySlug.value = category.slug;
+          elements.categoryDescription.value = category.description || '';
+          elements.parentCategorySelect.value = category.parent_id || '';
           document.getElementById('categoryImage').value = category.image_url || '';
-          document.getElementById('displayOrder').value = 1; // Você pode adicionar este campo depois
+          document.getElementById('displayOrder').value = category.display_order || 1;
           document.getElementById('isActive').checked = category.status !== 'inactive';
 
-          // Ícone
           if (category.icon) {
-            iconInput.value = category.icon;
-            if (category.icon.includes('fa-')) {
-              iconPreview.innerHTML = `<i class="fas ${category.icon}"></i>`;
-            } else {
-              iconPreview.innerHTML = category.icon;
-            }
+            elements.iconInput.value = category.icon;
+            elements.iconPreview.innerHTML = category.icon.includes('fa-')
+              ? `<i class="${category.icon}"></i>`
+              : category.icon;
           }
 
-          // Cor
           if (category.color) {
-            iconPreview.style.color = category.color;
-            selectedColorInput.value = category.color;
+            elements.iconPreview.style.color = category.color;
+            elements.selectedColor.value = category.color;
 
-            // Selecionar cor no color picker
             document.querySelectorAll('.color-option').forEach(opt => {
               opt.classList.remove('selected');
               if (opt.getAttribute('data-color') === category.color) {
@@ -1369,244 +1071,239 @@
             });
           }
 
-          // Mostrar formulário
-          categoryForm.classList.add('show');
-          newCategoryBtn.style.display = 'none';
+          elements.categoryForm.classList.add('show');
+          if (elements.newCategoryBtn) elements.newCategoryBtn.style.display = 'none';
           isEditing = true;
-          formTitle.textContent = 'Editar Categoria';
-          submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Categoria';
+          elements.formTitle.textContent = 'Editar Categoria';
+          elements.submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Categoria';
 
           showNotification(`Editando categoria: ${category.name}`, 'info');
-
         } catch (error) {
-          console.error("❌ Erro ao carregar categoria para edição:", error);
+          console.error('❌ Erro ao editar categoria:', error);
           showNotification('Erro ao carregar categoria', 'error');
         }
       };
 
-      // Gerar slug a partir do nome
-      categoryNameInput.addEventListener('input', function () {
-        if (!isEditing && !categorySlugInput.value) {
-          const slug = this.value
-            .toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^\w\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .trim();
-          categorySlugInput.value = slug;
-        }
-      });
+      // === EVENT LISTENERS DO FORMULÁRIO ===
+      if (elements.categoryName) {
+        elements.categoryName.addEventListener('input', function () {
+          if (!isEditing && elements.categorySlug && !elements.categorySlug.value) {
+            elements.categorySlug.value = this.value
+              .toLowerCase()
+              .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^\w\s-]/g, '')
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-')
+              .trim();
+          }
+        });
+      }
 
-      // Atualizar ícone preview
-      iconInput.addEventListener('input', function () {
-        const value = this.value.trim();
-        if (value.includes('fa-')) {
-          // Se for FontAwesome
-          iconPreview.innerHTML = `<i class="fas ${value}"></i>`;
-        } else if (value) {
-          // Se for emoji ou texto
-          iconPreview.innerHTML = value;
-        }
-      });
+      if (elements.iconInput) {
+        elements.iconInput.addEventListener('input', function () {
+          const value = this.value.trim();
+          if (elements.iconPreview) {
+            if (value.includes('fa-')) {
+              elements.iconPreview.innerHTML = `<i class="${value}"></i>`;
+            } else if (value) {
+              elements.iconPreview.innerHTML = value;
+            }
+          }
+        });
+      }
 
-      // Seletor de cor
+      // === SELEÇÃO DE COR ===
       document.querySelectorAll('.color-option').forEach(option => {
         option.addEventListener('click', function () {
           document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
           this.classList.add('selected');
           const color = this.getAttribute('data-color');
-          selectedColorInput.value = color;
-          iconPreview.style.color = color;
+          if (elements.selectedColor) elements.selectedColor.value = color;
+          if (elements.iconPreview) elements.iconPreview.style.color = color;
         });
       });
 
-      // Submissão do formulário
-      categoryFormData.addEventListener('submit', async function (e) {
-        e.preventDefault();
+      // === SUBMISSÃO DO FORMULÁRIO ===
+      if (elements.categoryFormData) {
+        elements.categoryFormData.addEventListener('submit', async function (e) {
+          e.preventDefault();
 
-        // Validar campos obrigatórios
-        if (!categoryNameInput.value.trim()) {
-          showNotification('Nome da categoria é obrigatório', 'error');
-          return;
-        }
-
-        if (!categorySlugInput.value.trim()) {
-          showNotification('Slug da categoria é obrigatório', 'error');
-          return;
-        }
-
-        // Preparar dados
-        const categoryData = {
-          name: categoryNameInput.value.trim(),
-          slug: categorySlugInput.value.trim(),
-          description: document.getElementById('categoryDescription').value.trim(),
-          parent_id: parentCategorySelect.value || null,
-          image_url: document.getElementById('categoryImage').value.trim() || null,
-          icon: iconInput.value.trim() || '🏺',
-          color: selectedColorInput.value,
-          status: document.getElementById('isActive').checked ? 'active' : 'inactive'
-          // Adicione display_order se tiver no banco
-        };
-
-        console.log(`${isEditing ? '📤 Atualizando' : '📤 Criando'} categoria:`, categoryData);
-
-        // Mostrar loading
-        const originalHTML = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-        submitBtn.disabled = true;
-
-        try {
-          let result;
-
-          if (isEditing) {
-            // Atualizar categoria existente
-            const categoryId = categoryIdInput.value;
-            result = await ProductAPI.updateCategory(categoryId, categoryData);
-          } else {
-            // Criar nova categoria
-            result = await ProductAPI.createCategory(categoryData);
+          if (!elements.categoryName.value.trim()) {
+            showNotification('Nome da categoria é obrigatório', 'error');
+            return;
           }
 
-          console.log("📥 Resposta da API:", result);
-
-          if (result.success) {
-            showNotification(
-              `Categoria ${isEditing ? 'atualizada' : 'criada'} com sucesso!`,
-              'success'
-            );
-
-            // Recarregar categorias
-            await loadCategories();
-
-            // Esconder formulário
-            hideCategoryForm();
-
-          } else {
-            showNotification(
-              `Erro: ${result.error || `Não foi possível ${isEditing ? 'atualizar' : 'criar'} a categoria`}`,
-              'error'
-            );
-            submitBtn.innerHTML = originalHTML;
-            submitBtn.disabled = false;
+          if (!elements.categorySlug.value.trim()) {
+            showNotification('Slug da categoria é obrigatório', 'error');
+            return;
           }
 
-        } catch (error) {
-          console.error("❌ Erro no envio:", error);
-          showNotification(`Erro: ${error.message || 'Falha na conexão'}`, 'error');
-          submitBtn.innerHTML = originalHTML;
-          submitBtn.disabled = false;
-        }
-      });
+          const categoryData = {
+            name: elements.categoryName.value.trim(),
+            slug: elements.categorySlug.value.trim(),
+            description: elements.categoryDescription?.value.trim() || '',
+            parent_id: elements.parentCategorySelect?.value || null,
+            image_url: document.getElementById('categoryImage')?.value.trim() || null,
+            icon: elements.iconInput?.value.trim() || '🏺',
+            color: elements.selectedColor?.value || '#C084FC',
+            status: document.getElementById('isActive')?.checked ? 'active' : 'inactive',
+            display_order: parseInt(document.getElementById('displayOrder')?.value) || 1
+          };
+
+          const originalHTML = elements.submitBtn.innerHTML;
+          elements.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+          elements.submitBtn.disabled = true;
+
+          try {
+            const result = isEditing
+              ? await ProductAPI.updateCategory(elements.categoryId.value, categoryData)
+              : await ProductAPI.createCategory(categoryData);
+
+            if (result.success) {
+              showNotification(`Categoria ${isEditing ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+              await loadCategories();
+              window.hideCategoryForm();
+            } else {
+              showNotification(`Erro: ${result.error}`, 'error');
+              elements.submitBtn.innerHTML = originalHTML;
+              elements.submitBtn.disabled = false;
+            }
+          } catch (error) {
+            console.error('❌ Erro no envio:', error);
+            showNotification(`Erro: ${error.message}`, 'error');
+            elements.submitBtn.innerHTML = originalHTML;
+            elements.submitBtn.disabled = false;
+          }
+        });
+      }
 
       // === MODAL DE EXCLUSÃO ===
       window.showDeleteModal = function (id, name) {
         categoryToDelete = id;
         const modal = document.getElementById('deleteModal');
-        modal.classList.add('show');
-
-        document.getElementById('deleteModalText').textContent =
-          `Tem certeza que deseja excluir a categoria "${name}"? Esta ação não pode ser desfeita.`;
+        if (modal) {
+          modal.classList.add('show');
+          const deleteModalText = document.getElementById('deleteModalText');
+          if (deleteModalText) {
+            deleteModalText.textContent = `Tem certeza que deseja excluir a categoria "${name}"? Esta ação não pode ser desfeita.`;
+          }
+        }
       };
 
       window.closeDeleteModal = function () {
         const modal = document.getElementById('deleteModal');
-        modal.classList.remove('show');
-        categoryToDelete = null;
+        if (modal) {
+          modal.classList.remove('show');
+          categoryToDelete = null;
+        }
       };
 
       window.confirmDelete = async function () {
         if (!categoryToDelete) return;
 
         try {
-          console.log(`🗑️ Excluindo categoria ${categoryToDelete}...`);
-
           const result = await ProductAPI.deleteCategory(categoryToDelete);
 
           if (result.success) {
             showNotification('Categoria excluída com sucesso!', 'success');
-
-            // Recarregar categorias
             await loadCategories();
           } else {
-            showNotification(`Erro: ${result.error || 'Não foi possível excluir a categoria'}`, 'error');
+            showNotification(`Erro: ${result.error}`, 'error');
           }
         } catch (error) {
-          console.error("❌ Erro ao excluir categoria:", error);
+          console.error('❌ Erro ao excluir categoria:', error);
           showNotification('Erro ao excluir categoria', 'error');
         }
 
         closeDeleteModal();
       };
 
-      // === EVENT LISTENERS ===
-      newCategoryBtn.addEventListener('click', showCategoryForm);
-      refreshBtn.addEventListener('click', () => {
-        loadCategories();
-        showNotification('Categorias atualizadas!', 'info');
+      // === EVENT LISTENERS PRINCIPAIS ===
+      if (elements.newCategoryBtn) {
+        elements.newCategoryBtn.addEventListener('click', window.showCategoryForm);
+      }
+
+      if (elements.refreshBtn) {
+        elements.refreshBtn.addEventListener('click', () => {
+          loadCategories();
+          showNotification('Categorias atualizadas!', 'info');
+        });
+      }
+
+      // === CONFIGURAÇÃO DO SELETOR DE ÍCONES ===
+      const searchInput = document.getElementById('iconSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', function () {
+          const searchTerm = this.value.toLowerCase();
+          document.querySelectorAll('.icon-item').forEach(item => {
+            const iconName = item.getAttribute('data-value')?.toLowerCase() || '';
+            const iconType = item.querySelector('.icon-name')?.textContent.toLowerCase() || '';
+            item.style.display = (iconName.includes(searchTerm) || iconType.includes(searchTerm)) ? 'flex' : 'none';
+          });
+        });
+      }
+
+      const categoryBtns = document.querySelectorAll('.category-btn');
+      categoryBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+          categoryBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          loadIcons(this.getAttribute('data-category'));
+        });
       });
 
-      // Carregar categorias inicialmente
-      loadCategories();
+      if (elements.iconPreview && elements.iconInput) {
+        elements.iconPreview.style.cursor = 'pointer';
+        elements.iconPreview.addEventListener('click', window.openIconPicker);
+        elements.iconInput.readOnly = true;
+        elements.iconInput.style.cursor = 'pointer';
+        elements.iconInput.addEventListener('click', window.openIconPicker);
+      }
+
+      // === LOGOUT ===
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+          if (confirm('Tem certeza que deseja sair?')) {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminEmail');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+
+      // === ATUALIZAR INFORMAÇÕES DO ADMIN ===
+      const adminEmail = localStorage.getItem('adminEmail');
+      const profileName = document.querySelector('.profile-info h4');
+      if (adminEmail && profileName) {
+        profileName.textContent = adminEmail.split('@')[0];
+      }
+
+      const profileAvatar = document.querySelector('.profile-avatar');
+      if (adminEmail && profileAvatar) {
+        profileAvatar.textContent = adminEmail.split('@')[0].charAt(0).toUpperCase();
+      }
+
+      // === INICIAR CARREGAMENTO ===
+      await loadCategories();
     });
-
-    // === FUNÇÃO DE NOTIFICAÇÃO ===
-    function showNotification(message, type = 'info') {
-      console.log(`📢 Notificação [${type}]: ${message}`);
-
-      const notification = document.createElement('div');
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #1a002b, #0b0015);
-        border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
-        color: white;
-        padding: 15px 25px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        max-width: 400px;
-      `;
-
-      const icon = type === 'success' ? 'check-circle' :
-        type === 'error' ? 'exclamation-circle' :
-          type === 'warning' ? 'exclamation-triangle' : 'info-circle';
-
-      notification.innerHTML = `
-        <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
-        <span>${message}</span>
-      `;
-
-      document.body.appendChild(notification);
-
-      setTimeout(() => {
-        notification.style.animation = 'fadeOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-      }, 4000);
-    }
 
     // === ANIMAÇÕES CSS ===
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes fadeOut {
-        from { opacity: 1; transform: translateX(0); }
-        to { opacity: 0; transform: translateX(100%); }
-      }
-      
-      .label-required::after {
-        content: " *";
-        color: #f44336;
-      }
-    `;
+          @keyframes slideIn {
+              from { transform: translateX(100%); opacity: 0; }
+              to { transform: translateX(0); opacity: 1; }
+          }
+          @keyframes fadeOut {
+              from { opacity: 1; transform: translateX(0); }
+              to { opacity: 0; transform: translateX(100%); }
+          }
+          .label-required::after {
+              content: " *";
+              color: #f44336;
+          }
+      `;
     document.head.appendChild(style);
   </script>
 </body>

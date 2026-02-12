@@ -1,8 +1,9 @@
+// src/controllers/categoryController.js - ATUALIZADO
 const Category = require("../models/Category");
 const Product = require("../models/Product");
 
 class CategoryController {
-  // Criar nova categoria (CORRIGIDO)
+  // Criar nova categoria
   async create(req, res) {
     try {
       console.log("🏷️ Recebendo dados da categoria...");
@@ -10,7 +11,6 @@ class CategoryController {
 
       const categoryData = { ...req.body };
 
-      // Validação básica para categoria
       if (!categoryData.name) {
         return res.status(400).json({
           success: false,
@@ -18,7 +18,7 @@ class CategoryController {
         });
       }
 
-      // Se não tiver slug, criar automaticamente
+      // Gerar slug automático
       if (!categoryData.slug) {
         categoryData.slug = categoryData.name
           .toLowerCase()
@@ -30,12 +30,10 @@ class CategoryController {
           .trim();
       }
 
-      // Garantir que parent_id seja null se for string vazia
       if (categoryData.parent_id === "") {
         categoryData.parent_id = null;
       }
 
-      // Verificar se slug já existe
       const existingCategory = await Category.findBySlug(categoryData.slug);
       if (existingCategory) {
         return res.status(400).json({
@@ -44,14 +42,8 @@ class CategoryController {
         });
       }
 
-      console.log("💾 Salvando categoria no banco...");
-      console.log("Dados a serem salvos:", categoryData);
-
       const categoryId = await Category.create(categoryData);
       const category = await Category.findById(categoryId);
-
-      console.log("✅ Categoria criada com sucesso!");
-      console.log("Categoria retornada:", category);
 
       res.status(201).json({
         success: true,
@@ -77,10 +69,40 @@ class CategoryController {
       };
 
       const categories = await Category.findAll(filters);
-      res.json({ categories });
+
+      res.json({
+        success: true,
+        categories,
+      });
     } catch (error) {
       console.error("Erro ao buscar categorias:", error);
-      res.status(500).json({ error: "Erro ao buscar categorias" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao buscar categorias",
+      });
+    }
+  }
+
+  // Listar categorias com contagem de produtos
+  async getAllWithProductCount(req, res) {
+    try {
+      const filters = {
+        parent_id: req.query.parent_id,
+        status: req.query.status,
+      };
+
+      const categories = await Category.findAllWithProductCount(filters);
+
+      res.json({
+        success: true,
+        categories,
+      });
+    } catch (error) {
+      console.error("Erro ao buscar categorias com contagem:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro ao buscar categorias",
+      });
     }
   }
 
@@ -91,13 +113,22 @@ class CategoryController {
       const category = await Category.findById(id);
 
       if (!category) {
-        return res.status(404).json({ error: "Categoria não encontrada" });
+        return res.status(404).json({
+          success: false,
+          error: "Categoria não encontrada",
+        });
       }
 
-      res.json({ category });
+      res.json({
+        success: true,
+        category,
+      });
     } catch (error) {
       console.error("Erro ao buscar categoria:", error);
-      res.status(500).json({ error: "Erro ao buscar categoria" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao buscar categoria",
+      });
     }
   }
 
@@ -108,13 +139,22 @@ class CategoryController {
       const category = await Category.findBySlug(slug);
 
       if (!category) {
-        return res.status(404).json({ error: "Categoria não encontrada" });
+        return res.status(404).json({
+          success: false,
+          error: "Categoria não encontrada",
+        });
       }
 
-      res.json({ category });
+      res.json({
+        success: true,
+        category,
+      });
     } catch (error) {
       console.error("Erro ao buscar categoria:", error);
-      res.status(500).json({ error: "Erro ao buscar categoria" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao buscar categoria",
+      });
     }
   }
 
@@ -126,20 +166,22 @@ class CategoryController {
 
       const categoryExists = await Category.findById(id);
       if (!categoryExists) {
-        return res.status(404).json({ error: "Categoria não encontrada" });
+        return res.status(404).json({
+          success: false,
+          error: "Categoria não encontrada",
+        });
       }
 
-      // Verificar se slug já existe (exceto para a própria categoria)
       if (categoryData.slug && categoryData.slug !== categoryExists.slug) {
         const existingCategory = await Category.findBySlug(categoryData.slug);
         if (existingCategory && existingCategory.id !== parseInt(id)) {
           return res.status(400).json({
+            success: false,
             error: "Slug já está em uso",
           });
         }
       }
 
-      // Garantir que parent_id seja null se for string vazia
       if (categoryData.parent_id === "") {
         categoryData.parent_id = null;
       }
@@ -154,7 +196,10 @@ class CategoryController {
       });
     } catch (error) {
       console.error("Erro ao atualizar categoria:", error);
-      res.status(500).json({ error: "Erro ao atualizar categoria" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao atualizar categoria",
+      });
     }
   }
 
@@ -165,10 +210,12 @@ class CategoryController {
 
       const categoryExists = await Category.findById(id);
       if (!categoryExists) {
-        return res.status(404).json({ error: "Categoria não encontrada" });
+        return res.status(404).json({
+          success: false,
+          error: "Categoria não encontrada",
+        });
       }
 
-      // Verificar se existem produtos nesta categoria
       const products = await Product.findByCategoryId(id);
       if (products && products.length > 0) {
         return res.status(400).json({
@@ -187,53 +234,55 @@ class CategoryController {
       });
     } catch (error) {
       console.error("Erro ao deletar categoria:", error);
-      res.status(500).json({ error: "Erro ao deletar categoria" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao deletar categoria",
+      });
     }
   }
 
-  // Listar produtos por categoria
+  // Produtos por categoria
   async getProductsByCategory(req, res) {
     try {
       const { id } = req.params;
 
       const category = await Category.findById(id);
       if (!category) {
-        return res.status(404).json({ error: "Categoria não encontrada" });
+        return res.status(404).json({
+          success: false,
+          error: "Categoria não encontrada",
+        });
       }
 
       const products = await Product.findByCategoryId(id);
 
       res.json({
+        success: true,
         category,
         products,
         count: products.length,
       });
     } catch (error) {
       console.error("Erro ao buscar produtos por categoria:", error);
-      res.status(500).json({ error: "Erro ao buscar produtos por categoria" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao buscar produtos por categoria",
+      });
     }
   }
 
-  // Contar produtos por categoria
+  // Contagem de produtos por categoria
   async getProductCountByCategory(req, res) {
     try {
       const { id } = req.params;
       const count = await Product.countByCategoryId(id);
-      res.json({ count });
+      res.json({ success: true, count });
     } catch (error) {
       console.error("Erro ao contar produtos por categoria:", error);
-      res.status(500).json({ error: "Erro ao contar produtos por categoria" });
-    }
-  }
-
-  // Listar todas as categorias COM CONTAGEM DE PRODUTOS
-  async getAllWithProductCount(req, res) {
-    try {
-      const categories = await Category.findAllWithProductCount();
-      res.json({ categories });
-    } catch (error) {
-      console.error("Erro ao buscar categorias com contagem:", error);
-      res.status(500).json({ error: "Erro ao buscar categorias" });
+      res.status(500).json({
+        success: false,
+        error: "Erro ao contar produtos por categoria",
+      });
     }
   }
 }

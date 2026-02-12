@@ -1,17 +1,9 @@
-// src/config/database-simple.js - VERSÃO ULTRA SIMPLIFICADA
+// src/config/database-simple.js - VERSÃO COMPLETA
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 console.log("🔌 Iniciando configuração Aiven MySQL...");
-console.log("📊 Config Aiven:", {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  database: process.env.DB_NAME,
-  hasPassword: !!process.env.DB_PASSWORD,
-});
 
-// CONFIGURAÇÃO SIMPLES PARA AIVEN
 const poolConfig = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
@@ -19,41 +11,24 @@ const poolConfig = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 5,
+  connectionLimit: 10,
   queueLimit: 0,
-
-  // SSL OBRIGATÓRIO
   ssl: {
     rejectUnauthorized: false,
   },
-
-  // Timeouts
   connectTimeout: 30000,
   acquireTimeout: 30000,
 };
 
 const pool = mysql.createPool(poolConfig);
 
-// FUNÇÃO PRINCIPAL - SETUP SIMPLIFICADO
 async function setupDatabase() {
   let connection;
   try {
-    console.log("🔄 Iniciando setup do banco...");
-
-    // 1. Testar conexão básica
+    console.log("🔄 Iniciando setup completo do banco...");
     connection = await pool.getConnection();
-    console.log("✅ Conexão com Aiven estabelecida");
 
-    // 2. Testar query simples
-    const [testResult] = await connection.query(
-      "SELECT 1 as test, VERSION() as version",
-    );
-    console.log(`✅ MySQL versão: ${testResult[0].version}`);
-
-    // 3. Criar tabelas básicas se não existirem
-    console.log("📝 Criando tabelas básicas...");
-
-    // Tabela categories (simples)
+    // 1. TABELA CATEGORIES (COMPLETA)
     await connection.query(`
       CREATE TABLE IF NOT EXISTS categories (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -63,15 +38,17 @@ async function setupDatabase() {
         image_url VARCHAR(500),
         icon VARCHAR(50) DEFAULT '🏷️',
         color VARCHAR(20) DEFAULT '#7C3AED',
+        parent_id INT DEFAULT NULL,
         status VARCHAR(20) DEFAULT 'active',
         display_order INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
       )
     `);
-    console.log("✅ Tabela 'categories' pronta");
+    console.log("✅ Tabela 'categories' criada/verificada");
 
-    // Tabela products (simples)
+    // 2. TABELA PRODUCTS (COMPLETA)
     await connection.query(`
       CREATE TABLE IF NOT EXISTS products (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -89,15 +66,73 @@ async function setupDatabase() {
         material VARCHAR(100),
         dimensions VARCHAR(100),
         weight VARCHAR(50),
+        variants JSON,
+        specifications JSON,
+        shipping_info JSON,
+        seo JSON,
+        settings JSON,
         featured BOOLEAN DEFAULT FALSE,
         status VARCHAR(20) DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
       )
     `);
-    console.log("✅ Tabela 'products' pronta");
+    console.log("✅ Tabela 'products' criada/verificada");
 
-    // 4. Verificar/inserir categorias padrão
+    // 3. TABELA ADMIN_USERS
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS admin_users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log("✅ Tabela 'admin_users' criada/verificada");
+
+    // 4. TABELA PRODUCT_DRAFTS
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS product_drafts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        admin_id INT,
+        data JSON NOT NULL,
+        title VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log("✅ Tabela 'product_drafts' criada/verificada");
+
+    // 5. TABELA PRODUCT_CATEGORIES (MUITOS-PARA-MUITOS)
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS product_categories (
+        product_id INT NOT NULL,
+        category_id INT NOT NULL,
+        PRIMARY KEY (product_id, category_id),
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+      )
+    `);
+    console.log("✅ Tabela 'product_categories' criada/verificada");
+
+    // 6. INSERIR ADMIN PADRÃO
+    const [adminExists] = await connection.query(
+      "SELECT id FROM admin_users WHERE email = ?",
+      ["admin@universoparalelo.com"],
+    );
+
+    if (adminExists.length === 0) {
+      await connection.query(
+        "INSERT INTO admin_users (email, password, name) VALUES (?, ?, ?)",
+        ["admin@universoparalelo.com", "admin123", "Administrador"],
+      );
+      console.log("👤 Usuário admin padrão criado");
+    }
+
+    // 7. INSERIR CATEGORIAS PADRÃO
     const [catCount] = await connection.query(
       "SELECT COUNT(*) as count FROM categories",
     );
@@ -137,46 +172,44 @@ async function setupDatabase() {
           "#FFC107",
           4,
         ],
+        [
+          "Protótipos",
+          "prototipos",
+          "Modelos e protótipos",
+          "⚙️",
+          "#2196F3",
+          5,
+        ],
       ];
 
       for (const cat of categories) {
         await connection.query(
-          `INSERT INTO categories (name, slug, description, icon, color, display_order) 
-           VALUES (?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO categories (name, slug, description, icon, color, display_order) VALUES (?, ?, ?, ?, ?, ?)`,
           cat,
         );
       }
-      console.log("✅ 4 categorias inseridas");
+      console.log("✅ 5 categorias padrão inseridas");
     }
 
-    // 5. Liberar conexão
     connection.release();
-    console.log("🎉 Setup do banco concluído com sucesso!");
+    console.log("🎉 Banco de dados configurado com sucesso!");
     return true;
   } catch (error) {
-    console.error("❌ ERRO NO SETUP:", error.message);
-    console.error("🔧 Código:", error.code);
-    console.error("🔧 SQL State:", error.sqlState);
-
-    if (connection) {
-      try {
-        connection.release();
-      } catch (e) {}
-    }
+    console.error("❌ ERRO NO SETUP:", error);
+    if (connection) connection.release();
     return false;
   }
 }
 
-// Função de teste simples
 async function testDatabaseConnection() {
   try {
     const connection = await pool.getConnection();
-    const [result] = await connection.query("SELECT 1 as test");
+    await connection.query("SELECT 1");
     connection.release();
     console.log("✅ Teste de conexão: OK");
     return true;
   } catch (error) {
-    console.error("❌ Teste de conexão falhou:", error.message);
+    console.error("❌ Teste de conexão falhou:", error);
     return false;
   }
 }

@@ -1754,9 +1754,11 @@
         }
       });
 
+      
+
       // === FUNÇÃO PARA CRIAR PRODUTO ===
      // === FUNÇÃO PARA CRIAR PRODUTO (VERSÃO FINAL) ===
-      async function createProduct() {
+     async function createProduct() {
         console.log("🚀 Iniciando criação de produto...");
 
         const submitBtn = productForm.querySelector('button[type="submit"]');
@@ -1765,97 +1767,48 @@
         submitBtn.disabled = true;
 
         try {
-          // 1. Preparar os dados
+          // Preparar FormData
           const formData = prepareFormData();
 
-          // Debug detalhado
-          console.log("🔍 DEBUG - Conteúdo do FormData:");
-          let hasImages = false;
-          for (let [key, value] of formData.entries()) {
-            if (value instanceof File) {
-              console.log(`📁 ${key}: ${value.name} (${value.size} bytes)`);
-              hasImages = true;
-            } else {
-              console.log(`📝 ${key}: ${value}`);
-            }
-          }
-          console.log("✅ FormData preparado. Tem imagens?", hasImages);
+          // Determinar URL da API
+          const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:5000/api'
+            : 'https://upuniversestorege.onrender.com/api';
 
-          // 2. Enviar para API
-          console.log("📤 Enviando para API...");
+          console.log("📤 Enviando para:", `${API_URL}/products`);
 
-          // Usar timeout mais longo para imagens
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos
-
-          const response = await fetch('http://localhost:5000/api/products', {
+          const response = await fetch(`${API_URL}/products`, {
             method: 'POST',
-            body: formData,
-            signal: controller.signal
+            body: formData
           });
 
-          clearTimeout(timeoutId);
-
-          console.log("📥 Resposta recebida - Status:", response.status, response.statusText);
-
-          // 3. Processar resposta
           let result;
-          try {
-            result = await response.json();
-            console.log("📄 Resposta JSON:", result);
-          } catch (jsonError) {
-            console.error("❌ Erro ao parsear JSON:", jsonError);
-            const textResponse = await response.text();
-            console.error("📄 Resposta em texto:", textResponse.substring(0, 500));
+          const responseText = await response.text();
 
-            throw new Error(`Resposta inválida do servidor: ${response.status} - ${response.statusText}`);
+          try {
+            result = JSON.parse(responseText);
+          } catch (e) {
+            console.error("❌ Resposta não é JSON:", responseText.substring(0, 200));
+            throw new Error(`Servidor retornou: ${response.status} - ${response.statusText}`);
           }
 
-          // 4. Verificar se foi bem-sucedido
+          console.log("📥 Resposta:", result);
+
           if (response.ok && result.success) {
-            console.log("✅ Produto criado com sucesso! ID:", result.product?.id);
             showNotification('🎉 Produto publicado com sucesso!', 'success');
 
-            // Limpar o formulário (opcional)
-            if (confirm('Produto criado com sucesso! Deseja limpar o formulário?')) {
-              productForm.reset();
-              const mainImagePreview = document.getElementById('mainImagePreview');
-              const imageGallery = document.getElementById('imagePreview');
-              if (mainImagePreview) mainImagePreview.innerHTML = '';
-              if (imageGallery) imageGallery.innerHTML = '';
-            }
-
-            // Redirecionar para lista de produtos
-            console.log("🔄 Redirecionando em 2 segundos...");
             setTimeout(() => {
-              console.log("📍 Redirecionando para products.html");
               window.location.href = 'products.html';
             }, 2000);
-
           } else {
-            // Erro da API
-            const errorMsg = result.error || result.message || 'Erro desconhecido ao criar produto';
-            console.error("❌ Erro da API:", errorMsg);
-            showNotification(`❌ Erro: ${errorMsg}`, 'error');
-
-            // Restaurar botão
+            showNotification(`❌ Erro: ${result.error || 'Falha ao criar produto'}`, 'error');
             submitBtn.innerHTML = originalHTML;
             submitBtn.disabled = false;
           }
 
         } catch (error) {
-          console.error("💥 Erro no processo de criação:", error);
-
-          let userMessage = error.message;
-          if (error.name === 'AbortError') {
-            userMessage = 'Tempo limite excedido. A imagem pode ser muito grande.';
-          } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-            userMessage = 'Falha na conexão. Verifique se o servidor está rodando.';
-          }
-
-          showNotification(`❌ Erro: ${userMessage}`, 'error');
-
-          // Restaurar botão
+          console.error("💥 Erro:", error);
+          showNotification(`❌ Erro: ${error.message}`, 'error');
           submitBtn.innerHTML = originalHTML;
           submitBtn.disabled = false;
         }
@@ -1863,44 +1816,34 @@
 
       // === FUNÇÃO PARA ATUALIZAR PRODUTO ===
       async function updateProduct(productId) {
+        console.log(`🔄 Atualizando produto ID: ${productId}...`);
+
+        const submitBtn = productForm.querySelector('button[type="submit"]');
+        const originalHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        submitBtn.disabled = true;
+
         try {
           const formData = prepareFormData();
 
-          console.log(`📤 Atualizando produto ${productId}...`);
+          const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:5000/api'
+            : 'https://upuniversestorege.onrender.com/api';
 
-          const submitBtn = productForm.querySelector('button[type="submit"]');
-          const originalHTML = submitBtn.innerHTML;
-          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-          submitBtn.disabled = true;
-
-          // Usar PUT com FormData
-          const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
+          const response = await fetch(`${API_URL}/products/${productId}`, {
             method: 'PUT',
-            body: formData // NÃO definir Content-Type - o navegador faz automaticamente
+            body: formData
           });
 
-          console.log("📥 Status:", response.status, response.statusText);
-
-          // Verificar se a resposta é JSON
-          const contentType = response.headers.get('content-type');
           let result;
+          const responseText = await response.text();
 
-          if (contentType && contentType.includes('application/json')) {
-            result = await response.json();
-          } else {
-            // Se não for JSON, tentar ler como texto para debug
-            const text = await response.text();
-            console.error("❌ API não retornou JSON:", text.substring(0, 500));
-
-            // Tentar parsear como JSON mesmo assim (às vezes o header está errado)
-            try {
-              result = JSON.parse(text);
-            } catch {
-              throw new Error(`API retornou: ${response.status} - ${text.substring(0, 100)}`);
-            }
+          try {
+            result = JSON.parse(responseText);
+          } catch (e) {
+            console.error("❌ Resposta não é JSON:", responseText.substring(0, 200));
+            throw new Error(`Servidor retornou: ${response.status} - ${response.statusText}`);
           }
-
-          console.log("📄 Resposta:", result);
 
           if (response.ok && result.success) {
             showNotification('✅ Produto atualizado com sucesso!', 'success');
@@ -1908,92 +1851,186 @@
               window.location.href = 'products.html';
             }, 2000);
           } else {
-            showNotification(`❌ Erro: ${result.error || result.message || 'Não foi possível atualizar'}`, 'error');
+            showNotification(`❌ Erro: ${result.error || 'Falha ao atualizar'}`, 'error');
             submitBtn.innerHTML = originalHTML;
             submitBtn.disabled = false;
           }
 
         } catch (error) {
-          console.error("💥 Erro na atualização:", error);
-
-          let errorMessage = error.message;
-          if (errorMessage.includes('Unexpected token')) {
-            errorMessage = 'Servidor retornou HTML em vez de JSON. Verifique as rotas do backend.';
-          }
-
-          showNotification(`❌ Erro: ${errorMessage}`, 'error');
-
-          // Restaurar botão
-          const submitBtn = productForm.querySelector('button[type="submit"]');
-          if (submitBtn) {
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
-            submitBtn.disabled = false;
-          }
+          console.error("💥 Erro:", error);
+          showNotification(`❌ Erro: ${error.message}`, 'error');
+          submitBtn.innerHTML = originalHTML;
+          submitBtn.disabled = false;
         }
       }
 
       // === FUNÇÃO PARA PREPARAR FORMDATA ===
       function prepareFormData() {
+        console.log("📦 Preparando FormData para envio...");
         const formData = new FormData();
 
-        // 1. Coletar dados básicos
-        const name = document.querySelector('#basicTab input[placeholder*="Crânio T-Rex 3D"]').value;
-        const price = document.querySelector('#basicTab input[placeholder*="120.00"]').value;
-        const categoryId = document.getElementById('categoryId').value;
-        const stock = document.querySelector('#basicTab input[placeholder*="12"]').value;
-        const shortDescription = document.querySelector('#basicTab textarea').value;
+        // ===== INFORMAÇÕES BÁSICAS =====
+        const nameInput = document.querySelector('#basicTab input[placeholder*="Crânio T-Rex 3D"]');
+        const priceInput = document.querySelector('#basicTab input[placeholder*="120.00"]');
+        const stockInput = document.querySelector('#basicTab input[placeholder*="12"]');
+        const shortDescTextarea = document.querySelector('#basicTab textarea');
+        const skuInput = document.querySelector('#basicTab input[placeholder*="SKU"]');
+        const promoPriceInput = document.querySelector('#basicTab input[placeholder*="150.00"]');
+        const categoryIdInput = document.getElementById('categoryId');
 
-        // Validação básica
-        if (!name || !price || !categoryId) {
-          showNotification('Preencha nome, preço e categoria!', 'error');
-          throw new Error('Campos obrigatórios não preenchidos');
+        // VALIDAÇÕES
+        if (!nameInput || !nameInput.value.trim()) {
+          showNotification('Nome do produto é obrigatório!', 'error');
+          throw new Error('Nome do produto é obrigatório');
         }
 
-        // 2. Adicionar dados básicos
-        formData.append('name', name);
-        formData.append('price', price);
-        formData.append('stock', stock);
-        formData.append('short_description', shortDescription);
+        if (!categoryIdInput || !categoryIdInput.value) {
+          showNotification('Selecione uma categoria!', 'error');
+          throw new Error('Categoria é obrigatória');
+        }
 
-        // 3. Categoria
-        const category = allCategories.find(c => c.id == categoryId);
+        if (!priceInput || !priceInput.value || parseFloat(priceInput.value) <= 0) {
+          showNotification('Preço deve ser maior que zero!', 'error');
+          throw new Error('Preço inválido');
+        }
+
+        // ADICIONAR DADOS BÁSICOS
+        formData.append('name', nameInput.value.trim());
+        formData.append('price', parseFloat(priceInput.value) || 0);
+        formData.append('stock', stockInput ? parseInt(stockInput.value) || 0 : 0);
+        formData.append('short_description', shortDescTextarea ? shortDescTextarea.value.trim() : '');
+        formData.append('sku', skuInput ? skuInput.value.trim() : '');
+        formData.append('category_id', parseInt(categoryIdInput.value));
+
+        if (promoPriceInput && promoPriceInput.value) {
+          formData.append('promotional_price', parseFloat(promoPriceInput.value));
+        }
+
+        // ADICIONAR NOME DA CATEGORIA (para compatibilidade)
+        const category = allCategories.find(c => c.id == categoryIdInput.value);
         if (category) {
           formData.append('category', category.name);
+          console.log(`✅ Categoria: ${category.name} (ID: ${category.id})`);
         }
 
-        // 4. Imagem principal (apenas se selecionou nova)
+        // ===== IMAGEM PRINCIPAL =====
         const mainImageInput = document.querySelector('#mainImageUpload input[type="file"]');
         if (mainImageInput && mainImageInput.files[0]) {
           formData.append('main_image', mainImageInput.files[0]);
-          console.log("📷 Nova imagem principal:", mainImageInput.files[0].name);
-        } else if (isEditing) {
-          // Se está editando e não selecionou nova imagem, manter a atual
-          formData.append('keep_current_image', 'true');
+          console.log("📷 Imagem principal:", mainImageInput.files[0].name);
         }
 
-        // 5. Galeria de imagens
+        // ===== GALERIA DE IMAGENS =====
         const galleryInput = document.querySelector('#galleryUpload input[type="file"]');
         if (galleryInput && galleryInput.files) {
           for (let i = 0; i < galleryInput.files.length; i++) {
             formData.append('gallery_images', galleryInput.files[i]);
           }
-          console.log(`✅ ${galleryInput.files.length} novas imagens na galeria`);
+          console.log(`🖼️ Galeria: ${galleryInput.files.length} imagem(ns)`);
         }
 
-        // 6. Descrição
-        const description = editorContent ? editorContent.innerHTML : '';
-        formData.append('description', description);
-
-        // 7. Outros campos
-        const skuInput = document.querySelector('#basicTab input[placeholder*="SKU"]');
-        if (skuInput && skuInput.value) {
-          formData.append('sku', skuInput.value);
+        // ===== DESCRIÇÃO DETALHADA =====
+        const editorContent = document.querySelector('.editor-content');
+        if (editorContent) {
+          formData.append('description', editorContent.innerHTML || '');
         }
+
+        // ===== VARIANTES =====
+        const variants = { sizes: [], colors: [] };
+
+        const sizeCheckboxes = document.querySelectorAll('#variantsTab input[type="checkbox"]');
+        const sizePriceInputs = document.querySelectorAll('#variantsTab input[placeholder*="00"]');
+
+        sizeCheckboxes.forEach((checkbox, index) => {
+          if (checkbox.checked && checkbox.nextElementSibling) {
+            const sizeText = checkbox.nextElementSibling.textContent.trim();
+            const priceInput = sizePriceInputs[index];
+            variants.sizes.push({
+              size: sizeText,
+              price: priceInput ? parseFloat(priceInput.value) : null
+            });
+          }
+        });
+
+        const selectedColor = document.querySelector('#variantsTab .color-option.selected');
+        if (selectedColor) {
+          variants.colors = [selectedColor.getAttribute('title') || 'Cor padrão'];
+        }
+
+        formData.append('variants', JSON.stringify(variants));
+
+        // ===== ESPECIFICAÇÕES =====
+        const specifications = [];
+        const specElements = document.querySelectorAll('#detailsTab #specifications > div');
+
+        specElements.forEach(spec => {
+          const inputs = spec.querySelectorAll('input');
+          if (inputs.length >= 2 && inputs[0].value && inputs[1].value) {
+            specifications.push({
+              key: inputs[0].value.trim(),
+              value: inputs[1].value.trim()
+            });
+          }
+        });
+
+        formData.append('specifications', JSON.stringify(specifications));
+
+        // ===== INFORMAÇÕES DE ENVIO =====
+        const physicalCheckbox = document.querySelector('#detailsTab input[type="checkbox"]:first-of-type');
+        const weightInput = document.querySelector('#detailsTab input[placeholder*="0.45"]');
+        const dimensionsInput = document.querySelector('#detailsTab input[placeholder*="25x18x15"]');
+        const productionInput = document.querySelector('#detailsTab input[placeholder*="3-5 dias"]');
+
+        const shippingInfo = {
+          is_physical: physicalCheckbox ? physicalCheckbox.checked : true,
+          weight_kg: weightInput ? parseFloat(weightInput.value) || 0 : 0,
+          dimensions_cm: dimensionsInput ? dimensionsInput.value.trim() : '',
+          production_time: productionInput ? productionInput.value.trim() : ''
+        };
+
+        formData.append('shipping_info', JSON.stringify(shippingInfo));
+        formData.append('dimensions', dimensionsInput ? dimensionsInput.value.trim() : '');
+        formData.append('weight', weightInput ? weightInput.value.trim() : '');
+
+        // ===== MATERIAL =====
+        const materialSpec = specifications.find(s =>
+          s.key && s.key.toLowerCase().includes('material')
+        );
+        formData.append('material', materialSpec ? materialSpec.value : '');
+
+        // ===== STATUS E DESTAQUE =====
+        const switches = document.querySelectorAll('#detailsTab .toggle-switch input[type="checkbox"]');
+        formData.append('featured', switches[1] ? (switches[1].checked ? 1 : 0) : 0);
+        formData.append('status', switches[0] ? (switches[0].checked ? 'active' : 'inactive') : 'active');
+
+        const settings = {
+          allow_reviews: switches[2] ? switches[2].checked : true
+        };
+        formData.append('settings', JSON.stringify(settings));
+
+        // ===== SEO =====
+        const seoTitleInput = document.querySelector('#seoTab input[placeholder*="Título SEO"]');
+        const seoDescTextarea = document.querySelector('#seoTab textarea[placeholder*="Meta Descrição"]');
+        const slugInput = document.querySelector('#seoTab input[placeholder*="URL Amigável"]');
+        const keywordsInput = document.querySelector('#seoTab input[placeholder*="Palavras-chave"]');
+
+        const seo = {
+          title: seoTitleInput ? seoTitleInput.value.trim() : '',
+          description: seoDescTextarea ? seoDescTextarea.value.trim() : '',
+          slug: slugInput ? slugInput.value.trim() : '',
+          keywords: keywordsInput ? keywordsInput.value.split(',').map(k => k.trim()).filter(k => k) : []
+        };
+
+        formData.append('seo', JSON.stringify(seo));
 
         // DEBUG
         console.log("=== CONTEÚDO DO FORMDATA ===");
         for (let [key, value] of formData.entries()) {
-          console.log(`${key}:`, value instanceof File ? `[Arquivo: ${value.name}]` : value);
+          if (value instanceof File) {
+            console.log(`📁 ${key}: ${value.name} (${value.size} bytes)`);
+          } else {
+            console.log(`📝 ${key}: ${value}`);
+          }
         }
         console.log("=== FIM DEBUG ===");
 

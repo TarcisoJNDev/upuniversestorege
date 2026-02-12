@@ -1,4 +1,4 @@
-// controllers/productController.js
+// src/controllers/productController.js - ATUALIZADO
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 const path = require("path");
@@ -9,71 +9,75 @@ class ProductController {
   async create(req, res) {
     try {
       console.log("📦 Recebendo dados do produto...");
-      console.log("📝 Campos do body:", req.body);
-      console.log("📁 Arquivos recebidos:", req.files);
-
-      // DEBUG: Mostrar arquivos recebidos
-      if (req.files) {
-        console.log("📁 Arquivos recebidos:");
-        console.log(
-          "- main_image:",
-          req.files.main_image ? req.files.main_image[0]?.filename : "Nenhum",
-        );
-        console.log(
-          "- gallery_images:",
-          req.files.gallery_images?.length || 0,
-          "arquivo(s)",
-        );
-      }
+      console.log("📝 Body:", req.body);
+      console.log("📁 Arquivos:", req.files);
 
       let productData = { ...req.body };
 
-      // Processar imagens se existirem
+      // Processar imagens
       if (req.files) {
-        // Imagem principal
         if (req.files.main_image && req.files.main_image[0]) {
           const mainImage = req.files.main_image[0];
           productData.image_url = `/uploads/${mainImage.filename}`;
-          console.log("📷 Imagem principal salva em:", productData.image_url);
+          console.log("📷 Imagem principal:", productData.image_url);
         }
 
-        // Galeria de imagens
         if (req.files.gallery_images) {
           productData.images = req.files.gallery_images.map(
             (file) => `/uploads/${file.filename}`,
           );
-          console.log("🖼️ Galeria salva:", productData.images);
+          console.log("🖼️ Galeria:", productData.images);
         }
       }
 
-      // Se tiver category, converter para ID
-      if (productData.category && !productData.category_id) {
+      // Processar category_id
+      if (productData.category_id) {
+        productData.category_id = parseInt(productData.category_id);
+
+        // Buscar nome da categoria pelo ID
+        const category = await Category.findById(productData.category_id);
+        if (category) {
+          productData.category = category.name;
+          console.log(
+            `🏷️ Categoria encontrada: ${category.name} (ID: ${category.id})`,
+          );
+        }
+      }
+
+      // Se não tiver category_id, tentar pelo nome
+      if (!productData.category_id && productData.category) {
         const category = await Category.findByName(productData.category);
         if (category) {
           productData.category_id = category.id;
-          productData.category = category.name; // Manter o nome também
+          console.log(
+            `🏷️ Categoria encontrada pelo nome: ${category.name} (ID: ${category.id})`,
+          );
         }
       }
 
-      // Se não tiver category_id, usar 0
-      if (!productData.category_id) {
-        productData.category_id = 0;
+      // Validação
+      if (!productData.name) {
+        return res
+          .status(400)
+          .json({ success: false, error: "Nome do produto é obrigatório" });
+      }
+      if (!productData.price || parseFloat(productData.price) <= 0) {
+        return res
+          .status(400)
+          .json({ success: false, error: "Preço inválido" });
+      }
+      if (!productData.category_id && !productData.category) {
+        return res
+          .status(400)
+          .json({ success: false, error: "Categoria é obrigatória" });
       }
 
-      // Validação básica
-      if (!productData.name || !productData.price) {
-        return res.status(400).json({
-          error: "Nome e preço são obrigatórios",
-        });
-      }
-
+      // Criar produto
       const productId = await Product.create(productData);
-      console.log("✅ Produto criado no banco com ID:", productId);
+      console.log("✅ Produto criado com ID:", productId);
 
       const product = await Product.findById(productId);
-      console.log("📋 Produto recuperado:", product);
 
-      // ENVIE SEMPRE UMA RESPOSTA JSON consistente
       res.status(201).json({
         success: true,
         message: "Produto criado com sucesso!",
@@ -86,7 +90,6 @@ class ProductController {
         success: false,
         error: "Erro ao criar produto",
         details: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       });
     }
   }
@@ -95,17 +98,16 @@ class ProductController {
   async getAll(req, res) {
     try {
       const filters = {
-        category: req.query.category, // nome da categoria
-        category_id: req.query.category_id, // ID da categoria (NOVO)
+        category: req.query.category,
+        category_id: req.query.category_id,
         status: req.query.status,
         featured: req.query.featured,
         search: req.query.search,
         limit: req.query.limit,
       };
 
-      console.log("🔍 Filtros aplicados:", filters);
-
       const products = await Product.findAll(filters);
+
       res.json({
         success: true,
         products,
@@ -127,64 +129,53 @@ class ProductController {
       const product = await Product.findById(id);
 
       if (!product) {
-        return res.status(404).json({ error: "Produto não encontrado" });
+        return res
+          .status(404)
+          .json({ success: false, error: "Produto não encontrado" });
       }
 
-      res.json({ product });
+      res.json({ success: true, product });
     } catch (error) {
       console.error("Erro ao buscar produto:", error);
-      res.status(500).json({ error: "Erro ao buscar produto" });
+      res.status(500).json({ success: false, error: "Erro ao buscar produto" });
     }
   }
 
   // Atualizar produto
-  // Atualizar produto COM upload de imagens
   async update(req, res) {
     try {
       const { id } = req.params;
       let productData = { ...req.body };
 
       console.log("🔄 Atualizando produto:", id);
-      console.log("📁 Arquivos recebidos:", req.files);
+      console.log("📁 Arquivos:", req.files);
 
       const productExists = await Product.findById(id);
       if (!productExists) {
-        return res.status(404).json({ error: "Produto não encontrado" });
+        return res
+          .status(404)
+          .json({ success: false, error: "Produto não encontrado" });
       }
 
-      // Processar imagens se existirem
+      // Processar imagens
       if (req.files) {
-        // Imagem principal
         if (req.files.main_image && req.files.main_image[0]) {
           const mainImage = req.files.main_image[0];
           productData.image_url = `/uploads/${mainImage.filename}`;
-          console.log("📷 Nova imagem principal:", productData.image_url);
-        } else {
-          // Manter imagem atual se não enviar nova
-          productData.image_url = productExists.image_url;
         }
 
-        // Galeria de imagens
-        if (req.files.gallery_images && req.files.gallery_images.length > 0) {
+        if (req.files.gallery_images) {
           productData.images = req.files.gallery_images.map(
             (file) => `/uploads/${file.filename}`,
           );
-          console.log("🖼️ Nova galeria:", productData.images);
-        } else {
-          // Manter galeria atual se não enviar novas
-          productData.images = productExists.images;
         }
-      } else {
-        // Se não enviar arquivos, manter os atuais
-        productData.image_url = productExists.image_url;
-        productData.images = productExists.images;
       }
 
-      // Se tiver category, converter para ID
-      if (productData.category && !productData.category_id) {
-        const category = await Category.findByName(productData.category);
+      // Processar category_id
+      if (productData.category_id) {
+        productData.category_id = parseInt(productData.category_id);
+        const category = await Category.findById(productData.category_id);
         if (category) {
-          productData.category_id = category.id;
           productData.category = category.name;
         }
       }
@@ -211,10 +202,12 @@ class ProductController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-
       const productExists = await Product.findById(id);
+
       if (!productExists) {
-        return res.status(404).json({ error: "Produto não encontrado" });
+        return res
+          .status(404)
+          .json({ success: false, error: "Produto não encontrado" });
       }
 
       await Product.delete(id);
@@ -225,7 +218,9 @@ class ProductController {
       });
     } catch (error) {
       console.error("Erro ao deletar produto:", error);
-      res.status(500).json({ error: "Erro ao deletar produto" });
+      res
+        .status(500)
+        .json({ success: false, error: "Erro ao deletar produto" });
     }
   }
 
@@ -233,44 +228,28 @@ class ProductController {
   async getFeatured(req, res) {
     try {
       const products = await Product.findAll({ featured: true, limit: 8 });
-      res.json({ products });
+      res.json({ success: true, products });
     } catch (error) {
       console.error("Erro ao buscar produtos em destaque:", error);
-      res.status(500).json({ error: "Erro ao buscar produtos em destaque" });
+      res
+        .status(500)
+        .json({ success: false, error: "Erro ao buscar produtos em destaque" });
     }
   }
 
-  // Produtos por categoria
-  async getByCategory(req, res) {
-    try {
-      const { category } = req.params;
-      const products = await Product.findAll({ category });
-      res.json({ products });
-    } catch (error) {
-      console.error("Erro ao buscar produtos por categoria:", error);
-      res.status(500).json({ error: "Erro ao buscar produtos por categoria" });
-    }
-  }
-
+  // Produtos por categoria ID
   async getByCategoryId(req, res) {
     try {
       const { categoryId } = req.params;
-      console.log("🔍 Buscando produtos por categoria ID:", categoryId);
-
-      // Converter para número se for string
       const id = parseInt(categoryId);
 
       if (isNaN(id)) {
-        return res.status(400).json({
-          error: "ID de categoria inválido",
-        });
+        return res
+          .status(400)
+          .json({ success: false, error: "ID de categoria inválido" });
       }
 
       const products = await Product.findByCategoryId(id);
-
-      console.log(
-        `✅ ${products.length} produtos encontrados para categoria ID ${id}`,
-      );
 
       res.json({
         success: true,
@@ -285,6 +264,23 @@ class ProductController {
         error: "Erro ao buscar produtos por categoria",
         details: error.message,
       });
+    }
+  }
+
+  // Produtos por categoria (nome)
+  async getByCategory(req, res) {
+    try {
+      const { category } = req.params;
+      const products = await Product.findAll({ category });
+      res.json({ success: true, products });
+    } catch (error) {
+      console.error("Erro ao buscar produtos por categoria:", error);
+      res
+        .status(500)
+        .json({
+          success: false,
+          error: "Erro ao buscar produtos por categoria",
+        });
     }
   }
 }
