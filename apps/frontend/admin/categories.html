@@ -846,6 +846,7 @@
             ? `<i class="${category.icon}"></i>`
             : category.icon;
         }
+        
 
         const isActive = category.status !== 'inactive';
         const statusClass = isActive ? 'status-active' : 'status-inactive';
@@ -1135,6 +1136,10 @@
       if (elements.categoryFormData) {
         elements.categoryFormData.addEventListener('submit', async function (e) {
           e.preventDefault();
+
+          // 🔴🔴🔴 ADICIONE ESTA LINHA - IMPEDE CLIQUE DUPLO 🔴🔴🔴
+          if (this.classList.contains('is-submitting')) return;
+          this.classList.add('is-submitting');
 
           if (!elements.categoryName.value.trim()) {
             showNotification('Nome da categoria é obrigatório', 'error');
