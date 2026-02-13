@@ -329,11 +329,10 @@ function setupEventListeners() {
 
 // Atualizar item do carrinho
 // Atualizar item do carrinho
+// Atualizar item do carrinho
 function updateCartItem(productId, quantity) {
-  if (!window.cartManager) return;
-
-  // Atualizar no localStorage via cartManager
-  const cart = window.cartManager.updateQuantity(productId, quantity);
+  // Usar cartManager diretamente (já está disponível globalmente)
+  const cart = cartManager.updateQuantity(productId, quantity);
 
   // Atualizar total do item na interface
   const itemElement = document.querySelector(
@@ -365,7 +364,7 @@ function updateCartItem(productId, quantity) {
   calculateTotalWithShipping();
 
   // Atualizar contador do carrinho
-  window.cartManager.updateCartCount();
+  cartManager.updateCartCount();
 
   // Se o carrinho ficar vazio
   if (cart.items.length === 0) {
