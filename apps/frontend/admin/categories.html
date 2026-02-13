@@ -452,11 +452,12 @@
 
       async updateCategory(id, data) {
         try {
-          console.log(`📤 Atualizando categoria ${id}...`);
+          console.log(`📤 Atualizando categoria ${id}...`, data);
           const result = await this.request(`/categories/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data)
           });
+          console.log('📥 Resposta da atualização:', result);
           return result.success ? result : { success: false, error: result.error || 'Erro ao atualizar categoria' };
         } catch (error) {
           console.error(`❌ Erro ao atualizar categoria ${id}:`, error);
@@ -840,11 +841,16 @@
         const productCount = category.product_count || 0;
         const color = getCategoryColor(category);
 
+        // No createCategoryCard, faça:
         let iconHTML = '🏺';
         if (category.icon) {
-          iconHTML = category.icon.includes('fa-')
-            ? `<i class="${category.icon}"></i>`
-            : category.icon;
+          if (category.icon.includes('fa-')) {
+            // Se for ícone FontAwesome, adicionar a classe "fas" (ou "far" dependendo do tipo)
+            // Por padrão, use "fas" para ícones sólidos
+            iconHTML = `<i class="fas ${category.icon}"></i>`;
+          } else {
+            iconHTML = category.icon; // Emoji
+          }
         }
         
 
@@ -1045,12 +1051,20 @@
 
       window.editCategory = async function (id) {
         try {
+          console.log(`✏️ Editando categoria #${id}...`);
+
+          // Mostrar loading
+          showNotification('Carregando categoria...', 'info');
+
           const category = await window.ProductAPI.getCategoryById(id);
+          console.log('📦 Categoria carregada:', category);
+
           if (!category) {
             showNotification('Categoria não encontrada', 'error');
             return;
           }
 
+          // Preencher campos básicos
           elements.categoryId.value = category.id;
           elements.categoryName.value = category.name;
           elements.categorySlug.value = category.slug;
@@ -1060,17 +1074,30 @@
           document.getElementById('displayOrder').value = category.display_order || 1;
           document.getElementById('isActive').checked = category.status !== 'inactive';
 
+          // 🔴 CORREÇÃO CRÍTICA: Processar o ícone
           if (category.icon) {
+            // Salvar no input
             elements.iconInput.value = category.icon;
-            elements.iconPreview.innerHTML = category.icon.includes('fa-')
-              ? `<i class="${category.icon}"></i>`
-              : category.icon;
+
+            // Mostrar preview correto
+            if (category.icon.includes('fa-')) {
+              // Ícone FontAwesome - mostrar com tag <i>
+              elements.iconPreview.innerHTML = `<i class="fas ${category.icon}"></i>`;
+            } else {
+              // Emoji
+              elements.iconPreview.innerHTML = category.icon;
+            }
+          } else {
+            elements.iconInput.value = '';
+            elements.iconPreview.innerHTML = '🏷️';
           }
 
+          // Cor do ícone
           if (category.color) {
             elements.iconPreview.style.color = category.color;
             elements.selectedColor.value = category.color;
 
+            // Selecionar cor no color picker
             document.querySelectorAll('.color-option').forEach(opt => {
               opt.classList.remove('selected');
               if (opt.getAttribute('data-color') === category.color) {
@@ -1079,16 +1106,18 @@
             });
           }
 
+          // Mostrar formulário
           elements.categoryForm.classList.add('show');
           if (elements.newCategoryBtn) elements.newCategoryBtn.style.display = 'none';
           isEditing = true;
           elements.formTitle.textContent = 'Editar Categoria';
           elements.submitBtn.innerHTML = '<i class="fas fa-save"></i> Atualizar Categoria';
 
-          showNotification(`Editando categoria: ${category.name}`, 'info');
+          showNotification(`Editando categoria: ${category.name}`, 'success');
+
         } catch (error) {
           console.error('❌ Erro ao editar categoria:', error);
-          showNotification('Erro ao carregar categoria', 'error');
+          showNotification('Erro ao carregar categoria: ' + error.message, 'error');
         }
       };
 
