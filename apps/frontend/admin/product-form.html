@@ -8,8 +8,8 @@
 
   <link rel="stylesheet" href="../public/css/style(OFC).css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="../public/js/api.js"></script>
   <link rel="stylesheet" href="product-form.css">
+  <script src="../public/js/config.js"></script>
   <style>
     /* CATEGORY SELECTOR STYLES */
     .category-selector-wrapper {
@@ -288,13 +288,13 @@
         </div>
 
         <!-- Tab Contents -->
-        <form id="productForm">
+        <form id="productForm" enctype="multipart/form-data">
           <!-- TAB 1: Informações Básicas -->
           <div class="tab-content active" id="basicTab">
             <div class="form-grid">
               <div class="form-group">
                 <label class="label-required">Nome do Produto</label>
-                <input type="text" class="form-control" placeholder="Ex: Crânio T-Rex 3D" required>
+                <input type="text" class="form-control" id="productName" placeholder="Ex: Crânio T-Rex 3D" required>
                 <div class="form-help">Nome completo do produto, como aparecerá na loja</div>
               </div>
 
@@ -342,15 +342,16 @@
 
               <div class="form-group">
                 <label>SKU (Código do Produto)</label>
-                <input type="text" class="form-control" placeholder="Ex: PROD-001">
+                <input type="text" class="form-control" id="productSku" placeholder="Ex: PROD-001">
                 <div class="form-help">Código único para controle de estoque</div>
               </div>
 
               <div class="form-group">
                 <label class="label-required">Preço</label>
                 <div style="display: flex; gap: 10px;">
-                  <input type="number" class="form-control" placeholder="120.00" step="0.01" required style="flex: 1;">
-                  <select class="form-control" style="width: 100px;">
+                  <input type="number" class="form-control" id="productPrice" placeholder="120.00" step="0.01" required
+                    style="flex: 1;">
+                  <select class="form-control" id="productCurrency" style="width: 100px;">
                     <option>R$</option>
                     <option>US$</option>
                     <option>€</option>
@@ -360,26 +361,25 @@
 
               <div class="form-group">
                 <label>Preço Promocional</label>
-                <input type="number" class="form-control" placeholder="150.00" step="0.01">
+                <input type="number" class="form-control" id="productPromoPrice" placeholder="150.00" step="0.01">
                 <div class="form-help">Preço original para mostrar o desconto</div>
               </div>
 
               <div class="form-group">
                 <label class="label-required">Estoque</label>
-                <input type="number" class="form-control" placeholder="12" min="0" required>
+                <input type="number" class="form-control" id="productStock" placeholder="12" min="0" required>
                 <div class="form-help">Quantidade disponível em estoque</div>
               </div>
             </div>
 
             <div class="form-group">
               <label>Descrição Curta</label>
-              <textarea class="form-control" placeholder="Breve descrição do produto, mostrada nas listagens"
-                maxlength="200"></textarea>
+              <textarea class="form-control" id="productShortDesc"
+                placeholder="Breve descrição do produto, mostrada nas listagens" maxlength="200"></textarea>
               <div class="form-help" style="text-align: right;">Máximo: 200 caracteres</div>
             </div>
           </div>
 
-          <!-- Resto do formulário permanece igual... -->
           <!-- TAB 2: Imagens -->
           <div class="tab-content" id="imagesTab">
             <div class="form-group">
@@ -389,7 +389,7 @@
                 <p>Clique para fazer upload da imagem principal</p>
                 <small>Recomendado: 1200x1200px, JPG ou PNG, máximo 5MB</small>
               </div>
-              <div id="mainImagePreview" style="margin-top: 20px;"></div>
+              <div id="mainImagePreview" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
             </div>
 
             <div class="form-group">
@@ -399,7 +399,8 @@
                 <p>Clique ou arraste para adicionar imagens à galeria</p>
                 <small>Você pode selecionar múltiplas imagens</small>
               </div>
-              <div id="imagePreview" class="image-gallery"></div>
+              <div id="imagePreview" class="image-gallery"
+                style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
             </div>
           </div>
 
@@ -413,19 +414,19 @@
                 <label>Tamanhos Disponíveis</label>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                   <label style="display: flex; align-items: center; gap: 5px;">
-                    <input type="checkbox">
+                    <input type="checkbox" class="size-checkbox" data-size="Pequeno">
                     <span>Pequeno (15cm)</span>
                   </label>
                   <label style="display: flex; align-items: center; gap: 5px;">
-                    <input type="checkbox" checked>
+                    <input type="checkbox" class="size-checkbox" data-size="Médio" checked>
                     <span>Médio (25cm)</span>
                   </label>
                   <label style="display: flex; align-items: center; gap: 5px;">
-                    <input type="checkbox">
+                    <input type="checkbox" class="size-checkbox" data-size="Grande">
                     <span>Grande (35cm)</span>
                   </label>
                   <label style="display: flex; align-items: center; gap: 5px;">
-                    <input type="checkbox">
+                    <input type="checkbox" class="size-checkbox" data-size="Gigante">
                     <span>Gigante (50cm)</span>
                   </label>
                 </div>
@@ -434,17 +435,24 @@
               <!-- Cores -->
               <div class="form-group">
                 <label>Cores do Filamento</label>
-                <div class="color-picker">
-                  <div class="color-option selected" style="background: #8B7355;" title="Marrom Pedra"></div>
-                  <div class="color-option" style="background: #A0522D;" title="Terra Queimada"></div>
-                  <div class="color-option" style="background: #808080;" title="Cinza Fosco"></div>
-                  <div class="color-option" style="background: #2F4F4F;" title="Verde Escuro"></div>
-                  <div class="color-option" style="background: #000000;" title="Preto Profundo"></div>
-                  <div class="color-option custom-color"
-                    style="background: linear-gradient(45deg, #666 50%, transparent 50%);">
-                    <input type="color" value="#7C3AED" title="Cor personalizada">
-                  </div>
+                <div class="color-picker" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <div class="color-option selected"
+                    style="background: #8B7355; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;"
+                    title="Marrom Pedra"></div>
+                  <div class="color-option"
+                    style="background: #A0522D; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;"
+                    title="Terra Queimada"></div>
+                  <div class="color-option"
+                    style="background: #808080; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;"
+                    title="Cinza Fosco"></div>
+                  <div class="color-option"
+                    style="background: #2F4F4F; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;"
+                    title="Verde Escuro"></div>
+                  <div class="color-option"
+                    style="background: #000000; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;"
+                    title="Preto Profundo"></div>
                 </div>
+                <input type="hidden" id="selectedColor" value="Marrom Pedra">
               </div>
 
               <!-- Preços por variante -->
@@ -454,26 +462,30 @@
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div>
                       <label style="display: block; margin-bottom: 8px; font-size: 13px;">Pequeno</label>
-                      <input type="number" class="form-control" placeholder="80.00" step="0.01">
+                      <input type="number" class="form-control size-price" data-size="Pequeno" placeholder="80.00"
+                        step="0.01">
                     </div>
                     <div>
                       <label style="display: block; margin-bottom: 8px; font-size: 13px;">Médio</label>
-                      <input type="number" class="form-control" placeholder="120.00" step="0.01">
+                      <input type="number" class="form-control size-price" data-size="Médio" placeholder="120.00"
+                        step="0.01">
                     </div>
                     <div>
                       <label style="display: block; margin-bottom: 8px; font-size: 13px;">Grande</label>
-                      <input type="number" class="form-control" placeholder="180.00" step="0.01">
+                      <input type="number" class="form-control size-price" data-size="Grande" placeholder="180.00"
+                        step="0.01">
                     </div>
                     <div>
                       <label style="display: block; margin-bottom: 8px; font-size: 13px;">Gigante</label>
-                      <input type="number" class="form-control" placeholder="250.00" step="0.01">
+                      <input type="number" class="form-control size-price" data-size="Gigante" placeholder="250.00"
+                        step="0.01">
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <button type="button" class="btn-add-variant">
+            <button type="button" class="btn-add-variant" id="addVariantBtn">
               <i class="fas fa-plus"></i>
               Adicionar Outra Opção (Material, Textura, etc.)
             </button>
@@ -501,15 +513,8 @@
                   <button type="button" class="editor-btn" data-command="insertOrderedList">
                     <i class="fas fa-list-ol"></i>
                   </button>
-                  <div style="width: 1px; background: rgba(124, 58, 237, 0.2); margin: 0 5px;"></div>
-                  <button type="button" class="editor-btn" data-command="createLink">
-                    <i class="fas fa-link"></i>
-                  </button>
-                  <button type="button" class="editor-btn" data-command="unlink">
-                    <i class="fas fa-unlink"></i>
-                  </button>
                 </div>
-                <div class="editor-content" contenteditable="true"></div>
+                <div class="editor-content" id="productDescription" contenteditable="true"></div>
               </div>
             </div>
 
@@ -518,17 +523,10 @@
                 <label>Especificações Técnicas</label>
                 <div style="background: rgba(26, 0, 43, 0.5); border-radius: 10px; padding: 20px;">
                   <div id="specifications">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                      <input type="text" class="form-control" placeholder="Ex: Material">
-                      <input type="text" class="form-control" placeholder="Ex: PLA Premium">
-                      <button type="button"
-                        style="background: transparent; border: 1px solid rgba(124, 58, 237, 0.3); color: #f44336; border-radius: 6px; width: 40px;">
-                        <i class="fas fa-times"></i>
-                      </button>
-                    </div>
+                    <!-- Especificações serão adicionadas aqui -->
                   </div>
-                  <button type="button"
-                    style="margin-top: 10px; padding: 8px 15px; background: rgba(124, 58, 237, 0.1); border: 1px dashed rgba(124, 58, 237, 0.3); color: #C084FC; border-radius: 6px; width: 100%;">
+                  <button type="button" id="addSpecBtn"
+                    style="margin-top: 10px; padding: 8px 15px; background: rgba(124, 58, 237, 0.1); border: 1px dashed rgba(124, 58, 237, 0.3); color: #C084FC; border-radius: 6px; width: 100%; cursor: pointer;">
                     <i class="fas fa-plus"></i> Adicionar Especificação
                   </button>
                 </div>
@@ -539,22 +537,22 @@
                 <div style="background: rgba(26, 0, 43, 0.5); border-radius: 10px; padding: 20px;">
                   <div style="margin-bottom: 15px;">
                     <label style="display: flex; align-items: center; gap: 10px;">
-                      <input type="checkbox" checked>
+                      <input type="checkbox" id="isPhysical" checked>
                       <span>Produto físico (requer envio)</span>
                     </label>
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div>
                       <label style="display: block; margin-bottom: 8px; font-size: 13px;">Peso (kg)</label>
-                      <input type="number" class="form-control" placeholder="0.45" step="0.01">
+                      <input type="number" class="form-control" id="productWeight" placeholder="0.45" step="0.01">
                     </div>
                     <div>
                       <label style="display: block; margin-bottom: 8px; font-size: 13px;">Dimensões (cm)</label>
-                      <input type="text" class="form-control" placeholder="25x18x15">
+                      <input type="text" class="form-control" id="productDimensions" placeholder="25x18x15">
                     </div>
                     <div>
                       <label style="display: block; margin-bottom: 8px; font-size: 13px;">Tempo de Produção</label>
-                      <input type="text" class="form-control" placeholder="3-5 dias">
+                      <input type="text" class="form-control" id="productionTime" placeholder="3-5 dias">
                     </div>
                   </div>
                 </div>
@@ -563,7 +561,7 @@
 
             <div class="toggle-switch" style="margin-top: 20px;">
               <label class="switch">
-                <input type="checkbox" checked>
+                <input type="checkbox" id="productActive" checked>
                 <span class="slider"></span>
               </label>
               <span>Disponível para venda</span>
@@ -571,15 +569,15 @@
 
             <div class="toggle-switch">
               <label class="switch">
-                <input type="checkbox" checked>
+                <input type="checkbox" id="productFeatured">
                 <span class="slider"></span>
               </label>
-              <span>Destacar como produto em promoção</span>
+              <span>Destacar como produto em destaque</span>
             </div>
 
             <div class="toggle-switch">
               <label class="switch">
-                <input type="checkbox">
+                <input type="checkbox" id="allowReviews" checked>
                 <span class="slider"></span>
               </label>
               <span>Permitir avaliações do produto</span>
@@ -590,26 +588,28 @@
           <div class="tab-content" id="seoTab">
             <div class="form-group">
               <label>Título SEO</label>
-              <input type="text" class="form-control" placeholder="Crânio T-Rex 3D - Universo Paralelo Store">
+              <input type="text" class="form-control" id="seoTitle"
+                placeholder="Crânio T-Rex 3D - Universo Paralelo Store">
               <div class="form-help">Título que aparecerá nos resultados de busca (recomendado: 50-60 caracteres)</div>
             </div>
 
             <div class="form-group">
               <label>Meta Descrição</label>
-              <textarea class="form-control" placeholder="Descrição para os mecanismos de busca" rows="3"></textarea>
+              <textarea class="form-control" id="seoDescription" placeholder="Descrição para os mecanismos de busca"
+                rows="3"></textarea>
               <div class="form-help">Descrição que aparecerá nos resultados de busca (recomendado: 150-160 caracteres)
               </div>
             </div>
 
             <div class="form-group">
               <label>URL Amigável (Slug)</label>
-              <input type="text" class="form-control" placeholder="cranio-t-rex-3d">
+              <input type="text" class="form-control" id="productSlug" placeholder="cranio-t-rex-3d">
               <div class="form-help">URL limpa para o produto (ex: seu-site.com/produtos/cranio-t-rex-3d)</div>
             </div>
 
             <div class="form-group">
               <label>Palavras-chave</label>
-              <input type="text" class="form-control"
+              <input type="text" class="form-control" id="productKeywords"
                 placeholder="escultura 3d, t-rex, dinossauro, decoração, impressão 3d">
               <div class="form-help">Separe por vírgulas as palavras-chave relevantes</div>
             </div>
@@ -617,11 +617,10 @@
             <div class="seo-preview">
               <h4>Pré-visualização do Resultado de Busca</h4>
               <div class="preview-item">
-                <div class="preview-title">Crânio T-Rex 3D - Universo Paralelo Store</div>
-                <div class="preview-url">https://universoparalelo.com/produtos/cranio-t-rex-3d</div>
-                <div class="preview-description">Esta impressionante réplica do crânio do T-Rex é perfeita para
-                  apaixonados por paleontologia e decoração única. Impressa em 3D com alta resolução, captura cada
-                  detalhe...</div>
+                <div class="preview-title" id="previewTitle">Crânio T-Rex 3D - Universo Paralelo Store</div>
+                <div class="preview-url" id="previewUrl">https://universoparalelo.com/produtos/cranio-t-rex-3d</div>
+                <div class="preview-description" id="previewDescription">Esta impressionante réplica do crânio do T-Rex
+                  é perfeita para apaixonados por paleontologia e decoração única.</div>
               </div>
             </div>
           </div>
@@ -636,7 +635,7 @@
               <i class="far fa-save"></i>
               Salvar Rascunho
             </button>
-            <button type="submit" class="btn-save">
+            <button type="submit" class="btn-save" id="submitBtn">
               <i class="fas fa-rocket"></i>
               Publicar Produto
             </button>
@@ -647,93 +646,187 @@
   </div>
 
   <script>
-    // === FUNÇÕES GLOBAIS ===
+    // ============================================
+    // ===== CONFIGURAÇÃO DA API =====
+    // ============================================
+    const IS_LOCALHOST = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_BASE_URL = IS_LOCALHOST ? 'http://localhost:5000/api' : 'https://upuniversestorege.onrender.com/api';
+
+    console.log('🚀 API Base URL:', API_BASE_URL);
+
+    // ============================================
+    // ===== API CLIENT =====
+    // ============================================
+    window.ProductAPI = {
+      API_BASE_URL: API_BASE_URL,
+
+      async request(endpoint, options = {}, timeout = 30000) {
+        const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        try {
+          console.log(`📡 ${options.method || 'GET'} ${url}`);
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+          }
+
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+          }
+          return await response.text();
+        } catch (error) {
+          clearTimeout(timeoutId);
+          console.error(`❌ Erro na requisição ${url}:`, error);
+          throw error;
+        }
+      },
+
+      // ===== CATEGORIAS =====
+      async getAllCategories() {
+        try {
+          const data = await this.request('/categories');
+          return data.categories || [];
+        } catch (error) {
+          console.error('❌ Erro ao buscar categorias:', error);
+          return [];
+        }
+      },
+
+      // ===== PRODUTOS =====
+      async getProductById(id) {
+        try {
+          const data = await this.request(`/products/${id}`);
+          return data.product || null;
+        } catch (error) {
+          console.error(`❌ Erro ao buscar produto ${id}:`, error);
+          return null;
+        }
+      },
+
+      async createProduct(formData) {
+        try {
+          console.log('📤 Criando produto...');
+          const result = await this.request('/products', {
+            method: 'POST',
+            body: formData
+          });
+          return result;
+        } catch (error) {
+          console.error('❌ Erro ao criar produto:', error);
+          return { success: false, error: error.message };
+        }
+      },
+
+      async updateProduct(id, formData) {
+        try {
+          console.log(`📤 Atualizando produto ${id}...`);
+          const result = await this.request(`/products/${id}`, {
+            method: 'PUT',
+            body: formData
+          });
+          return result;
+        } catch (error) {
+          console.error(`❌ Erro ao atualizar produto ${id}:`, error);
+          return { success: false, error: error.message };
+        }
+      },
+
+      async deleteProduct(id) {
+        try {
+          const result = await this.request(`/products/${id}`, {
+            method: 'DELETE'
+          });
+          return result;
+        } catch (error) {
+          console.error(`❌ Erro ao deletar produto ${id}:`, error);
+          return { success: false, error: error.message };
+        }
+      },
+
+      async getAllProducts(filters = {}) {
+        try {
+          const params = new URLSearchParams();
+          if (filters.category) params.append('category', filters.category);
+          if (filters.category_id) params.append('category_id', filters.category_id);
+          if (filters.status) params.append('status', filters.status);
+          if (filters.featured) params.append('featured', filters.featured);
+          if (filters.search) params.append('search', filters.search);
+          if (filters.limit) params.append('limit', filters.limit);
+
+          const query = params.toString() ? `?${params.toString()}` : '';
+          const data = await this.request(`/products${query}`);
+          return data.products || [];
+        } catch (error) {
+          console.error('❌ Erro ao buscar produtos:', error);
+          return [];
+        }
+      }
+    };
+
+    // ============================================
+    // ===== FUNÇÕES DE NOTIFICAÇÃO =====
+    // ============================================
     function showNotification(message, type = 'info') {
-      console.log(`📢 Notificação [${type}]: ${message}`);
+      console.log(`📢 [${type}]: ${message}`);
 
       const notification = document.createElement('div');
       notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #1a002b, #0b0015);
-    border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
-    color: white;
-    padding: 15px 25px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    max-width: 400px;
-  `;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #1a002b, #0b0015);
+        border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        max-width: 400px;
+      `;
 
       const icon = type === 'success' ? 'check-circle' :
         type === 'error' ? 'exclamation-circle' :
           type === 'warning' ? 'exclamation-triangle' : 'info-circle';
 
       notification.innerHTML = `
-    <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
-    <span>${message}</span>
-  `;
+        <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
+        <span>${message}</span>
+      `;
 
       document.body.appendChild(notification);
-
       setTimeout(() => {
         notification.style.animation = 'fadeOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
       }, 4000);
     }
 
-    // === VARIÁVEIS GLOBAIS ===
+    // ============================================
+    // ===== CATEGORY SELECTOR FUNCTIONS =====
+    // ============================================
     let allCategories = [];
-    let mainImageData = null;
-    let galleryImagesData = [];
-    let collectAllFormData;
 
-    // === CATEGORY SELECTOR FUNCTIONS ===
     async function loadCategories() {
       try {
-        console.log("📥 Carregando categorias para o seletor...");
-
-        const categoriesList = document.getElementById('categoriesList');
-        if (categoriesList) {
-          categoriesList.innerHTML = `
-          <div class="loading-categories">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>Carregando categorias...</span>
-          </div>
-        `;
-        }
-
+        console.log("📥 Carregando categorias...");
         allCategories = await ProductAPI.getAllCategories();
         console.log(`✅ ${allCategories.length} categorias carregadas`);
-
-        allCategories.sort((a, b) => {
-          if (!a.parent_id && b.parent_id) return -1;
-          if (a.parent_id && !b.parent_id) return 1;
-          return a.name.localeCompare(b.name);
-        });
-
         renderCategories();
-
       } catch (error) {
         console.error("❌ Erro ao carregar categorias:", error);
-
-        const categoriesList = document.getElementById('categoriesList');
-        if (categoriesList) {
-          categoriesList.innerHTML = `
-          <div class="loading-categories" style="color: #f44336;">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>Erro ao carregar categorias</span>
-            <button onclick="loadCategories()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">
-              <i class="fas fa-sync-alt"></i> Tentar novamente
-            </button>
-          </div>
-        `;
-        }
+        showNotification('Erro ao carregar categorias', 'error');
       }
     }
 
@@ -743,46 +836,17 @@
 
       if (allCategories.length === 0) {
         categoriesList.innerHTML = `
-        <div class="no-categories">
-          <i class="fas fa-tags"></i>
-          <p>Nenhuma categoria criada</p>
-          <p style="font-size: 12px; margin-top: 5px;">Clique em "Crie sua categoria" para começar</p>
-        </div>
-      `;
+          <div class="no-categories">
+            <i class="fas fa-tags"></i>
+            <p>Nenhuma categoria criada</p>
+          </div>
+        `;
         return;
       }
 
       let html = '';
-
       const mainCategories = allCategories.filter(cat => !cat.parent_id);
       const subCategories = allCategories.filter(cat => cat.parent_id);
-
-      function createCategoryItem(category, isSubcategory = false) {
-        const parent = category.parent_id ?
-          allCategories.find(c => c.id == category.parent_id) : null;
-
-        const icon = category.icon ?
-          (category.icon.includes('fa-') ?
-            `<i class="fas ${category.icon}"></i>` :
-            `<span>${category.icon}</span>`) :
-          `<i class="fas fa-tag"></i>`;
-
-        const color = category.color || '#C084FC';
-
-        return `
-        <div class="category-option ${isSubcategory ? 'subcategory' : ''}" 
-             onclick="selectCategory(${category.id})"
-             data-category-id="${category.id}">
-          <div class="category-option-content" style="color: ${color}">
-            ${icon}
-            <div>
-              <div class="category-name">${category.name}</div>
-              ${parent ? `<div class="category-path">${parent.name}</div>` : ''}
-            </div>
-          </div>
-        </div>
-      `;
-      }
 
       mainCategories.forEach(category => {
         html += createCategoryItem(category);
@@ -796,54 +860,66 @@
       categoriesList.innerHTML = html;
     }
 
-    window.selectCategory = function (categoryId) {
-        const category = allCategories.find(c => c.id == categoryId);
-        if (!category) {
-          console.error("❌ Categoria não encontrada:", categoryId);
-          showNotification('Categoria não encontrada!', 'error');
-          return;
-        }
+    function createCategoryItem(category, isSubcategory = false) {
+      const parent = category.parent_id ? allCategories.find(c => c.id == category.parent_id) : null;
+      const icon = category.icon ?
+        (category.icon.includes('fa-') ? `<i class="fas ${category.icon}"></i>` : `<span>${category.icon}</span>`) :
+        '<i class="fas fa-tag"></i>';
+      const color = category.color || '#C084FC';
 
-        const selectedCategory = document.getElementById('selectedCategory');
-        const categoryIdInput = document.getElementById('categoryId');
-        const clearBtn = document.getElementById('clearCategoryBtn');
-
-        if (selectedCategory) {
-          const icon = category.icon ?
-            (category.icon.includes('fa-') ?
-              `<i class="fas ${category.icon} category-icon-small"></i>` :
-              `<span class="category-icon-small">${category.icon}</span>`) :
-            `<i class="fas fa-tag category-icon-small"></i>`;
-
-          const parent = category.parent_id ?
-            allCategories.find(c => c.id == category.parent_id) : null;
-
-          selectedCategory.innerHTML = `
-      <div class="category-display" style="color: ${category.color || '#C084FC'}">
-        ${icon}
-        <div>
-          <div><strong>${category.name}</strong></div>
-          ${parent ? `<div style="font-size: 12px; color: #aaa;">${parent.name}</div>` : ''}
-          <div style="font-size: 10px; color: #666; margin-top: 2px;">ID: ${category.id} | Nome: ${category.name}</div>
+      return `
+        <div class="category-option ${isSubcategory ? 'subcategory' : ''}" 
+             onclick="selectCategory(${category.id})"
+             data-category-id="${category.id}">
+          <div class="category-option-content" style="color: ${color}">
+            ${icon}
+            <div>
+              <div class="category-name">${category.name}</div>
+              ${parent ? `<div class="category-path">${parent.name}</div>` : ''}
+            </div>
+          </div>
         </div>
-      </div>
-      <i class="fas fa-chevron-down"></i>
-    `;
-        }
+      `;
+    }
 
-        if (categoryIdInput) {
-          categoryIdInput.value = category.id;
-          console.log("✅ Categoria selecionada - ID:", category.id, "Nome:", category.name);
-        }
+    window.selectCategory = function (categoryId) {
+      const category = allCategories.find(c => c.id == categoryId);
+      if (!category) {
+        showNotification('Categoria não encontrada!', 'error');
+        return;
+      }
 
-        if (clearBtn) {
-          clearBtn.style.display = 'flex';
-        }
+      const selectedCategory = document.getElementById('selectedCategory');
+      const categoryIdInput = document.getElementById('categoryId');
+      const clearBtn = document.getElementById('clearCategoryBtn');
 
-        hideCategoryDropdown();
+      if (selectedCategory) {
+        const icon = category.icon ?
+          (category.icon.includes('fa-') ? `<i class="fas ${category.icon}"></i>` : `<span>${category.icon}</span>`) :
+          '<i class="fas fa-tag"></i>';
 
-        showNotification(`✅ Categoria selecionada: ${category.name}`, 'success');
-      };
+        const parent = category.parent_id ? allCategories.find(c => c.id == category.parent_id) : null;
+
+        selectedCategory.innerHTML = `
+          <div class="category-display" style="color: ${category.color || '#C084FC'}">
+            ${icon}
+            <div>
+              <div><strong>${category.name}</strong></div>
+              ${parent ? `<div style="font-size: 12px; color: #aaa;">${parent.name}</div>` : ''}
+            </div>
+          </div>
+          <i class="fas fa-chevron-down"></i>
+        `;
+      }
+
+      if (categoryIdInput) {
+        categoryIdInput.value = category.id;
+      }
+
+      if (clearBtn) clearBtn.style.display = 'flex';
+      hideCategoryDropdown();
+      showNotification(`Categoria: ${category.name}`, 'success');
+    };
 
     window.clearCategorySelection = function () {
       const selectedCategory = document.getElementById('selectedCategory');
@@ -852,40 +928,31 @@
 
       if (selectedCategory) {
         selectedCategory.innerHTML = `
-        <span class="placeholder">Selecione uma categoria</span>
-        <i class="fas fa-chevron-down"></i>
-      `;
+          <span class="placeholder">Selecione uma categoria</span>
+          <i class="fas fa-chevron-down"></i>
+        `;
       }
 
-      if (categoryIdInput) {
-        categoryIdInput.value = '';
-      }
-
-      if (clearBtn) {
-        clearBtn.style.display = 'none';
-      }
-
+      if (categoryIdInput) categoryIdInput.value = '';
+      if (clearBtn) clearBtn.style.display = 'none';
       showNotification('Categoria removida', 'info');
     };
 
     function toggleCategoryDropdown() {
       const dropdown = document.getElementById('categoryDropdown');
-      if (!dropdown) return;
-
-      if (dropdown.classList.contains('show')) {
-        hideCategoryDropdown();
-      } else {
-        showCategoryDropdown();
+      if (dropdown) {
+        if (dropdown.classList.contains('show')) {
+          hideCategoryDropdown();
+        } else {
+          showCategoryDropdown();
+        }
       }
     }
 
     function showCategoryDropdown() {
       const dropdown = document.getElementById('categoryDropdown');
-      const selector = document.getElementById('categorySelector');
-
-      if (dropdown && selector) {
+      if (dropdown) {
         dropdown.classList.add('show');
-
         setTimeout(() => {
           document.addEventListener('click', closeDropdownOnClickOutside);
         }, 10);
@@ -903,468 +970,47 @@
     function closeDropdownOnClickOutside(event) {
       const selector = document.getElementById('categorySelector');
       const dropdown = document.getElementById('categoryDropdown');
-
       if (selector && !selector.contains(event.target) && dropdown) {
         hideCategoryDropdown();
       }
     }
 
     window.openCategoryForm = function () {
-      const productData = collectAllFormData();
-      if (productData.name || productData.price || productData.description) {
-        const draftId = 'draft_product_category';
-        localStorage.setItem(draftId, JSON.stringify(productData));
-      }
-
-      localStorage.setItem('cameFromProductForm', 'true');
       window.location.href = 'categories.html';
     };
 
     window.openCategoryManager = function () {
-      localStorage.setItem('cameFromProductForm', 'true');
-
-      const productData = collectAllFormData();
-      if (productData.name || productData.price || productData.description) {
-        localStorage.setItem('product_draft_current', JSON.stringify(productData));
-      }
-
       window.location.href = 'categories.html';
     };
 
-    function checkForNewCategory() {
-      const newCategoryId = localStorage.getItem('newCategoryId');
-      const newCategoryName = localStorage.getItem('newCategoryName');
-
-      if (newCategoryId && newCategoryName) {
-        loadCategories().then(() => {
-          setTimeout(() => {
-            selectCategory(parseInt(newCategoryId));
-            showNotification(`Nova categoria "${newCategoryName}" selecionada!`, 'success');
-          }, 500);
-        });
-
-        localStorage.removeItem('newCategoryId');
-        localStorage.removeItem('newCategoryName');
-      }
-    }
-
-    // === ANIMAÇÕES CSS ===
-    const style = document.createElement('style');
-    style.textContent = `
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes fadeOut {
-    from { opacity: 1; transform: translateX(0); }
-    to { opacity: 0; transform: translateX(100%); }
-  }
-`;
-    document.head.appendChild(style);
-
-    // === DEBUG HELPER ===
-    window.debugForm = function () {
-      if (typeof collectAllFormData === 'function') {
-        const data = collectAllFormData();
-        console.log("🔍 DEBUG - Dados do formulário:", data);
-        alert(`Debug:\nNome: ${data.name}\nPreço: R$ ${data.price}\nCategoria: ${data.category_id}\nStatus: ${data.status}`);
-      } else {
-        console.error("collectAllFormData não está definida");
-        alert("A função collectAllFormData não foi carregada ainda");
-      }
-    };
-
-    // === FUNÇÃO PARA CARREGAR PRODUTO PARA EDIÇÃO ===
-      async function loadProductForEdit(productId) {
-        try {
-          console.log(`📥 Carregando produto ${productId} para edição...`);
-
-          // Mostrar loading
-          const formContainer = document.querySelector('.form-container');
-          if (formContainer) {
-            const loadingDiv = document.createElement('div');
-            loadingDiv.id = 'loadingProduct';
-            loadingDiv.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #C084FC;">
-          <i class="fas fa-spinner fa-spin fa-2x"></i>
-          <p style="margin-top: 10px;">Carregando produto...</p>
-        </div>
-      `;
-            formContainer.insertBefore(loadingDiv, formContainer.firstChild);
-          }
-
-          // Buscar produto da API
-          const product = await ProductAPI.getProductById(productId);
-
-          if (!product) {
-            showNotification('Produto não encontrado!', 'error');
-            window.location.href = 'products.html';
-            return;
-          }
-
-          console.log("✅ Produto carregado:", product);
-
-          // Remover loading
-          const loadingDiv = document.getElementById('loadingProduct');
-          if (loadingDiv) loadingDiv.remove();
-
-          // Preencher formulário com dados do produto
-          fillFormWithProductData(product);
-
-          showNotification(`Pronto para editar: ${product.name}`, 'success');
-
-        } catch (error) {
-          console.error("❌ Erro ao carregar produto:", error);
-          showNotification('Erro ao carregar produto para edição', 'error');
-
-          // Voltar para lista de produtos após 2 segundos
-          setTimeout(() => {
-            window.location.href = 'products.html';
-          }, 2000);
-        }
-      }
-
-      // === FUNÇÃO PARA ATUALIZAR PREVIEW SEO ===
-        function updateSeoPreview() {
-          const seoTitleInput = document.querySelector('#seoTab input[placeholder*="Título SEO"]');
-          const seoDescTextarea = document.querySelector('#seoTab textarea[placeholder*="Meta Descrição"]');
-          const seoUrlInput = document.querySelector('#seoTab input[placeholder*="URL Amigável"]');
-
-          if (!seoTitleInput || !seoDescTextarea || !seoUrlInput) return;
-
-          const preview = document.querySelector('.seo-preview .preview-item');
-          if (preview) {
-            const titleEl = preview.querySelector('.preview-title');
-            const urlEl = preview.querySelector('.preview-url');
-            const descEl = preview.querySelector('.preview-description');
-
-            if (seoTitleInput.value) titleEl.textContent = seoTitleInput.value;
-            if (seoUrlInput.value) {
-              const slug = seoUrlInput.value.toLowerCase()
-                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^\w\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim();
-              urlEl.textContent = `https://universoparalelo.com/produtos/${slug}`;
-            }
-            if (seoDescTextarea.value) descEl.textContent = seoDescTextarea.value.substring(0, 160) + '...';
-          }
-        }
-
-      // === FUNÇÃO PARA PREENCHER FORMULÁRIO ===
-      function fillFormWithProductData(product) {
-        console.log("📝 Preenchendo formulário com dados do produto...");
-
-        // TAB 1: Informações Básicas
-        const nameInput = document.querySelector('#basicTab input[placeholder*="Crânio T-Rex 3D"]');
-        const priceInput = document.querySelector('#basicTab input[placeholder*="120.00"]');
-        const stockInput = document.querySelector('#basicTab input[placeholder*="12"]');
-        const shortDescTextarea = document.querySelector('#basicTab textarea');
-        const skuInput = document.querySelector('#basicTab input[placeholder*="SKU"]');
-        const promoPriceInput = document.querySelector('#basicTab input[placeholder*="150.00"]');
-
-        if (nameInput) nameInput.value = product.name || '';
-        if (priceInput) priceInput.value = product.price || '';
-        if (stockInput) stockInput.value = product.stock || 0;
-        if (shortDescTextarea) shortDescTextarea.value = product.short_description || '';
-        if (skuInput) skuInput.value = product.sku || '';
-        if (promoPriceInput) {
-          promoPriceInput.value = product.promotional_price || '';
-        }
-
-        // Categoria
-        if (product.category && allCategories && allCategories.length > 0) {
-          const category = allCategories.find(c => c.name === product.category);
-          if (category) {
-            selectCategory(category.id);
-          }
-        }
-
-        // TAB 2: Imagens (carregar após categorias)
-        setTimeout(() => {
-          loadProductImages(product);
-        }, 500);
-
-        // TAB 4: Detalhes
-        const editorContent = document.querySelector('.editor-content');
-        if (editorContent && product.description) {
-          editorContent.innerHTML = product.description;
-        }
-
-        // Status switches
-        const statusSwitch = document.querySelector('#detailsTab .toggle-switch:first-child input[type="checkbox"]');
-        if (statusSwitch) {
-          statusSwitch.checked = product.status === 'active';
-        }
-
-        const featuredSwitch = document.querySelector('#detailsTab .toggle-switch:nth-child(2) input[type="checkbox"]');
-        if (featuredSwitch) {
-          featuredSwitch.checked = product.featured === true;
-        }
-
-        // TAB 5: SEO
-        const seoTitleInput = document.querySelector('#seoTab input[placeholder*="Título SEO"]');
-        const seoDescTextarea = document.querySelector('#seoTab textarea[placeholder*="Meta Descrição"]');
-        const slugInput = document.querySelector('#seoTab input[placeholder*="URL Amigável"]');
-        const keywordsInput = document.querySelector('#seoTab input[placeholder*="Palavras-chave"]');
-
-        if (seoTitleInput && product.seo && product.seo.title) {
-          seoTitleInput.value = product.seo.title;
-        }
-
-        if (seoDescTextarea && product.seo && product.seo.description) {
-          seoDescTextarea.value = product.seo.description;
-        }
-
-        if (slugInput && product.seo && product.seo.slug) {
-          slugInput.value = product.seo.slug;
-        }
-
-        if (keywordsInput && product.seo && product.seo.keywords) {
-          keywordsInput.value = Array.isArray(product.seo.keywords)
-            ? product.seo.keywords.join(', ')
-            : product.seo.keywords;
-        }
-
-        updateSeoPreview();
-      }
-
-      // === FUNÇÃO PARA CARREGAR IMAGENS DO PRODUTO ===
-      function loadProductImages(product) {
-        console.log("🖼️ Carregando imagens do produto...");
-
-        // Imagem principal
-        if (product.image_url) {
-          const mainImagePreview = document.getElementById('mainImagePreview');
-          if (mainImagePreview) {
-            // URL da imagem
-            let imageUrl = product.image_url;
-            if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:image')) {
-              if (imageUrl.startsWith('/')) {
-                imageUrl = `http://localhost:5000${imageUrl}`;
-              } else {
-                imageUrl = `http://localhost:5000/uploads/${imageUrl}`;
-              }
-            }
-
-            mainImagePreview.innerHTML = `
-        <div class="preview-item">
-          <img src="${imageUrl}" alt="${product.name}" 
-               style="max-width: 200px; max-height: 200px; border-radius: 8px;">
-          <div style="margin-top: 10px; font-size: 12px; color: #aaa;">
-            Imagem atual do produto
-          </div>
-        </div>
-      `;
-          }
-        }
-
-        // Galeria de imagens
-        if (product.images && product.images.length > 0) {
-          const imageGallery = document.getElementById('imagePreview');
-          if (imageGallery) {
-            product.images.forEach((img, index) => {
-              let imageUrl = img;
-              if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:image')) {
-                if (imageUrl.startsWith('/')) {
-                  imageUrl = `http://localhost:5000${imageUrl}`;
-                } else {
-                  imageUrl = `http://localhost:5000/uploads/${imageUrl}`;
-                }
-              }
-
-              const div = document.createElement('div');
-              div.className = 'preview-item';
-              div.innerHTML = `
-          <img src="${imageUrl}" alt="Gallery image ${index + 1}" 
-               style="max-width: 150px; max-height: 150px; border-radius: 8px;">
-          <div style="font-size: 11px; color: #888; margin-top: 5px;">
-            Imagem ${index + 1}
-          </div>
-        `;
-              imageGallery.appendChild(div);
-            });
-          }
-        }
-      }
-
-    document.addEventListener('DOMContentLoaded', async function () {
-        console.log("📱 Formulário carregado");
-
-        // Verificar login
-        const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-        if (!isLoggedIn) {
-          window.location.href = 'login.html';
-          return;
-        }
-
-        // === DETECTAR SE É EDIÇÃO ===
-        const urlParams = new URLSearchParams(window.location.search);
-        const editProductId = urlParams.get('edit');
-
-        // Variável para controlar se está editando
-        let isEditing = false;
-        let currentProductId = null;
-
-        if (editProductId) {
-          isEditing = true;
-          currentProductId = parseInt(editProductId);
-          console.log(`✏️ Modo EDIÇÃO ativado para produto ID: ${currentProductId}`);
-
-          // Mudar título da página
-          document.title = "Editar Produto - Admin";
-
-          // Mudar título do formulário
-          const formTitle = document.querySelector('.form-container h1');
-          if (!formTitle) {
-            // Criar título se não existir
-            const formContainer = document.querySelector('.form-container');
-            if (formContainer) {
-              const title = document.createElement('h1');
-              title.textContent = 'Editar Produto';
-              title.style.cssText = 'color: #DF38FF; margin-bottom: 20px; font-size: 28px;';
-              formContainer.insertBefore(title, formContainer.firstChild);
-            }
-          } else {
-            formTitle.textContent = 'Editar Produto';
-          }
-
-          // Mudar botão de submit
-          const submitBtn = document.querySelector('#productForm button[type="submit"]');
-          if (submitBtn) {
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
-          }
-        } else {
-          console.log("➕ Modo CRIAÇÃO ativado");
-        }
-
-      // === 1. INICIALIZAR CATEGORIA SELECTOR ===
-      const selectedCategory = document.getElementById('selectedCategory');
-      if (selectedCategory) {
-        selectedCategory.addEventListener('click', toggleCategoryDropdown);
-      }
-
-            // Carregar categorias primeiro
-      await loadCategories();
-
-      // Se estiver editando, carregar produto
-      if (isEditing && currentProductId) {
-        await loadProductForEdit(currentProductId);
-      }
-
-      checkForNewCategory();
-
-
-      const quickTestBtn = document.createElement('button');
-      quickTestBtn.innerHTML = '⚡ Teste Rápido';
-      quickTestBtn.style.cssText = `
-    position: fixed;
-    bottom: 180px;
-    left: 20px;
-    padding: 10px 15px;
-    background: #FF9800;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 10000;
-    font-weight: bold;
-  `;
-
-      quickTestBtn.onclick = async function () {
-        console.log("⚡ Teste rápido iniciado...");
-
-        // Criar uma imagem simples em base64
-        const base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
-
-        // Converter base64 para Blob
-        const blob = await fetch(base64Image).then(r => r.blob());
-        const testFile = new File([blob], 'test.png', { type: 'image/png' });
-
-        const formData = new FormData();
-        formData.append('name', 'Produto Teste com Imagem');
-        formData.append('price', '99.99');
-        formData.append('category', 'Teste');
-        formData.append('stock', '5');
-        formData.append('short_description', 'Produto de teste com imagem');
-        formData.append('main_image', testFile);
-
-        try {
-          console.log("📤 Enviando teste...");
-          const response = await fetch('http://localhost:5000/api/products', {
-            method: 'POST',
-            body: formData
-          });
-
-          console.log("📥 Status:", response.status);
-          const result = await response.json();
-          console.log("Resultado:", result);
-
-          if (result.success) {
-            alert('✅ Teste OK! Produto criado. Redirecionando...');
-            setTimeout(() => {
-              window.location.href = 'products.html';
-            }, 1000);
-          } else {
-            alert(`❌ Erro: ${result.error}`);
-          }
-        } catch (error) {
-          console.error("Erro no teste:", error);
-          alert('❌ Falha: ' + error.message);
-        }
-      };
-
-      document.body.appendChild(quickTestBtn);
-    
-
-      // === 2. SISTEMA DE TABS ===
-      const tabButtons = document.querySelectorAll('.tab-button');
-      const tabContents = document.querySelectorAll('.tab-content');
-
-      tabButtons.forEach(button => {
-        button.addEventListener('click', function () {
-          const tabId = this.getAttribute('data-tab');
-
-          tabButtons.forEach(btn => btn.classList.remove('active'));
-          tabContents.forEach(content => content.classList.remove('active'));
-
-          this.classList.add('active');
-          const tabElement = document.getElementById(`${tabId}Tab`);
-          if (tabElement) {
-            tabElement.classList.add('active');
-          }
-        });
-      });
-
-      // === 3. GERENCIAMENTO DE IMAGENS ===
+    // ============================================
+    // ===== FUNÇÕES DE UPLOAD DE IMAGENS =====
+    // ============================================
+    function setupImageUploads() {
       const mainImageUpload = document.getElementById('mainImageUpload');
       const galleryUpload = document.getElementById('galleryUpload');
       const mainImagePreview = document.getElementById('mainImagePreview');
       const imageGallery = document.getElementById('imagePreview');
 
+      // Upload de imagem principal
       if (mainImageUpload) {
-        let mainImageFileInput = null;
+        let mainImageInput = null;
 
         mainImageUpload.addEventListener('click', function () {
-          // Criar input de arquivo se não existir
-          if (!mainImageFileInput) {
-            mainImageFileInput = document.createElement('input');
-            mainImageFileInput.type = 'file';
-            mainImageFileInput.accept = 'image/*';
-            mainImageFileInput.style.display = 'none';
-            mainImageUpload.appendChild(mainImageFileInput);
+          if (!mainImageInput) {
+            mainImageInput = document.createElement('input');
+            mainImageInput.type = 'file';
+            mainImageInput.accept = 'image/*';
+            mainImageInput.style.display = 'none';
+            mainImageUpload.appendChild(mainImageInput);
 
-            mainImageFileInput.onchange = function (e) {
+            mainImageInput.onchange = function (e) {
               const file = e.target.files[0];
               if (file) {
-                // Validar tipo de arquivo
                 if (!file.type.match('image/(jpeg|jpg|png|gif|webp)')) {
-                  showNotification('Formato de imagem não suportado! Use JPG, PNG ou GIF.', 'error');
+                  showNotification('Formato não suportado! Use JPG, PNG ou GIF.', 'error');
                   return;
                 }
-
-                // Validar tamanho (max 5MB)
                 if (file.size > 5 * 1024 * 1024) {
                   showNotification('Imagem muito grande! Máximo 5MB.', 'error');
                   return;
@@ -1373,46 +1019,42 @@
                 const reader = new FileReader();
                 reader.onload = function (event) {
                   mainImagePreview.innerHTML = `
-                            <div class="preview-item">
-                                <img src="${event.target.result}" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
-                                <button type="button" class="remove-image" onclick="removeMainImage()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        `;
-                  console.log("📷 Imagem principal carregada:", file.name, file.size + ' bytes');
+                    <div class="preview-item" style="position: relative;">
+                      <img src="${event.target.result}" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                      <button type="button" onclick="removeMainImage()" 
+                              style="position: absolute; top: 5px; right: 5px; background: rgba(244,67,54,0.8); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  `;
                 };
                 reader.readAsDataURL(file);
               }
             };
           }
-
-          mainImageFileInput.click();
+          mainImageInput.click();
         });
       }
 
-      // Substitua o código do upload da galeria:
+      // Upload de galeria
       if (galleryUpload) {
-        let galleryFileInput = null;
+        let galleryInput = null;
 
         galleryUpload.addEventListener('click', function () {
-          // Criar input de arquivo se não existir
-          if (!galleryFileInput) {
-            galleryFileInput = document.createElement('input');
-            galleryFileInput.type = 'file';
-            galleryFileInput.accept = 'image/*';
-            galleryFileInput.multiple = true;
-            galleryFileInput.style.display = 'none';
-            galleryUpload.appendChild(galleryFileInput);
+          if (!galleryInput) {
+            galleryInput = document.createElement('input');
+            galleryInput.type = 'file';
+            galleryInput.accept = 'image/*';
+            galleryInput.multiple = true;
+            galleryInput.style.display = 'none';
+            galleryUpload.appendChild(galleryInput);
 
-            galleryFileInput.onchange = function (e) {
+            galleryInput.onchange = function (e) {
               Array.from(e.target.files).forEach(file => {
-                // Validações
                 if (!file.type.match('image/(jpeg|jpg|png|gif|webp)')) {
                   showNotification(`Arquivo "${file.name}" não é uma imagem válida!`, 'error');
                   return;
                 }
-
                 if (file.size > 5 * 1024 * 1024) {
                   showNotification(`Imagem "${file.name}" muito grande! Máximo 5MB.`, 'error');
                   return;
@@ -1422,773 +1064,485 @@
                 reader.onload = function (event) {
                   const div = document.createElement('div');
                   div.className = 'preview-item';
+                  div.style.position = 'relative';
                   div.innerHTML = `
-                            <img src="${event.target.result}" alt="Gallery image" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
-                            <button type="button" class="remove-image" onclick="removeGalleryImage(this)">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        `;
+                    <img src="${event.target.result}" alt="Gallery" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
+                    <button type="button" onclick="this.parentElement.remove()" 
+                            style="position: absolute; top: 5px; right: 5px; background: rgba(244,67,54,0.8); border: none; color: white; width: 25px; height: 25px; border-radius: 50%; cursor: pointer;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  `;
                   imageGallery.appendChild(div);
-
-                  console.log("🖼️ Imagem da galeria adicionada:", file.name);
                 };
                 reader.readAsDataURL(file);
               });
             };
           }
-
-          galleryFileInput.click();
+          galleryInput.click();
         });
       }
+    }
 
-     window.removeMainImage = function () {
-        const mainImageUpload = document.getElementById('mainImageUpload');
-        const input = mainImageUpload.querySelector('input[type="file"]');
-        if (input) {
-          input.value = ''; // Limpa o input de arquivo
+    window.removeMainImage = function () {
+      const mainImagePreview = document.getElementById('mainImagePreview');
+      const mainImageUpload = document.getElementById('mainImageUpload');
+      const input = mainImageUpload.querySelector('input[type="file"]');
+      if (input) input.value = '';
+      if (mainImagePreview) mainImagePreview.innerHTML = '';
+    };
+
+    // ============================================
+    // ===== PREPARAR FORMDATA =====
+    // ============================================
+    function prepareFormData() {
+      const formData = new FormData();
+
+      // Informações Básicas
+      const name = document.getElementById('productName')?.value;
+      const price = document.getElementById('productPrice')?.value;
+      const stock = document.getElementById('productStock')?.value;
+      const categoryId = document.getElementById('categoryId')?.value;
+      const sku = document.getElementById('productSku')?.value;
+      const promoPrice = document.getElementById('productPromoPrice')?.value;
+      const shortDesc = document.getElementById('productShortDesc')?.value;
+
+      if (!name) throw new Error('Nome do produto é obrigatório');
+      if (!price || parseFloat(price) <= 0) throw new Error('Preço deve ser maior que zero');
+      if (!categoryId) throw new Error('Selecione uma categoria');
+
+      formData.append('name', name.trim());
+      formData.append('price', parseFloat(price));
+      formData.append('stock', parseInt(stock) || 0);
+      formData.append('category_id', parseInt(categoryId));
+      if (sku) formData.append('sku', sku.trim());
+      if (promoPrice) formData.append('promotional_price', parseFloat(promoPrice));
+      if (shortDesc) formData.append('short_description', shortDesc.trim());
+
+      // Nome da categoria para compatibilidade
+      const category = allCategories.find(c => c.id == categoryId);
+      if (category) formData.append('category', category.name);
+
+      // Imagem principal
+      const mainImageInput = document.querySelector('#mainImageUpload input[type="file"]');
+      if (mainImageInput && mainImageInput.files[0]) {
+        formData.append('main_image', mainImageInput.files[0]);
+      }
+
+      // Galeria
+      const galleryInput = document.querySelector('#galleryUpload input[type="file"]');
+      if (galleryInput && galleryInput.files) {
+        for (let i = 0; i < galleryInput.files.length; i++) {
+          formData.append('gallery_images', galleryInput.files[i]);
         }
-        const mainImagePreview = document.getElementById('mainImagePreview');
-        if (mainImagePreview) {
-          mainImagePreview.innerHTML = '';
-        }
-        console.log("🗑️ Imagem principal removida");
-      };
+      }
 
-      window.removeGalleryImage = function (button) {
-        const item = button.closest('.preview-item');
-        item.remove();
-        console.log("🗑️ Imagem removida da galeria");
+      // Descrição
+      const description = document.getElementById('productDescription')?.innerHTML || '';
+      formData.append('description', description);
 
-        // Nota: Para realmente remover o arquivo do FormData,
-        // você precisaria recriar o input de arquivo ou usar um array de arquivos
-      };
+      // Variantes
+      const variants = { sizes: [], colors: [] };
 
-      // === 4. EDITOR DE TEXTO ===
-      const editorButtons = document.querySelectorAll('.editor-btn');
-      const editorContent = document.querySelector('.editor-content');
+      document.querySelectorAll('.size-checkbox:checked').forEach(cb => {
+        const size = cb.getAttribute('data-size');
+        const priceInput = document.querySelector(`.size-price[data-size="${size}"]`);
+        variants.sizes.push({
+          size: size,
+          price: priceInput ? parseFloat(priceInput.value) || null : null
+        });
+      });
 
-      if (editorButtons.length > 0 && editorContent) {
-        editorButtons.forEach(button => {
-          button.addEventListener('click', function () {
-            const command = this.getAttribute('data-command');
-            document.execCommand(command, false, null);
-            editorContent.focus();
+      const selectedColor = document.querySelector('.color-option.selected');
+      if (selectedColor) {
+        variants.colors = [selectedColor.getAttribute('title') || 'Cor padrão'];
+      }
+      formData.append('variants', JSON.stringify(variants));
+
+      // Especificações
+      const specifications = [];
+      document.querySelectorAll('#specifications > div').forEach(spec => {
+        const inputs = spec.querySelectorAll('input');
+        if (inputs.length >= 2 && inputs[0].value && inputs[1].value) {
+          specifications.push({
+            key: inputs[0].value.trim(),
+            value: inputs[1].value.trim()
           });
-        });
-      }
-
-      // === 5. ADICIONAR ESPECIFICAÇÕES ===
-      const allButtons = document.querySelectorAll('button');
-      let addSpecBtn = null;
-
-      for (let btn of allButtons) {
-        if (btn.textContent.includes('Adicionar Especificação')) {
-          addSpecBtn = btn;
-          break;
         }
-      }
+      });
+      formData.append('specifications', JSON.stringify(specifications));
 
-      if (!addSpecBtn) {
-        addSpecBtn = document.querySelector('#detailsTab button');
-      }
+      // Informações de envio
+      const weight = document.getElementById('productWeight')?.value;
+      const dimensions = document.getElementById('productDimensions')?.value;
+      const productionTime = document.getElementById('productionTime')?.value;
+      const isPhysical = document.getElementById('isPhysical')?.checked;
 
-      if (addSpecBtn) {
-        addSpecBtn.addEventListener('click', function () {
-          const specsContainer = document.getElementById('specifications');
-          if (specsContainer) {
-            const newSpec = document.createElement('div');
-            newSpec.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
-            newSpec.innerHTML = `
-          <input type="text" class="form-control" placeholder="Ex: Material">
-          <input type="text" class="form-control" placeholder="Ex: PLA Premium">
-          <button type="button" class="remove-spec" style="background: transparent; border: 1px solid rgba(124, 58, 237, 0.3); color: #f44336; border-radius: 6px; width: 40px;">
-            <i class="fas fa-times"></i>
-          </button>
-        `;
-            specsContainer.appendChild(newSpec);
+      const shippingInfo = {
+        is_physical: isPhysical !== undefined ? isPhysical : true,
+        weight_kg: weight ? parseFloat(weight) : 0,
+        dimensions_cm: dimensions || '',
+        production_time: productionTime || ''
+      };
+      formData.append('shipping_info', JSON.stringify(shippingInfo));
+      if (dimensions) formData.append('dimensions', dimensions);
+      if (weight) formData.append('weight', weight);
 
-            newSpec.querySelector('.remove-spec').addEventListener('click', function () {
-              newSpec.remove();
-            });
+      // Material
+      const materialSpec = specifications.find(s =>
+        s.key && s.key.toLowerCase().includes('material')
+      );
+      if (materialSpec) formData.append('material', materialSpec.value);
 
-            console.log("➕ Especificação adicionada");
+      // Status
+      const isActive = document.getElementById('productActive')?.checked;
+      const isFeatured = document.getElementById('productFeatured')?.checked;
+      const allowReviews = document.getElementById('allowReviews')?.checked;
+
+      formData.append('status', isActive ? 'active' : 'inactive');
+      formData.append('featured', isFeatured ? 1 : 0);
+
+      const settings = { allow_reviews: allowReviews !== undefined ? allowReviews : true };
+      formData.append('settings', JSON.stringify(settings));
+
+      // SEO
+      const seoTitle = document.getElementById('seoTitle')?.value;
+      const seoDesc = document.getElementById('seoDescription')?.value;
+      const slug = document.getElementById('productSlug')?.value;
+      const keywords = document.getElementById('productKeywords')?.value;
+
+      const seo = {
+        title: seoTitle || '',
+        description: seoDesc || '',
+        slug: slug || '',
+        keywords: keywords ? keywords.split(',').map(k => k.trim()).filter(k => k) : []
+      };
+      formData.append('seo', JSON.stringify(seo));
+
+      return formData;
+    }
+
+    // ============================================
+    // ===== CARREGAR PRODUTO PARA EDIÇÃO =====
+    // ============================================
+    async function loadProductForEdit(productId) {
+      try {
+        console.log(`📥 Carregando produto ${productId}...`);
+        showNotification('Carregando produto...', 'info');
+
+        const product = await ProductAPI.getProductById(productId);
+        if (!product) {
+          showNotification('Produto não encontrado!', 'error');
+          window.location.href = 'products.html';
+          return;
+        }
+
+        console.log('✅ Produto carregado:', product);
+
+        // Informações Básicas
+        document.getElementById('productName').value = product.name || '';
+        document.getElementById('productPrice').value = product.price || '';
+        document.getElementById('productStock').value = product.stock || 0;
+        document.getElementById('productShortDesc').value = product.short_description || '';
+        document.getElementById('productSku').value = product.sku || '';
+        if (product.promotional_price) {
+          document.getElementById('productPromoPrice').value = product.promotional_price;
+        }
+
+        // Categoria
+        if (product.category_id) {
+          const category = allCategories.find(c => c.id == product.category_id);
+          if (category) {
+            setTimeout(() => selectCategory(category.id), 500);
           }
-        });
+        }
+
+        // Imagens
+        setTimeout(() => {
+          if (product.image_url) {
+            const mainImagePreview = document.getElementById('mainImagePreview');
+            let imageUrl = product.image_url;
+            if (!imageUrl.startsWith('http')) {
+              imageUrl = `https://upuniversestorege.onrender.com${imageUrl}`;
+            }
+            mainImagePreview.innerHTML = `
+              <div class="preview-item">
+                <img src="${imageUrl}" alt="${product.name}" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                <p style="font-size: 12px; color: #aaa; margin-top: 5px;">Imagem atual</p>
+              </div>
+            `;
+          }
+        }, 500);
+
+        // Descrição
+        if (product.description) {
+          document.getElementById('productDescription').innerHTML = product.description;
+        }
+
+        // Status
+        document.getElementById('productActive').checked = product.status === 'active';
+        document.getElementById('productFeatured').checked = product.featured === true;
+        if (product.settings) {
+          document.getElementById('allowReviews').checked = product.settings.allow_reviews !== false;
+        }
+
+        // Informações de envio
+        if (product.shipping_info) {
+          document.getElementById('isPhysical').checked = product.shipping_info.is_physical !== false;
+          if (product.shipping_info.weight_kg) {
+            document.getElementById('productWeight').value = product.shipping_info.weight_kg;
+          }
+          if (product.shipping_info.dimensions_cm) {
+            document.getElementById('productDimensions').value = product.shipping_info.dimensions_cm;
+          }
+          if (product.shipping_info.production_time) {
+            document.getElementById('productionTime').value = product.shipping_info.production_time;
+          }
+        } else {
+          if (product.weight) document.getElementById('productWeight').value = product.weight;
+          if (product.dimensions) document.getElementById('productDimensions').value = product.dimensions;
+        }
+
+        // SEO
+        if (product.seo) {
+          document.getElementById('seoTitle').value = product.seo.title || '';
+          document.getElementById('seoDescription').value = product.seo.description || '';
+          document.getElementById('productSlug').value = product.seo.slug || '';
+          if (product.seo.keywords) {
+            document.getElementById('productKeywords').value = Array.isArray(product.seo.keywords)
+              ? product.seo.keywords.join(', ')
+              : product.seo.keywords;
+          }
+        }
+
+        // Especificações
+        if (product.specifications && product.specifications.length > 0) {
+          const specsContainer = document.getElementById('specifications');
+          specsContainer.innerHTML = '';
+          product.specifications.forEach(spec => {
+            addSpecification(spec.key, spec.value);
+          });
+        }
+
+        showNotification('Produto carregado!', 'success');
+      } catch (error) {
+        console.error('❌ Erro ao carregar produto:', error);
+        showNotification('Erro ao carregar produto', 'error');
       }
+    }
 
-      // === 6. FORMULÁRIO PRINCIPAL ===
-      const productForm = document.getElementById('productForm');
-      const saveDraftBtn = document.getElementById('saveDraftBtn');
+    // ============================================
+    // ===== FUNÇÕES AUXILIARES =====
+    // ============================================
+    function addSpecification(key = '', value = '') {
+      const specsContainer = document.getElementById('specifications');
+      const newSpec = document.createElement('div');
+      newSpec.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
+      newSpec.innerHTML = `
+        <input type="text" class="form-control" placeholder="Ex: Material" value="${key}">
+        <input type="text" class="form-control" placeholder="Ex: PLA Premium" value="${value}">
+        <button type="button" class="remove-spec" style="background: transparent; border: 1px solid rgba(124, 58, 237, 0.3); color: #f44336; border-radius: 6px; width: 40px; cursor: pointer;">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      specsContainer.appendChild(newSpec);
 
-      if (!productForm) {
-        console.error("❌ FORMULÁRIO NÃO ENCONTRADO!");
+      newSpec.querySelector('.remove-spec').addEventListener('click', () => newSpec.remove());
+    }
+
+    function updateSeoPreview() {
+      const title = document.getElementById('seoTitle')?.value || 'Crânio T-Rex 3D - Universo Paralelo Store';
+      const slug = document.getElementById('productSlug')?.value || 'cranio-t-rex-3d';
+      const desc = document.getElementById('seoDescription')?.value || 'Esta impressionante réplica do crânio do T-Rex é perfeita para apaixonados por paleontologia e decoração única.';
+
+      document.getElementById('previewTitle').textContent = title;
+      document.getElementById('previewUrl').textContent = `https://universoparalelo.com/produtos/${slug}`;
+      document.getElementById('previewDescription').textContent = desc.substring(0, 160) + '...';
+    }
+
+    // ============================================
+    // ===== INICIALIZAÇÃO =====
+    // ============================================
+    document.addEventListener('DOMContentLoaded', async function () {
+      console.log('📱 Inicializando formulário de produtos...');
+
+      // Verificar login
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.href = 'login.html';
         return;
       }
 
-      // === 7. COLETA DE DADOS ===
-     collectAllFormData = function () {
-        console.log("📋 Coletando dados do formulário...");
+      // Verificar se é edição
+      const urlParams = new URLSearchParams(window.location.search);
+      const editProductId = urlParams.get('edit');
+      let isEditing = false;
+      let currentProductId = null;
 
-        // Criar FormData para envio de arquivos
-        const formData = new FormData();
+      if (editProductId) {
+        isEditing = true;
+        currentProductId = parseInt(editProductId);
+        document.title = "Editar Produto - Admin";
 
-        // TAB 1: Informações Básicas
-        const nameInput = document.querySelector('#basicTab input[placeholder*="Crânio T-Rex 3D"]');
-        const categoryIdInput = document.getElementById('categoryId');
-        const skuInput = document.querySelector('#basicTab input[placeholder*="SKU"]');
-        const priceInput = document.querySelector('#basicTab input[placeholder*="120.00"]');
-        const promoPriceInput = document.querySelector('#basicTab input[placeholder*="150.00"]');
-        const stockInput = document.querySelector('#basicTab input[placeholder*="12"]');
-        const shortDescTextarea = document.querySelector('#basicTab textarea');
-
-        // Adicionar dados básicos
-        formData.append('name', nameInput ? nameInput.value : '');
-
-        // Categoria
-        const categoryId = categoryIdInput ? parseInt(categoryIdInput.value) || null : null;
-        if (categoryId && allCategories.length > 0) {
-          const categoryObj = allCategories.find(c => c.id == categoryId);
-          if (categoryObj) {
-            formData.append('category', categoryObj.name);
-            formData.append('category_id', categoryObj.id);
-          }
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+          submitBtn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
         }
-
-        formData.append('price', priceInput ? parseFloat(priceInput.value) || 0 : 0);
-        formData.append('promotional_price', promoPriceInput ? parseFloat(promoPriceInput.value) || '' : '');
-        formData.append('stock', stockInput ? parseInt(stockInput.value) || 0 : 0);
-        formData.append('sku', skuInput ? skuInput.value : '');
-        formData.append('short_description', shortDescTextarea ? shortDescTextarea.value : '');
-
-        // TAB 2: Imagens
-        // Obter arquivo da imagem principal
-        const mainImageFileInput = document.querySelector('#mainImageUpload input[type="file"]');
-        if (mainImageFileInput && mainImageFileInput.files[0]) {
-          formData.append('main_image', mainImageFileInput.files[0]);
-        }
-
-        // Obter arquivos da galeria
-        const galleryFileInput = document.querySelector('#galleryUpload input[type="file"]');
-        if (galleryFileInput && galleryFileInput.files) {
-          for (let i = 0; i < galleryFileInput.files.length; i++) {
-            formData.append('gallery_images', galleryFileInput.files[i]);
-          }
-        }
-
-        // TAB 3: Variantes (converter para JSON)
-        const variants = {
-          sizes: [],
-          colors: []
-        };
-
-        // Coletar tamanhos
-        const sizeCheckboxes = document.querySelectorAll('#variantsTab input[type="checkbox"]');
-        const sizePriceInputs = document.querySelectorAll('#variantsTab input[placeholder*="00"]');
-
-        sizeCheckboxes.forEach((checkbox, index) => {
-          if (checkbox.checked && checkbox.nextElementSibling) {
-            const sizeText = checkbox.nextElementSibling.textContent.trim();
-            const priceInput = sizePriceInputs[index];
-            const sizePrice = priceInput ? parseFloat(priceInput.value) : null;
-
-            variants.sizes.push({
-              size: sizeText,
-              price: sizePrice
-            });
-          }
-        });
-
-        // Cores
-        const selectedColor = document.querySelector('#variantsTab .color-option.selected');
-        if (selectedColor) {
-          variants.colors = [selectedColor.getAttribute('title')];
-        }
-
-        formData.append('variants', JSON.stringify(variants));
-
-        // TAB 4: Detalhes
-        const description = editorContent ? editorContent.innerHTML : '';
-        formData.append('description', description);
-
-        // Especificações
-        const specifications = [];
-        const specElements = document.querySelectorAll('#detailsTab #specifications > div');
-        specElements.forEach(spec => {
-          const inputs = spec.querySelectorAll('input');
-          if (inputs.length >= 2 && inputs[0].value && inputs[1].value) {
-            specifications.push({
-              key: inputs[0].value,
-              value: inputs[1].value
-            });
-          }
-        });
-
-        formData.append('specifications', JSON.stringify(specifications));
-
-        // Informações de envio
-        const physicalCheckbox = document.querySelector('#detailsTab input[type="checkbox"]:first-of-type');
-        const weightInput = document.querySelector('#detailsTab input[placeholder*="0.45"]');
-        const dimensionsInput = document.querySelector('#detailsTab input[placeholder*="25x18x15"]');
-        const productionInput = document.querySelector('#detailsTab input[placeholder*="3-5 dias"]');
-
-        const shippingInfo = {
-          is_physical: physicalCheckbox ? physicalCheckbox.checked : false,
-          weight_kg: weightInput ? parseFloat(weightInput.value) || 0 : 0,
-          dimensions_cm: dimensionsInput ? dimensionsInput.value : '',
-          production_time: productionInput ? productionInput.value : ''
-        };
-
-        formData.append('shipping_info', JSON.stringify(shippingInfo));
-
-        // Switches
-        const switches = document.querySelectorAll('#detailsTab .toggle-switch input[type="checkbox"]');
-        formData.append('featured', switches[1] ? (switches[1].checked ? 1 : 0) : 0);
-        formData.append('status', switches[0] ? (switches[0].checked ? 'active' : 'inactive') : 'active');
-        formData.append('settings', JSON.stringify({
-          allow_reviews: switches[2] ? switches[2].checked : false
-        }));
-
-        // TAB 5: SEO
-        const seoTitleInput = document.querySelector('#seoTab input[placeholder*="Título SEO"]');
-        const seoDescTextarea = document.querySelector('#seoTab textarea[placeholder*="Meta Descrição"]');
-        const slugInput = document.querySelector('#seoTab input[placeholder*="URL Amigável"]');
-        const keywordsInput = document.querySelector('#seoTab input[placeholder*="Palavras-chave"]');
-
-        const seo = {
-          title: seoTitleInput ? seoTitleInput.value : '',
-          description: seoDescTextarea ? seoDescTextarea.value : '',
-          slug: slugInput ? slugInput.value : '',
-          keywords: keywordsInput ? keywordsInput.value.split(',').map(k => k.trim()).filter(k => k) : []
-        };
-
-        formData.append('seo', JSON.stringify(seo));
-
-        // Material e dimensões
-        const material = specifications.find(s => s.key && s.key.toLowerCase() === 'material')?.value || '';
-        formData.append('material', material);
-        formData.append('dimensions', dimensionsInput ? dimensionsInput.value : '');
-        formData.append('weight', weightInput ? weightInput.value : '');
-
-        console.log("✅ FormData criado com sucesso");
-
-        // Para debug, mostrar o que está sendo enviado
-        for (let pair of formData.entries()) {
-          console.log(`${pair[0]}:`, pair[0] === 'main_image' || pair[0] === 'gallery_images[]'
-            ? `[Arquivo: ${pair[1].name}]`
-            : pair[1]);
-        }
-
-        return formData;
-      };
-      // === 8. VALIDAÇÃO ===
-      function validateProductData(data) {
-        console.log("🔍 Validando dados...");
-        console.log("📊 Dados para validação:", {
-          nome: data.name,
-          preco: data.price,
-          categoria: data.category,
-          tipo_categoria: typeof data.category
-        });
-
-        if (!data.name || !data.name.trim()) {
-          showNotification('Nome do produto é obrigatório!', 'error');
-          return false;
-        }
-
-        if (!data.category || !data.category.trim()) {
-          showNotification('Categoria é obrigatória! Selecione uma categoria.', 'error');
-          console.error("❌ Categoria está vazia:", data.category);
-          return false;
-        }
-
-        if (data.price <= 0) {
-          showNotification('Preço deve ser maior que zero!', 'error');
-          return false;
-        }
-
-        console.log("✅ Validação passou com sucesso");
-        return true;
       }
 
-      // Adicione esta função para verificar a categoria
-      window.debugCategory = function () {
-        const categoryIdInput = document.getElementById('categoryId');
-        const categoryId = categoryIdInput ? categoryIdInput.value : null;
+      // Configurar tabs
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
 
-        console.log("🔍 Debug Categoria:");
-        console.log("📌 categoryId do input:", categoryId);
-        console.log("📌 allCategories:", allCategories);
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          const tabId = this.getAttribute('data-tab');
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          this.classList.add('active');
+          const tabElement = document.getElementById(`${tabId}Tab`);
+          if (tabElement) tabElement.classList.add('active');
+        });
+      });
 
-        if (categoryId && allCategories.length > 0) {
-          const category = allCategories.find(c => c.id == categoryId);
-          console.log("📌 Categoria encontrada:", category);
+      // Configurar categoria selector
+      const selectedCategory = document.getElementById('selectedCategory');
+      if (selectedCategory) {
+        selectedCategory.addEventListener('click', toggleCategoryDropdown);
+      }
 
-          if (category) {
-            alert(`Categoria selecionada:\nID: ${category.id}\nNome: ${category.name}\nSlug: ${category.slug}`);
-          } else {
-            alert("❌ Categoria não encontrada no array allCategories");
-          }
-        } else {
-          alert("❌ Nenhuma categoria selecionada ou categorias não carregadas");
-        }
-      };
+      // Carregar categorias
+      await loadCategories();
 
-      // Adicione um botão de debug de categoria
-      const debugCategoryBtn = document.createElement('button');
-      debugCategoryBtn.textContent = '🔍 Categoria';
-      debugCategoryBtn.style.cssText = 'position: fixed; bottom: 60px; left: 20px; padding: 10px 15px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 10000;';
-      debugCategoryBtn.onclick = window.debugCategory;
-      document.body.appendChild(debugCategoryBtn);
+      // Se for edição, carregar produto
+      if (isEditing && currentProductId) {
+        await loadProductForEdit(currentProductId);
+      }
 
-      // === 9. ENVIO DO FORMULÁRIO ===
-      // === 9. ENVIO DO FORMULÁRIO (CRIAÇÃO OU EDIÇÃO) ===
-      productForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
+      // Configurar upload de imagens
+      setupImageUploads();
 
-        if (isEditing) {
-          console.log(`🔄 Atualizando produto ID: ${currentProductId}...`);
-          await updateProduct(currentProductId);
-        } else {
-          console.log("🚀 Criando novo produto...");
-          await createProduct();
+      // Configurar especificações
+      const addSpecBtn = document.getElementById('addSpecBtn');
+      if (addSpecBtn) {
+        addSpecBtn.addEventListener('click', () => addSpecification());
+      }
+
+      // Configurar cores
+      document.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', function () {
+          document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+          this.classList.add('selected');
+          document.getElementById('selectedColor').value = this.getAttribute('title') || '';
+        });
+      });
+
+      // Configurar preview SEO
+      ['seoTitle', 'productSlug', 'seoDescription'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', updateSeoPreview);
+      });
+
+      // Gerar slug automaticamente
+      document.getElementById('productName')?.addEventListener('input', function () {
+        const slugInput = document.getElementById('productSlug');
+        if (!isEditing && slugInput && !slugInput.value) {
+          slugInput.value = this.value
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+          updateSeoPreview();
         }
       });
 
-      
-
-      // === FUNÇÃO PARA CRIAR PRODUTO ===
-     // === FUNÇÃO PARA CRIAR PRODUTO (VERSÃO FINAL) ===
-     async function createProduct() {
-        console.log("🚀 Iniciando criação de produto...");
-
-        const submitBtn = productForm.querySelector('button[type="submit"]');
-        const originalHTML = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
-        submitBtn.disabled = true;
-
-        try {
-          // Preparar FormData
-          const formData = prepareFormData();
-
-          // Determinar URL da API
-          const API_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:5000/api'
-            : 'https://upuniversestorege.onrender.com/api';
-
-          console.log("📤 Enviando para:", `${API_URL}/products`);
-
-          const response = await fetch(`${API_URL}/products`, {
-            method: 'POST',
-            body: formData
-          });
-
-          let result;
-          const responseText = await response.text();
-
-          try {
-            result = JSON.parse(responseText);
-          } catch (e) {
-            console.error("❌ Resposta não é JSON:", responseText.substring(0, 200));
-            throw new Error(`Servidor retornou: ${response.status} - ${response.statusText}`);
-          }
-
-          console.log("📥 Resposta:", result);
-
-          if (response.ok && result.success) {
-            showNotification('🎉 Produto publicado com sucesso!', 'success');
-
-            setTimeout(() => {
-              window.location.href = 'products.html';
-            }, 2000);
-          } else {
-            showNotification(`❌ Erro: ${result.error || 'Falha ao criar produto'}`, 'error');
-            submitBtn.innerHTML = originalHTML;
-            submitBtn.disabled = false;
-          }
-
-        } catch (error) {
-          console.error("💥 Erro:", error);
-          showNotification(`❌ Erro: ${error.message}`, 'error');
-          submitBtn.innerHTML = originalHTML;
-          submitBtn.disabled = false;
+      // Gerar SKU automático
+      document.getElementById('productName')?.addEventListener('blur', function () {
+        const skuInput = document.getElementById('productSku');
+        if (skuInput && !skuInput.value) {
+          const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+          skuInput.value = `PROD-${randomNum}`;
         }
-      }
+      });
 
-      // === FUNÇÃO PARA ATUALIZAR PRODUTO ===
-      async function updateProduct(productId) {
-        console.log(`🔄 Atualizando produto ID: ${productId}...`);
+      // Submissão do formulário
+      const productForm = document.getElementById('productForm');
+      if (productForm) {
+        productForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
 
-        const submitBtn = productForm.querySelector('button[type="submit"]');
-        const originalHTML = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-        submitBtn.disabled = true;
-
-        try {
-          const formData = prepareFormData();
-
-          const API_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:5000/api'
-            : 'https://upuniversestorege.onrender.com/api';
-
-          const response = await fetch(`${API_URL}/products/${productId}`, {
-            method: 'PUT',
-            body: formData
-          });
-
-          let result;
-          const responseText = await response.text();
-
-          try {
-            result = JSON.parse(responseText);
-          } catch (e) {
-            console.error("❌ Resposta não é JSON:", responseText.substring(0, 200));
-            throw new Error(`Servidor retornou: ${response.status} - ${response.statusText}`);
-          }
-
-          if (response.ok && result.success) {
-            showNotification('✅ Produto atualizado com sucesso!', 'success');
-            setTimeout(() => {
-              window.location.href = 'products.html';
-            }, 2000);
-          } else {
-            showNotification(`❌ Erro: ${result.error || 'Falha ao atualizar'}`, 'error');
-            submitBtn.innerHTML = originalHTML;
-            submitBtn.disabled = false;
-          }
-
-        } catch (error) {
-          console.error("💥 Erro:", error);
-          showNotification(`❌ Erro: ${error.message}`, 'error');
-          submitBtn.innerHTML = originalHTML;
-          submitBtn.disabled = false;
-        }
-      }
-
-      // === FUNÇÃO PARA PREPARAR FORMDATA ===
-      function prepareFormData() {
-        console.log("📦 Preparando FormData para envio...");
-        const formData = new FormData();
-
-        // ===== INFORMAÇÕES BÁSICAS =====
-        const nameInput = document.querySelector('#basicTab input[placeholder*="Crânio T-Rex 3D"]');
-        const priceInput = document.querySelector('#basicTab input[placeholder*="120.00"]');
-        const stockInput = document.querySelector('#basicTab input[placeholder*="12"]');
-        const shortDescTextarea = document.querySelector('#basicTab textarea');
-        const skuInput = document.querySelector('#basicTab input[placeholder*="SKU"]');
-        const promoPriceInput = document.querySelector('#basicTab input[placeholder*="150.00"]');
-        const categoryIdInput = document.getElementById('categoryId');
-
-        // VALIDAÇÕES
-        if (!nameInput || !nameInput.value.trim()) {
-          showNotification('Nome do produto é obrigatório!', 'error');
-          throw new Error('Nome do produto é obrigatório');
-        }
-
-        if (!categoryIdInput || !categoryIdInput.value) {
-          showNotification('Selecione uma categoria!', 'error');
-          throw new Error('Categoria é obrigatória');
-        }
-
-        if (!priceInput || !priceInput.value || parseFloat(priceInput.value) <= 0) {
-          showNotification('Preço deve ser maior que zero!', 'error');
-          throw new Error('Preço inválido');
-        }
-
-        // ADICIONAR DADOS BÁSICOS
-        formData.append('name', nameInput.value.trim());
-        formData.append('price', parseFloat(priceInput.value) || 0);
-        formData.append('stock', stockInput ? parseInt(stockInput.value) || 0 : 0);
-        formData.append('short_description', shortDescTextarea ? shortDescTextarea.value.trim() : '');
-        formData.append('sku', skuInput ? skuInput.value.trim() : '');
-        formData.append('category_id', parseInt(categoryIdInput.value));
-
-        if (promoPriceInput && promoPriceInput.value) {
-          formData.append('promotional_price', parseFloat(promoPriceInput.value));
-        }
-
-        // ADICIONAR NOME DA CATEGORIA (para compatibilidade)
-        const category = allCategories.find(c => c.id == categoryIdInput.value);
-        if (category) {
-          formData.append('category', category.name);
-          console.log(`✅ Categoria: ${category.name} (ID: ${category.id})`);
-        }
-
-        // ===== IMAGEM PRINCIPAL =====
-        const mainImageInput = document.querySelector('#mainImageUpload input[type="file"]');
-        if (mainImageInput && mainImageInput.files[0]) {
-          formData.append('main_image', mainImageInput.files[0]);
-          console.log("📷 Imagem principal:", mainImageInput.files[0].name);
-        }
-
-        // ===== GALERIA DE IMAGENS =====
-        const galleryInput = document.querySelector('#galleryUpload input[type="file"]');
-        if (galleryInput && galleryInput.files) {
-          for (let i = 0; i < galleryInput.files.length; i++) {
-            formData.append('gallery_images', galleryInput.files[i]);
-          }
-          console.log(`🖼️ Galeria: ${galleryInput.files.length} imagem(ns)`);
-        }
-
-        // ===== DESCRIÇÃO DETALHADA =====
-        const editorContent = document.querySelector('.editor-content');
-        if (editorContent) {
-          formData.append('description', editorContent.innerHTML || '');
-        }
-
-        // ===== VARIANTES =====
-        const variants = { sizes: [], colors: [] };
-
-        const sizeCheckboxes = document.querySelectorAll('#variantsTab input[type="checkbox"]');
-        const sizePriceInputs = document.querySelectorAll('#variantsTab input[placeholder*="00"]');
-
-        sizeCheckboxes.forEach((checkbox, index) => {
-          if (checkbox.checked && checkbox.nextElementSibling) {
-            const sizeText = checkbox.nextElementSibling.textContent.trim();
-            const priceInput = sizePriceInputs[index];
-            variants.sizes.push({
-              size: sizeText,
-              price: priceInput ? parseFloat(priceInput.value) : null
-            });
-          }
-        });
-
-        const selectedColor = document.querySelector('#variantsTab .color-option.selected');
-        if (selectedColor) {
-          variants.colors = [selectedColor.getAttribute('title') || 'Cor padrão'];
-        }
-
-        formData.append('variants', JSON.stringify(variants));
-
-        // ===== ESPECIFICAÇÕES =====
-        const specifications = [];
-        const specElements = document.querySelectorAll('#detailsTab #specifications > div');
-
-        specElements.forEach(spec => {
-          const inputs = spec.querySelectorAll('input');
-          if (inputs.length >= 2 && inputs[0].value && inputs[1].value) {
-            specifications.push({
-              key: inputs[0].value.trim(),
-              value: inputs[1].value.trim()
-            });
-          }
-        });
-
-        formData.append('specifications', JSON.stringify(specifications));
-
-        // ===== INFORMAÇÕES DE ENVIO =====
-        const physicalCheckbox = document.querySelector('#detailsTab input[type="checkbox"]:first-of-type');
-        const weightInput = document.querySelector('#detailsTab input[placeholder*="0.45"]');
-        const dimensionsInput = document.querySelector('#detailsTab input[placeholder*="25x18x15"]');
-        const productionInput = document.querySelector('#detailsTab input[placeholder*="3-5 dias"]');
-
-        const shippingInfo = {
-          is_physical: physicalCheckbox ? physicalCheckbox.checked : true,
-          weight_kg: weightInput ? parseFloat(weightInput.value) || 0 : 0,
-          dimensions_cm: dimensionsInput ? dimensionsInput.value.trim() : '',
-          production_time: productionInput ? productionInput.value.trim() : ''
-        };
-
-        formData.append('shipping_info', JSON.stringify(shippingInfo));
-        formData.append('dimensions', dimensionsInput ? dimensionsInput.value.trim() : '');
-        formData.append('weight', weightInput ? weightInput.value.trim() : '');
-
-        // ===== MATERIAL =====
-        const materialSpec = specifications.find(s =>
-          s.key && s.key.toLowerCase().includes('material')
-        );
-        formData.append('material', materialSpec ? materialSpec.value : '');
-
-        // ===== STATUS E DESTAQUE =====
-        const switches = document.querySelectorAll('#detailsTab .toggle-switch input[type="checkbox"]');
-        formData.append('featured', switches[1] ? (switches[1].checked ? 1 : 0) : 0);
-        formData.append('status', switches[0] ? (switches[0].checked ? 'active' : 'inactive') : 'active');
-
-        const settings = {
-          allow_reviews: switches[2] ? switches[2].checked : true
-        };
-        formData.append('settings', JSON.stringify(settings));
-
-        // ===== SEO =====
-        const seoTitleInput = document.querySelector('#seoTab input[placeholder*="Título SEO"]');
-        const seoDescTextarea = document.querySelector('#seoTab textarea[placeholder*="Meta Descrição"]');
-        const slugInput = document.querySelector('#seoTab input[placeholder*="URL Amigável"]');
-        const keywordsInput = document.querySelector('#seoTab input[placeholder*="Palavras-chave"]');
-
-        const seo = {
-          title: seoTitleInput ? seoTitleInput.value.trim() : '',
-          description: seoDescTextarea ? seoDescTextarea.value.trim() : '',
-          slug: slugInput ? slugInput.value.trim() : '',
-          keywords: keywordsInput ? keywordsInput.value.split(',').map(k => k.trim()).filter(k => k) : []
-        };
-
-        formData.append('seo', JSON.stringify(seo));
-
-        // DEBUG
-        console.log("=== CONTEÚDO DO FORMDATA ===");
-        for (let [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            console.log(`📁 ${key}: ${value.name} (${value.size} bytes)`);
-          } else {
-            console.log(`📝 ${key}: ${value}`);
-          }
-        }
-        console.log("=== FIM DEBUG ===");
-
-        return formData;
-      }
-
-      // === FUNÇÃO PARA PROCESSAR RESPOSTA DA ATUALIZAÇÃO ===
-      function handleUpdateResponse(response, result, submitBtn, originalHTML) {
-        console.log("📥 Status da resposta:", response.status);
-        console.log("Resposta da API:", result);
-
-        if (response.ok && result.success) {
-          showNotification('✅ Produto atualizado com sucesso!', 'success');
-          setTimeout(() => {
-            window.location.href = 'products.html';
-          }, 2000);
-        } else {
-          showNotification(`❌ Erro: ${result.error || 'Não foi possível atualizar o produto'}`, 'error');
-          submitBtn.innerHTML = originalHTML;
-          submitBtn.disabled = false;
-        }
-      }
-
-      // === 10. BOTÃO SALVAR RASCUNHO ===
-      if (saveDraftBtn) {
-        saveDraftBtn.addEventListener('click', function () {
-          const productData = collectAllFormData();
-
-          if (!productData.name) {
-            showNotification('Digite pelo menos o nome do produto para salvar rascunho', 'warning');
+          if (this.hasAttribute('data-submitting') && this.getAttribute('data-submitting') === 'true') {
+            console.log('⏳ Requisição já em andamento');
             return;
           }
+          this.setAttribute('data-submitting', 'true');
 
-          const draftId = 'draft_' + Date.now();
-          localStorage.setItem(draftId, JSON.stringify({
-            data: productData,
-            timestamp: new Date().toISOString(),
-            title: productData.name || 'Novo produto'
-          }));
-
-          const drafts = JSON.parse(localStorage.getItem('product_drafts') || '[]');
-          drafts.push({
-            id: draftId,
-            title: productData.name || 'Novo produto',
-            timestamp: new Date().toISOString()
-          });
-          localStorage.setItem('product_drafts', JSON.stringify(drafts));
-
-          showNotification('📝 Rascunho salvo com sucesso!', 'info');
-        });
-      }
-
-      // === 11. FUNÇÕES AUXILIARES ===
-      const seoTitleInput = document.querySelector('#seoTab input[placeholder*="Título SEO"]');
-      const seoDescTextarea = document.querySelector('#seoTab textarea[placeholder*="Meta Descrição"]');
-      const seoUrlInput = document.querySelector('#seoTab input[placeholder*="URL Amigável"]');
-
-      if (seoTitleInput && seoDescTextarea && seoUrlInput) {
-        seoTitleInput.addEventListener('input', updateSeoPreview);
-        seoDescTextarea.addEventListener('input', updateSeoPreview);
-        seoUrlInput.addEventListener('input', updateSeoPreview);
-
-        function updateSeoPreview() {
-          const preview = document.querySelector('.seo-preview .preview-item');
-          if (preview) {
-            const titleEl = preview.querySelector('.preview-title');
-            const urlEl = preview.querySelector('.preview-url');
-            const descEl = preview.querySelector('.preview-description');
-
-            if (seoTitleInput.value) titleEl.textContent = seoTitleInput.value;
-            if (seoUrlInput.value) urlEl.textContent = `https://universoparalelo.com/produtos/${seoUrlInput.value}`;
-            if (seoDescTextarea.value) descEl.textContent = seoDescTextarea.value.substring(0, 160) + '...';
-          }
-        }
-
-        updateSeoPreview();
-      }
-
-      const skuField = document.querySelector('#basicTab input[placeholder*="SKU"]');
-      const nameField = document.querySelector('#basicTab input[placeholder*="Nome do Produto"]');
-
-      if (skuField && nameField) {
-        nameField.addEventListener('blur', function () {
-          if (!skuField.value.trim()) {
-            const sku = 'PROD-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            skuField.value = sku;
-          }
-        });
-
-        nameField.addEventListener('input', function () {
-          if (seoUrlInput && !seoUrlInput.value.trim()) {
-            const slug = this.value
-              .toLowerCase()
-              .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-              .replace(/[^\w\s-]/g, '')
-              .replace(/\s+/g, '-')
-              .replace(/-+/g, '-')
-              .trim();
-            seoUrlInput.value = slug;
-            updateSeoPreview();
-          }
-        });
-      }
-
-      // === 12. BOTÃO DE DEBUG ===
-      const debugBtn = document.createElement('button');
-      debugBtn.textContent = '🐛 Debug';
-      debugBtn.style.cssText = 'position: fixed; bottom: 20px; left: 20px; padding: 10px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 10000;';
-      debugBtn.onclick = window.debugForm;
-      document.body.appendChild(debugBtn);
-
-      console.log("✅ Formulário inicializado com sucesso");
-    });
-
-    // Adicione este botão de teste no seu product-form.html
-      const testBtn = document.createElement('button');
-      testBtn.textContent = '🧪 Teste Simples';
-      testBtn.style.cssText = 'position: fixed; bottom: 140px; left: 20px; padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 10000;';
-
-      /*
-      // Modifique o botão de teste para incluir uma imagem
-        testBtn.onclick = async function () {
-          console.log("🧪 Teste com imagem...");
-
-          // Criar um arquivo de imagem fake para teste
-          const blob = new Blob([''], { type: 'image/jpeg' });
-          const testFile = new File([blob], 'test-image.jpg', { type: 'image/jpeg' });
-
-          const formData = new FormData();
-          formData.append('name', 'Produto Com Imagem');
-          formData.append('price', '199.99');
-          formData.append('category', 'Teste');
-          formData.append('stock', '5');
-          formData.append('main_image', testFile); // Adiciona imagem
-
-          console.log("Enviando teste com imagem...");
-
-          // Debug: mostrar campos
-          console.log("Campos no FormData:");
-          for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value instanceof File ? `[Arquivo: ${value.name}]` : value);
-          }
+          const submitBtn = document.getElementById('submitBtn');
+          const originalHTML = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+          submitBtn.disabled = true;
 
           try {
-            const response = await fetch('http://localhost:5000/api/products', {
-              method: 'POST',
-              body: formData
-            });
-            const result = await response.json();
-            console.log("Resultado do teste:", result);
-            alert(result.success ? '✅ Teste com imagem OK!' : `❌ Erro: ${result.error}`);
+            const formData = prepareFormData();
+
+            let result;
+            if (isEditing && currentProductId) {
+              result = await ProductAPI.updateProduct(currentProductId, formData);
+            } else {
+              result = await ProductAPI.createProduct(formData);
+            }
+
+            if (result.success) {
+              showNotification(`✅ Produto ${isEditing ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+              setTimeout(() => {
+                window.location.href = 'products.html';
+              }, 2000);
+            } else {
+              showNotification(`❌ Erro: ${result.error || 'Falha ao processar'}`, 'error');
+              submitBtn.innerHTML = originalHTML;
+              submitBtn.disabled = false;
+            }
           } catch (error) {
-            console.error("Erro no teste:", error);
-            alert('❌ Falha na conexão: ' + error.message);
+            console.error('❌ Erro:', error);
+            showNotification(`❌ Erro: ${error.message}`, 'error');
+            submitBtn.innerHTML = originalHTML;
+            submitBtn.disabled = false;
+          } finally {
+            this.removeAttribute('data-submitting');
           }
-        };
-      document.body.appendChild(testBtn);
-      */
+        });
+      }
+
+      // Salvar rascunho
+      const saveDraftBtn = document.getElementById('saveDraftBtn');
+      if (saveDraftBtn) {
+        saveDraftBtn.addEventListener('click', function () {
+          showNotification('Função de rascunho será implementada em breve', 'info');
+        });
+      }
+
+      console.log("✅ Formulário inicializado");
+    });
+
+    // ============================================
+    // ===== ANIMAÇÕES CSS =====
+    // ============================================
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(100%); }
+      }
+      .label-required::after {
+        content: " *";
+        color: #f44336;
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 

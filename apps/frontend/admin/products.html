@@ -6,15 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Produtos - Admin</title>
   <link rel="stylesheet" href="../public/css/base.css">
-  <link rel="stylesheet" href="../admin/categories.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../admin/products.css">
-  <script src="../public/js/api.js"></script>
+  <script src="../public/js/config.js"></script>
 </head>
 
 <body>
   <div class="admin-wrapper">
-    <!-- SIDEBAR ATUALIZADA COM LINKS DESABILITADOS -->
+    <!-- SIDEBAR -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">UNIVERSO PARALELO</div>
@@ -39,7 +38,6 @@
             <i class="fas fa-tags"></i>
             <span>Categorias</span>
           </a>
-          <!-- href="orders.html" -->
           <a href="#" class="nav-link disabled">
             <i class="fas fa-shopping-cart"></i>
             <span>Pedidos</span>
@@ -56,12 +54,10 @@
             <i class="fas fa-star"></i>
             <span>Avaliações</span>
           </a>
-          <!-- Blog foi removido conforme solicitado -->
         </div>
 
         <div class="nav-section">
           <div class="section-title">Configurações</div>
-          <!-- Usuários foi removido conforme solicitado -->
           <a href="#" class="nav-link disabled">
             <i class="fas fa-cog"></i>
             <span>Configurações</span>
@@ -118,20 +114,19 @@
           <option value="">Todos os status</option>
           <option value="active">Ativo</option>
           <option value="inactive">Inativo</option>
-          <option value="out_of_stock">Esgotado</option>
         </select>
 
         <select class="filter-select" id="sortFilter">
-          <option value="newest">Ordenar por: Mais recentes</option>
-          <option value="name_asc">Ordenar por: Nome (A-Z)</option>
-          <option value="name_desc">Ordenar por: Nome (Z-A)</option>
-          <option value="price_asc">Ordenar por: Preço (menor)</option>
-          <option value="price_desc">Ordenar por: Preço (maior)</option>
+          <option value="newest">Mais recentes</option>
+          <option value="name_asc">Nome (A-Z)</option>
+          <option value="name_desc">Nome (Z-A)</option>
+          <option value="price_asc">Preço (menor)</option>
+          <option value="price_desc">Preço (maior)</option>
         </select>
 
         <button class="btn-action btn-view" style="padding: 12px 25px;" id="applyFiltersBtn">
           <i class="fas fa-filter"></i>
-          Aplicar Filtros
+          Aplicar
         </button>
 
         <button class="btn-action btn-view" style="padding: 12px 25px; background: #4CAF50;" id="refreshBtn">
@@ -157,7 +152,6 @@
             </tr>
           </thead>
           <tbody id="productsTableBody">
-            <!-- Os produtos serão carregados aqui dinamicamente -->
             <tr id="loadingRow">
               <td colspan="7" style="text-align: center; padding: 40px;">
                 <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
@@ -181,7 +175,7 @@
           <div class="page-numbers" id="pageNumbers">
             <span class="page-number active">1</span>
           </div>
-          <button class="btn-pagination" id="nextPageBtn">
+          <button class="btn-pagination" id="nextPageBtn" disabled>
             Próxima
             <i class="fas fa-chevron-right"></i>
           </button>
@@ -200,7 +194,7 @@
           <option value="delete">Excluir selecionados</option>
         </select>
         <button id="applyBulkActionBtn"
-          style="padding: 10px 20px; background: linear-gradient(135deg, #DF38FF, #7C3AED); border: none; border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; transition: all 0.3s ease;">
+          style="padding: 10px 20px; background: linear-gradient(135deg, #DF38FF, #7C3AED); border: none; border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer;">
           Aplicar
         </button>
       </div>
@@ -229,746 +223,106 @@
   </div>
 
   <script>
-    // ========== CONFIGURAÇÃO DA API ==========
-    const API_BASE_URL = 'http://localhost:5000/api';
+    // ============================================
+    // ===== CONFIGURAÇÃO DA API =====
+    // ============================================
+    const IS_LOCALHOST = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_BASE_URL = IS_LOCALHOST ? 'http://localhost:5000/api' : 'https://upuniversestorege.onrender.com/api';
 
-    // Função para obter headers
-    function getAPIConfig() {
-      return {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      };
-    }
+    console.log('🚀 API Base URL:', API_BASE_URL);
 
-    // ========== FUNÇÕES DE API ESPECÍFICAS PARA CATEGORIAS ==========
+    // ============================================
+    // ===== API CLIENT =====
+    // ============================================
+    window.ProductAPI = {
+      API_BASE_URL: API_BASE_URL,
 
-    // Função para buscar categorias com contagem (ADICIONADA AQUI)
-    async function getCategoriesWithProductCount() {
-      try {
-        console.log("🌐 Chamando API:", `${API_BASE_URL}/categories/with-count`);
-        const response = await fetch(`${API_BASE_URL}/categories/with-count`, getAPIConfig());
+      async request(endpoint, options = {}, timeout = 30000) {
+        const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-        if (!response.ok) {
-          throw new Error('Erro ao buscar categorias');
-        }
-
-        const data = await response.json();
-        console.log("📊 Dados recebidos da API:", data);
-        return data.categories || [];
-      } catch (error) {
-        console.error('Erro ao buscar categorias com contagem:', error);
-        return [];
-      }
-    }
-
-    // Função para buscar categorias simples (sem contagem)
-    async function getCategories() {
-      try {
-        console.log("🌐 Chamando API:", `${API_BASE_URL}/categories`);
-        const response = await fetch(`${API_BASE_URL}/categories`, getAPIConfig());
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar categorias');
-        }
-
-        const data = await response.json();
-        return data.categories || [];
-      } catch (error) {
-        console.error('Erro ao buscar categorias:', error);
-        return [];
-      }
-    }
-
-    // ========== INTEGRAR COM ProductAPI EXISTENTE ==========
-    // Adicionar métodos ao ProductAPI se não existirem
-    if (typeof ProductAPI === 'undefined') {
-      window.ProductAPI = {};
-    }
-
-    // Adicionar os métodos de categorias ao ProductAPI
-    ProductAPI.getCategoriesWithProductCount = getCategoriesWithProductCount;
-    ProductAPI.getCategories = getCategories;
-
-    document.addEventListener('DOMContentLoaded', function () {
-      console.log("📦 Iniciando página de produtos...");
-
-      // === GERENCIAMENTO DO PERFIL E LOGOUT ===
-      // Verificar login
-      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
-      if (!isLoggedIn) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      // Logout
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', function () {
-          if (confirm('Tem certeza que deseja sair?')) {
-            localStorage.removeItem('adminLoggedIn');
-            localStorage.removeItem('adminEmail');
-            window.location.href = 'login.html';
-          }
-        });
-      }
-
-      // Update admin name from localStorage
-      const adminEmail = localStorage.getItem('adminEmail');
-      const profileName = document.querySelector('.profile-info h4');
-      if (adminEmail && profileName) {
-        profileName.textContent = adminEmail.split('@')[0];
-      }
-
-      // Atualizar avatar com primeira letra do nome
-      const profileAvatar = document.querySelector('.profile-avatar');
-      if (adminEmail && profileAvatar) {
-        const firstName = adminEmail.split('@')[0];
-        profileAvatar.textContent = firstName.charAt(0).toUpperCase();
-      }
-
-      // === GERENCIAMENTO DE PRODUTOS ===
-      // Variáveis globais
-      let allProducts = [];
-      let filteredProducts = [];
-      let allCategories = [];
-      let currentPage = 1;
-      const productsPerPage = 10;
-      let productToDelete = null;
-
-      // Elementos DOM
-      const searchInput = document.getElementById('searchInput');
-      const categoryFilter = document.getElementById('categoryFilter');
-      const statusFilter = document.getElementById('statusFilter');
-      const sortFilter = document.getElementById('sortFilter');
-      const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-      const refreshBtn = document.getElementById('refreshBtn');
-      const productsTableBody = document.getElementById('productsTableBody');
-      const paginationInfo = document.getElementById('paginationInfo');
-      const prevPageBtn = document.getElementById('prevPageBtn');
-      const nextPageBtn = document.getElementById('nextPageBtn');
-      const pageNumbers = document.getElementById('pageNumbers');
-      const bulkActions = document.getElementById('bulkActions');
-      const selectedCount = document.getElementById('selectedCount');
-      const bulkActionSelect = document.getElementById('bulkActionSelect');
-      const applyBulkActionBtn = document.getElementById('applyBulkActionBtn');
-      const selectAll = document.getElementById('selectAll');
-
-      // === FUNÇÕES PRINCIPAIS ===
-
-      // Função para carregar categorias da API
-      async function loadCategories() {
         try {
-          console.log("🏷️ Carregando categorias da API...");
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+            headers: options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }
+          });
+          clearTimeout(timeoutId);
 
-          // Tentar buscar categorias com contagem
-          try {
-            allCategories = await ProductAPI.getCategoriesWithProductCount();
-          } catch (error) {
-            console.log("🔄 Fallback: buscando categorias simples...");
-            // Se falhar, tentar buscar categorias normais
-            allCategories = await ProductAPI.getCategories();
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
           }
 
-          console.log(`✅ ${allCategories.length} categorias carregadas`);
-
-          // Atualizar o select de categorias
-          updateCategoryFilter();
-
-          return allCategories;
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+          }
+          return await response.text();
         } catch (error) {
-          console.error("❌ Erro ao carregar categorias:", error);
-          showNotification('Erro ao carregar categorias', 'error');
+          clearTimeout(timeoutId);
+          console.error(`❌ Erro na requisição ${url}:`, error);
+          throw error;
+        }
+      },
+
+      // Categorias
+      async getAllCategories() {
+        try {
+          const data = await this.request('/categories');
+          return data.categories || [];
+        } catch (error) {
+          console.error('❌ Erro ao buscar categorias:', error);
           return [];
         }
-      }
+      },
 
-      // Função para atualizar o filtro de categorias
-      function updateCategoryFilter() {
-        const categoryFilter = document.getElementById('categoryFilter');
-
-        // Limpar opções existentes (exceto a primeira)
-        categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
-
-        if (!allCategories || allCategories.length === 0) {
-          // Se não houver categorias, adicionar uma opção padrão
-          const option = document.createElement('option');
-          option.value = "uncategorized";
-          option.textContent = "Não categorizado";
-          categoryFilter.appendChild(option);
-          return;
-        }
-
-        // Ordenar categorias por nome
-        allCategories.sort((a, b) => a.name.localeCompare(b.name));
-
-        // Adicionar categorias principais primeiro (sem parent_id)
-        const mainCategories = allCategories.filter(cat => !cat.parent_id);
-        const subCategories = allCategories.filter(cat => cat.parent_id);
-
-        // Adicionar categorias principais
-        mainCategories.forEach(category => {
-          const option = document.createElement('option');
-          option.value = category.id;
-          option.textContent = category.name;
-          categoryFilter.appendChild(option);
-
-          // Adicionar subcategorias desta categoria
-          const categorySubCategories = subCategories.filter(sub => sub.parent_id == category.id);
-          if (categorySubCategories.length > 0) {
-            categorySubCategories.forEach(subCategory => {
-              const subOption = document.createElement('option');
-              subOption.value = subCategory.id;
-              subOption.textContent = `└─ ${subCategory.name}`;
-              subOption.style.paddingLeft = '20px';
-              categoryFilter.appendChild(subOption);
-            });
-          }
-        });
-      }
-
-      // Carregar produtos da API
-      async function loadProducts() {
+      // Produtos
+      async getAllProducts(filters = {}) {
         try {
-          console.log("📥 Carregando produtos da API...");
+          const params = new URLSearchParams();
+          if (filters.category) params.append('category', filters.category);
+          if (filters.category_id) params.append('category_id', filters.category_id);
+          if (filters.status) params.append('status', filters.status);
+          if (filters.search) params.append('search', filters.search);
 
-          // Mostrar loading
-          productsTableBody.innerHTML = `
-            <tr id="loadingRow">
-              <td colspan="7" style="text-align: center; padding: 40px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
-                <p style="margin-top: 10px;">Carregando produtos...</p>
-              </td>
-            </tr>
-          `;
-
-          // Carregar categorias primeiro
-          await loadCategories();
-
-          // Buscar produtos
-          allProducts = await ProductAPI.getAllProducts();
-          console.log(`✅ ${allProducts.length} produtos carregados`);
-
-          // Aplicar filtros iniciais
-          applyFilters();
-
+          const query = params.toString() ? `?${params.toString()}` : '';
+          const data = await this.request(`/products${query}`);
+          return data.products || [];
         } catch (error) {
-          console.error("❌ Erro ao carregar produtos:", error);
-          showNotification('Erro ao carregar produtos', 'error');
-
-          productsTableBody.innerHTML = `
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 40px; color: #f44336;">
-                <i class="fas fa-exclamation-triangle fa-2x"></i>
-                <p style="margin-top: 10px;">Erro ao carregar produtos</p>
-                <button onclick="loadProducts()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                  Tentar novamente
-                </button>
-              </td>
-            </tr>
-          `;
+          console.error('❌ Erro ao buscar produtos:', error);
+          return [];
         }
-      }
+      },
 
-      // Aplicar filtros
-     // Aplicar filtros - VERSÃO CORRIGIDA PARA category (string)
-      function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const categoryId = categoryFilter.value;
-        const status = statusFilter.value;
-        const sortBy = sortFilter.value;
-
-        console.log("🔍 Aplicando filtros:", {
-          searchTerm,
-          categoryId,
-          status,
-          sortBy
-        });
-
-        // Filtrar produtos
-        filteredProducts = allProducts.filter(product => {
-          // Busca por texto
-          const matchesSearch = !searchTerm ||
-            product.name.toLowerCase().includes(searchTerm) ||
-            (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-            (product.sku && product.sku.toLowerCase().includes(searchTerm));
-
-          // Filtro por categoria - VERSÃO CORRIGIDA PARA category (string)
-          let matchesCategory = true;
-          if (categoryId) {
-            // Obter o nome da categoria selecionada
-            let selectedCategoryName = '';
-
-            // Encontrar a categoria selecionada pelo ID
-            const selectedCategory = allCategories.find(cat => cat.id.toString() === categoryId.toString());
-            if (selectedCategory) {
-              selectedCategoryName = selectedCategory.name;
-              console.log(`Categoria selecionada: ${selectedCategoryName} (ID: ${categoryId})`);
-            }
-
-            // Verificar se o produto pertence a esta categoria
-            if (selectedCategoryName) {
-              // Primeiro, tentar usar category_id se existir
-              if (product.category_id !== null && product.category_id !== undefined) {
-                matchesCategory = product.category_id.toString() === categoryId.toString();
-              }
-              // Se não tiver category_id, usar o campo category (string)
-              else if (product.category) {
-                // Comparar nomes das categorias
-                matchesCategory = product.category.toLowerCase() === selectedCategoryName.toLowerCase();
-                console.log(`Comparando categoria do produto "${product.category}" com "${selectedCategoryName}": ${matchesCategory}`);
-              } else {
-                // Produto sem categoria
-                matchesCategory = false;
-              }
-            } else {
-              // Categoria não encontrada (não deve acontecer)
-              matchesCategory = false;
-            }
-          }
-
-          // Filtro por status
-          const matchesStatus = !status || product.status === status;
-
-          return matchesSearch && matchesCategory && matchesStatus;
-        });
-
-        console.log(`📊 ${filteredProducts.length} produtos após filtragem (de ${allProducts.length} total)`);
-
-        // Ordenar produtos
-        filteredProducts.sort((a, b) => {
-          switch (sortBy) {
-            case 'name_asc':
-              return a.name.localeCompare(b.name);
-            case 'name_desc':
-              return b.name.localeCompare(a.name);
-            case 'price_asc':
-              return a.price - b.price;
-            case 'price_desc':
-              return b.price - a.price;
-            case 'newest':
-            default:
-              return new Date(b.created_at) - new Date(a.created_at);
-          }
-        });
-
-        // Atualizar exibição
-        currentPage = 1;
-        updateTable();
-        updatePagination();
-      }
-
-      // Atualizar tabela
-      function updateTable() {
-        const startIndex = (currentPage - 1) * productsPerPage;
-        const endIndex = startIndex + productsPerPage;
-        const pageProducts = filteredProducts.slice(startIndex, endIndex);
-
-        function buildImageUrl(imagePath) {
-          if (!imagePath) return '';
-
-          // Se já for URL completa
-          if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) {
-            return imagePath;
-          }
-
-          // Se começar com /, adicionar domínio
-          if (imagePath.startsWith('/')) {
-            return `http://localhost:5000${imagePath}`;
-          }
-
-          // Se for apenas nome do arquivo
-          return `http://localhost:5000/uploads/${imagePath}`;
-        }
-
-        if (pageProducts.length === 0) {
-          productsTableBody.innerHTML = `
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 40px;">
-                <i class="fas fa-box-open fa-2x" style="color: #7C3AED; opacity: 0.5;"></i>
-                <p style="margin-top: 10px; color: #aaa;">Nenhum produto encontrado</p>
-                ${filteredProducts.length === 0 && allProducts.length > 0 ?
-              '<p style="color: #888; font-size: 14px;">Tente ajustar os filtros</p>' :
-              '<a href="product-form.html" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; text-decoration: none; border-radius: 5px;">Criar primeiro produto</a>'}
-              </td>
-            </tr>
-          `;
-          bulkActions.style.display = 'none';
-          return;
-        }
-
-        // Gerar linhas da tabela
-        let tableHTML = '';
-
-        pageProducts.forEach((product, index) => {
-          const isFeatured = product.featured ? '<span style="margin-left: 5px; color: #FFD700;"><i class="fas fa-star"></i></span>' : '';
-
-          // Determinar status do estoque
-          let stockStatusClass = '';
-          let stockStatusIcon = '';
-          let stockStatusText = '';
-
-          if (product.status === 'inactive') {
-            stockStatusClass = 'stock-out';
-            stockStatusIcon = 'fas fa-ban';
-            stockStatusText = 'Inativo';
-          } else if (product.stock === 0) {
-            stockStatusClass = 'stock-out';
-            stockStatusIcon = 'fas fa-times-circle';
-            stockStatusText = 'Esgotado';
-          } else if (product.stock <= 5) {
-            stockStatusClass = 'stock-low';
-            stockStatusIcon = 'fas fa-exclamation-triangle';
-            stockStatusText = 'Estoque baixo';
-          } else {
-            stockStatusClass = 'stock-in';
-            stockStatusIcon = 'fas fa-check-circle';
-            stockStatusText = 'Em estoque';
-          }
-
-          // Imagem do produto
-          const mainImageUrl = buildImageUrl(product.image_url);
-
-          // Formatar preço
-          const formattedPrice = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-          }).format(product.price);
-
-          // SKU ou ID
-          const productId = product.sku || `PROD-${String(product.id).padStart(3, '0')}`;
-
-          // Obter nome da categoria
-          let categoryName = 'Não categorizado';
-          if (product.category_id && allCategories && allCategories.length > 0) {
-            const category = allCategories.find(cat => cat.id == product.category_id);
-            if (category) {
-              categoryName = category.name;
-            }
-          } else if (product.category) {
-            // Se ainda estiver usando o campo antigo category
-            categoryName = product.category;
-          }
-
-          tableHTML += `
-    <tr data-product-id="${product.id}">
-      <td>
-        <input type="checkbox" class="product-checkbox" data-product-id="${product.id}">
-      </td>
-      <td>
-        <div class="product-cell">
-          <div class="product-image">
-            <img src="${mainImageUrl}" alt="${product.name}" 
-                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;"
-                 onerror="
-                    console.error('❌ Erro ao carregar imagem do produto ${product.id}:', this.src);
-                    this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
-                 ">
-          </div>
-          <div class="product-info">
-            <h4>${product.name} ${isFeatured}</h4>
-            <p>ID: ${productId}</p>
-          </div>
-        </div>
-      </td>
-      <td>${categoryName}</td>
-      <td>
-        <strong style="color: #C084FC;">${formattedPrice}</strong>
-      </td>
-      <td>${product.stock} unidades</td>
-      <td>
-        <span class="stock-status ${stockStatusClass}">
-          <i class="${stockStatusIcon}"></i>
-          ${stockStatusText}
-        </span>
-      </td>
-      <td>
-        <div class="actions-cell">
-          <button class="btn-action btn-view" onclick="viewProduct(${product.id})">
-            <i class="far fa-eye"></i>
-            Ver
-          </button>
-          <button class="btn-action btn-edit" onclick="editProduct(${product.id})">
-            <i class="far fa-edit"></i>
-            Editar
-          </button>
-          <button class="btn-action btn-delete" onclick="showDeleteModal(${product.id}, '${product.name.replace(/'/g, "\\'")}')">
-            <i class="far fa-trash-alt"></i>
-            Excluir
-          </button>
-        </div>
-      </td>
-    </tr>
-  `;
-        });
-
-        productsTableBody.innerHTML = tableHTML;
-        updateBulkActions();
-      }
-
-      // Atualizar paginação
-      function updatePagination() {
-        const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-
-        // Atualizar informações
-        const startProduct = (currentPage - 1) * productsPerPage + 1;
-        const endProduct = Math.min(currentPage * productsPerPage, filteredProducts.length);
-
-        paginationInfo.innerHTML = filteredProducts.length > 0 ?
-          `Mostrando <strong>${startProduct}-${endProduct}</strong> de <strong>${filteredProducts.length}</strong> produtos` :
-          'Nenhum produto encontrado';
-
-        // Atualizar botões
-        prevPageBtn.disabled = currentPage === 1;
-        nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
-
-        // Atualizar números de página
-        let pageNumbersHTML = '';
-        const maxPagesToShow = 5;
-
-        if (totalPages <= maxPagesToShow) {
-          for (let i = 1; i <= totalPages; i++) {
-            pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
-          }
-        } else {
-          // Lógica para mostrar páginas com "..." quando há muitas
-          if (currentPage <= 3) {
-            for (let i = 1; i <= 4; i++) {
-              pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
-            }
-            pageNumbersHTML += '<span class="page-dots">...</span>';
-            pageNumbersHTML += `<span class="page-number" onclick="goToPage(${totalPages})">${totalPages}</span>`;
-          } else if (currentPage >= totalPages - 2) {
-            pageNumbersHTML += `<span class="page-number" onclick="goToPage(1)">1</span>`;
-            pageNumbersHTML += '<span class="page-dots">...</span>';
-            for (let i = totalPages - 3; i <= totalPages; i++) {
-              pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
-            }
-          } else {
-            pageNumbersHTML += `<span class="page-number" onclick="goToPage(1)">1</span>`;
-            pageNumbersHTML += '<span class="page-dots">...</span>';
-            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-              pageNumbersHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
-            }
-            pageNumbersHTML += '<span class="page-dots">...</span>';
-            pageNumbersHTML += `<span class="page-number" onclick="goToPage(${totalPages})">${totalPages}</span>`;
-          }
-        }
-
-        pageNumbers.innerHTML = pageNumbersHTML;
-      }
-
-      // Atualizar ações em massa
-      function updateBulkActions() {
-        const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
-        const selectedCountValue = selectedCheckboxes.length;
-
-        if (selectedCountValue > 0) {
-          bulkActions.style.display = 'flex';
-          selectedCount.textContent = selectedCountValue;
-        } else {
-          bulkActions.style.display = 'none';
-        }
-      }
-
-      // === FUNÇÕES DE NAVEGAÇÃO ===
-      window.goToPage = function (page) {
-        if (page < 1 || page > Math.ceil(filteredProducts.length / productsPerPage)) return;
-        currentPage = page;
-        updateTable();
-        updatePagination();
-      }
-
-      window.viewProduct = function (productId) {
-        console.log("👁️ Visualizando produto:", productId);
-        // Aqui você pode abrir um modal ou redirecionar para uma página de detalhes
-        showNotification(`Visualizando produto ID: ${productId}`, 'info');
-      }
-
-      window.editProduct = function (productId) {
-        console.log("✏️ Editando produto:", productId);
-        // Redirecionar para página de edição
-        window.location.href = `product-form.html?edit=${productId}`;
-      }
-
-      // === FUNÇÕES DO MODAL DE EXCLUSÃO ===
-      window.showDeleteModal = function (productId, productName) {
-        productToDelete = productId;
-        const modal = document.getElementById('deleteModal');
-        modal.classList.add('show');
-
-        document.getElementById('deleteModalText').textContent =
-          `Tem certeza que deseja excluir o produto "${productName}"? Esta ação não pode ser desfeita.`;
-      }
-
-      window.closeDeleteModal = function () {
-        const modal = document.getElementById('deleteModal');
-        modal.classList.remove('show');
-        productToDelete = null;
-      }
-
-      window.confirmDelete = async function () {
-        if (!productToDelete) return;
-
+      async deleteProduct(id) {
         try {
-          console.log(`🗑️ Excluindo produto ${productToDelete}...`);
-
-          const result = await ProductAPI.deleteProduct(productToDelete);
-
-          if (result.success) {
-            showNotification('Produto excluído com sucesso!', 'success');
-
-            // Remover produto da lista local
-            allProducts = allProducts.filter(p => p.id !== productToDelete);
-            filteredProducts = filteredProducts.filter(p => p.id !== productToDelete);
-
-            // Atualizar exibição
-            updateTable();
-            updatePagination();
-          } else {
-            showNotification(`Erro: ${result.error || 'Não foi possível excluir o produto'}`, 'error');
-          }
+          const result = await this.request(`/products/${id}`, { method: 'DELETE' });
+          return result;
         } catch (error) {
-          console.error("❌ Erro ao excluir produto:", error);
-          showNotification('Erro ao excluir produto', 'error');
+          console.error(`❌ Erro ao deletar produto ${id}:`, error);
+          return { success: false, error: error.message };
         }
+      },
 
-        closeDeleteModal();
-      }
-
-      // === FUNÇÕES DE AÇÕES EM MASSA ===
-      async function applyBulkAction() {
-        const action = bulkActionSelect.value;
-        const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
-
-        if (!action || selectedCheckboxes.length === 0) {
-          showNotification('Selecione uma ação e pelo menos um produto', 'warning');
-          return;
-        }
-
-        const productIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.productId));
-
+      async updateProduct(id, data) {
         try {
-          let successCount = 0;
-          let errorCount = 0;
-
-          for (const productId of productIds) {
-            try {
-              let result;
-
-              switch (action) {
-                case 'activate':
-                  result = await ProductAPI.updateProduct(productId, { status: 'active' });
-                  break;
-                case 'deactivate':
-                  result = await ProductAPI.updateProduct(productId, { status: 'inactive' });
-                  break;
-                case 'delete':
-                  result = await ProductAPI.deleteProduct(productId);
-                  break;
-              }
-
-              if (result && result.success) {
-                successCount++;
-              } else {
-                errorCount++;
-              }
-            } catch (error) {
-              errorCount++;
-              console.error(`Erro processando produto ${productId}:`, error);
-            }
-          }
-
-          // Recarregar produtos
-          await loadProducts();
-
-          // Mostrar resultado
-          if (errorCount === 0) {
-            showNotification(`${successCount} produto(s) ${getActionText(action)} com sucesso!`, 'success');
-          } else {
-            showNotification(`${successCount} sucesso(s), ${errorCount} erro(s)`, 'warning');
-          }
-
-          // Resetar seleção
-          selectAll.checked = false;
-          document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = false);
-          updateBulkActions();
-
-        } catch (error) {
-          console.error("❌ Erro nas ações em massa:", error);
-          showNotification('Erro ao processar ações em massa', 'error');
-        }
-      }
-
-      function getActionText(action) {
-        switch (action) {
-          case 'activate': return 'ativado(s)';
-          case 'deactivate': return 'desativado(s)';
-          case 'delete': return 'excluído(s)';
-          default: return 'processado(s)';
-        }
-      }
-
-      // === EVENT LISTENERS ===
-      // Selecionar todos
-      if (selectAll) {
-        selectAll.addEventListener('change', function () {
-          const checkboxes = document.querySelectorAll('.product-checkbox');
-          checkboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+          const result = await this.request(`/products/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
           });
-          updateBulkActions();
-        });
-      }
-
-      // Atualizar contagem quando checkboxes mudam
-      document.addEventListener('change', function (e) {
-        if (e.target.classList.contains('product-checkbox')) {
-          updateBulkActions();
+          return result;
+        } catch (error) {
+          console.error(`❌ Erro ao atualizar produto ${id}:`, error);
+          return { success: false, error: error.message };
         }
-      });
-
-      // Busca em tempo real
-      if (searchInput) {
-        searchInput.addEventListener('input', function () {
-          clearTimeout(this.searchTimeout);
-          this.searchTimeout = setTimeout(() => {
-            applyFilters();
-          }, 500);
-        });
       }
+    };
 
-      // Filtros
-      if (categoryFilter) categoryFilter.addEventListener('change', applyFilters);
-      if (statusFilter) statusFilter.addEventListener('change', applyFilters);
-      if (sortFilter) sortFilter.addEventListener('change', applyFilters);
-      if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', applyFilters);
-
-      // Botão de atualizar
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', function () {
-          loadProducts();
-          showNotification('Produtos atualizados!', 'info');
-        });
-      }
-
-      // Botões de paginação
-      if (prevPageBtn) prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
-      if (nextPageBtn) nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
-
-      // Ações em massa
-      if (applyBulkActionBtn) {
-        applyBulkActionBtn.addEventListener('click', applyBulkAction);
-      }
-
-      // Carregar produtos inicialmente
-      loadProducts();
-    });
-
-    // === FUNÇÃO DE NOTIFICAÇÃO ===
+    // ============================================
+    // ===== FUNÇÕES DE NOTIFICAÇÃO =====
+    // ============================================
     function showNotification(message, type = 'info') {
-      console.log(`📢 Notificação [${type}]: ${message}`);
-
       const notification = document.createElement('div');
       notification.style.cssText = `
         position: fixed;
@@ -998,14 +352,406 @@
       `;
 
       document.body.appendChild(notification);
-
       setTimeout(() => {
         notification.style.animation = 'fadeOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
       }, 4000);
     }
 
-    // === ANIMAÇÕES CSS ===
+    // ============================================
+    // ===== GERENCIAMENTO DE PRODUTOS =====
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('📦 Iniciando página de produtos...');
+
+      // Verificar login
+      const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
+      if (!isLoggedIn) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+          if (confirm('Tem certeza que deseja sair?')) {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminEmail');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+
+      // Info do admin
+      const adminEmail = localStorage.getItem('adminEmail');
+      const profileName = document.querySelector('.profile-info h4');
+      if (adminEmail && profileName) {
+        profileName.textContent = adminEmail.split('@')[0];
+      }
+
+      const profileAvatar = document.querySelector('.profile-avatar');
+      if (adminEmail && profileAvatar) {
+        profileAvatar.textContent = adminEmail.split('@')[0].charAt(0).toUpperCase();
+      }
+
+      // Variáveis globais
+      let allProducts = [];
+      let filteredProducts = [];
+      let allCategories = [];
+      let currentPage = 1;
+      const productsPerPage = 10;
+      let productToDelete = null;
+
+      // Elementos DOM
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const statusFilter = document.getElementById('statusFilter');
+      const sortFilter = document.getElementById('sortFilter');
+      const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const productsTableBody = document.getElementById('productsTableBody');
+      const paginationInfo = document.getElementById('paginationInfo');
+      const prevPageBtn = document.getElementById('prevPageBtn');
+      const nextPageBtn = document.getElementById('nextPageBtn');
+      const pageNumbers = document.getElementById('pageNumbers');
+      const bulkActions = document.getElementById('bulkActions');
+      const selectedCount = document.getElementById('selectedCount');
+      const bulkActionSelect = document.getElementById('bulkActionSelect');
+      const applyBulkActionBtn = document.getElementById('applyBulkActionBtn');
+      const selectAll = document.getElementById('selectAll');
+
+      // ===== FUNÇÕES =====
+      async function loadCategories() {
+        try {
+          allCategories = await ProductAPI.getAllCategories();
+          console.log(`✅ ${allCategories.length} categorias carregadas`);
+
+          categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
+
+          allCategories.sort((a, b) => a.name.localeCompare(b.name)).forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categoryFilter.appendChild(option);
+          });
+        } catch (error) {
+          console.error('❌ Erro ao carregar categorias:', error);
+        }
+      }
+
+      function getImageUrl(imagePath) {
+        if (!imagePath) return 'https://via.placeholder.com/50x50/7C3AED/FFFFFF?text=Sem+Imagem';
+        if (imagePath.startsWith('http')) return imagePath;
+        if (imagePath.startsWith('/')) return `https://upuniversestorege.onrender.com${imagePath}`;
+        return `https://upuniversestorege.onrender.com/uploads/${imagePath}`;
+      }
+
+      function getCategoryName(categoryId) {
+        if (!categoryId) return 'Sem categoria';
+        const category = allCategories.find(c => c.id == categoryId);
+        return category ? category.name : 'Sem categoria';
+      }
+
+      function getStockStatus(product) {
+        if (product.status === 'inactive') {
+          return { class: 'stock-out', icon: 'fas fa-ban', text: 'Inativo' };
+        }
+        if (product.stock === 0) {
+          return { class: 'stock-out', icon: 'fas fa-times-circle', text: 'Esgotado' };
+        }
+        if (product.stock <= 5) {
+          return { class: 'stock-low', icon: 'fas fa-exclamation-triangle', text: 'Estoque baixo' };
+        }
+        return { class: 'stock-in', icon: 'fas fa-check-circle', text: 'Em estoque' };
+      }
+
+      function formatPrice(price) {
+        return new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(price || 0);
+      }
+
+      async function loadProducts() {
+        try {
+          console.log('📥 Carregando produtos...');
+          productsTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: #7C3AED;"></i>
+                <p style="margin-top: 10px;">Carregando produtos...</p>
+              </td>
+            </tr>
+          `;
+
+          await loadCategories();
+          allProducts = await ProductAPI.getAllProducts();
+          console.log(`✅ ${allProducts.length} produtos carregados`);
+
+          applyFilters();
+        } catch (error) {
+          console.error('❌ Erro ao carregar produtos:', error);
+          productsTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px; color: #f44336;">
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                <p style="margin-top: 10px;">Erro ao carregar produtos</p>
+                <button onclick="window.location.reload()" style="margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                  Tentar novamente
+                </button>
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const categoryId = categoryFilter.value;
+        const status = statusFilter.value;
+        const sortBy = sortFilter.value;
+
+        filteredProducts = allProducts.filter(product => {
+          const matchesSearch = !searchTerm ||
+            product.name.toLowerCase().includes(searchTerm) ||
+            (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+            (product.sku && product.sku.toLowerCase().includes(searchTerm));
+
+          const matchesCategory = !categoryId || product.category_id == categoryId;
+          const matchesStatus = !status || product.status === status;
+
+          return matchesSearch && matchesCategory && matchesStatus;
+        });
+
+        filteredProducts.sort((a, b) => {
+          switch (sortBy) {
+            case 'name_asc': return a.name.localeCompare(b.name);
+            case 'name_desc': return b.name.localeCompare(a.name);
+            case 'price_asc': return a.price - b.price;
+            case 'price_desc': return b.price - a.price;
+            default: return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+          }
+        });
+
+        currentPage = 1;
+        updateTable();
+        updatePagination();
+      }
+
+      function updateTable() {
+        const start = (currentPage - 1) * productsPerPage;
+        const end = start + productsPerPage;
+        const pageProducts = filteredProducts.slice(start, end);
+
+        if (pageProducts.length === 0) {
+          productsTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px;">
+                <i class="fas fa-box-open fa-2x" style="color: #7C3AED; opacity: 0.5;"></i>
+                <p style="margin-top: 10px; color: #aaa;">Nenhum produto encontrado</p>
+                ${filteredProducts.length === 0 && allProducts.length > 0 ?
+              '<p style="color: #888;">Tente ajustar os filtros</p>' :
+              '<a href="product-form.html" style="display: inline-block; margin-top: 10px; padding: 8px 15px; background: #7C3AED; color: white; text-decoration: none; border-radius: 5px;">Criar primeiro produto</a>'}
+              </td>
+            </tr>
+          `;
+          bulkActions.style.display = 'none';
+          return;
+        }
+
+        let tableHTML = '';
+        pageProducts.forEach(product => {
+          const stockStatus = getStockStatus(product);
+          const featuredStar = product.featured ?
+            '<span style="margin-left: 5px; color: #FFD700;"><i class="fas fa-star"></i></span>' : '';
+
+          tableHTML += `
+            <tr data-product-id="${product.id}">
+              <td><input type="checkbox" class="product-checkbox" data-product-id="${product.id}"></td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <img src="${getImageUrl(product.image_url)}" alt="${product.name}" 
+                       style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;"
+                       onerror="this.src='https://via.placeholder.com/50x50/7C3AED/FFFFFF?text=Erro'">
+                  <div>
+                    <strong>${product.name}</strong> ${featuredStar}<br>
+                    <small style="color: #aaa;">${product.sku || `ID: ${product.id}`}</small>
+                  </div>
+                </div>
+              </td>
+              <td>${getCategoryName(product.category_id)}</td>
+              <td><strong style="color: #C084FC;">${formatPrice(product.price)}</strong></td>
+              <td>${product.stock} un.</td>
+              <td>
+                <span class="stock-status ${stockStatus.class}">
+                  <i class="${stockStatus.icon}"></i> ${stockStatus.text}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 5px;">
+                  <button class="btn-action btn-view" onclick="editProduct(${product.id})">
+                    <i class="far fa-edit"></i>
+                  </button>
+                  <button class="btn-action btn-delete" onclick="showDeleteModal(${product.id}, '${product.name.replace(/'/g, "\\'")}')">
+                    <i class="far fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+
+        productsTableBody.innerHTML = tableHTML;
+        updateBulkActions();
+      }
+
+      function updatePagination() {
+        const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+        const start = (currentPage - 1) * productsPerPage + 1;
+        const end = Math.min(currentPage * productsPerPage, filteredProducts.length);
+
+        paginationInfo.innerHTML = filteredProducts.length > 0 ?
+          `Mostrando <strong>${start}-${end}</strong> de <strong>${filteredProducts.length}</strong> produtos` :
+          'Nenhum produto encontrado';
+
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+        let pagesHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          pagesHTML += `<span class="page-number ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</span>`;
+        }
+        pageNumbers.innerHTML = pagesHTML;
+      }
+
+      function updateBulkActions() {
+        const checked = document.querySelectorAll('.product-checkbox:checked');
+        if (checked.length > 0) {
+          bulkActions.style.display = 'flex';
+          selectedCount.textContent = checked.length;
+        } else {
+          bulkActions.style.display = 'none';
+        }
+      }
+
+      // ===== FUNÇÕES GLOBAIS =====
+      window.goToPage = function (page) {
+        currentPage = page;
+        updateTable();
+        updatePagination();
+      };
+
+      window.editProduct = function (productId) {
+        window.location.href = `product-form.html?edit=${productId}`;
+      };
+
+      window.showDeleteModal = function (productId, productName) {
+        productToDelete = productId;
+        const modal = document.getElementById('deleteModal');
+        modal.classList.add('show');
+        document.getElementById('deleteModalText').textContent =
+          `Tem certeza que deseja excluir o produto "${productName}"? Esta ação não pode ser desfeita.`;
+      };
+
+      window.closeDeleteModal = function () {
+        document.getElementById('deleteModal').classList.remove('show');
+        productToDelete = null;
+      };
+
+      window.confirmDelete = async function () {
+        if (!productToDelete) return;
+
+        try {
+          const result = await ProductAPI.deleteProduct(productToDelete);
+          if (result.success) {
+            showNotification('Produto excluído com sucesso!', 'success');
+            allProducts = allProducts.filter(p => p.id !== productToDelete);
+            filteredProducts = filteredProducts.filter(p => p.id !== productToDelete);
+            updateTable();
+            updatePagination();
+          } else {
+            showNotification(`Erro: ${result.error}`, 'error');
+          }
+        } catch (error) {
+          showNotification('Erro ao excluir produto', 'error');
+        }
+        closeDeleteModal();
+      };
+
+      // ===== EVENT LISTENERS =====
+      if (selectAll) {
+        selectAll.addEventListener('change', function () {
+          document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = this.checked);
+          updateBulkActions();
+        });
+      }
+
+      document.addEventListener('change', function (e) {
+        if (e.target.classList.contains('product-checkbox')) updateBulkActions();
+      });
+
+      if (searchInput) {
+        searchInput.addEventListener('input', function () {
+          clearTimeout(this.searchTimeout);
+          this.searchTimeout = setTimeout(applyFilters, 500);
+        });
+      }
+
+      if (categoryFilter) categoryFilter.addEventListener('change', applyFilters);
+      if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+      if (sortFilter) sortFilter.addEventListener('change', applyFilters);
+      if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', applyFilters);
+
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+          loadProducts();
+          showNotification('Produtos atualizados!', 'info');
+        });
+      }
+
+      if (prevPageBtn) prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+      if (nextPageBtn) nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
+
+      if (applyBulkActionBtn) {
+        applyBulkActionBtn.addEventListener('click', async function () {
+          const action = bulkActionSelect.value;
+          const selected = Array.from(document.querySelectorAll('.product-checkbox:checked'))
+            .map(cb => parseInt(cb.dataset.productId));
+
+          if (!action || selected.length === 0) {
+            showNotification('Selecione uma ação e pelo menos um produto', 'warning');
+            return;
+          }
+
+          let success = 0, errors = 0;
+          for (const id of selected) {
+            try {
+              if (action === 'delete') {
+                const result = await ProductAPI.deleteProduct(id);
+                if (result.success) success++; else errors++;
+              } else {
+                const result = await ProductAPI.updateProduct(id, {
+                  status: action === 'activate' ? 'active' : 'inactive'
+                });
+                if (result.success) success++; else errors++;
+              }
+            } catch {
+              errors++;
+            }
+          }
+
+          await loadProducts();
+          showNotification(`${success} sucesso(s), ${errors} erro(s)`, errors === 0 ? 'success' : 'warning');
+          selectAll.checked = false;
+        });
+      }
+
+      // Iniciar
+      loadProducts();
+    });
+
+    // ===== ANIMAÇÕES CSS =====
     const style = document.createElement('style');
     style.textContent = `
       @keyframes slideIn {
@@ -1015,20 +761,6 @@
       @keyframes fadeOut {
         from { opacity: 1; transform: translateX(0); }
         to { opacity: 0; transform: translateX(100%); }
-      }
-      
-      .page-dots {
-        color: #888;
-        padding: 5px 10px;
-      }
-      
-      .page-number {
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-      
-      .page-number:hover {
-        background: rgba(124, 58, 237, 0.2);
       }
     `;
     document.head.appendChild(style);
