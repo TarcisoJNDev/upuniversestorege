@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Carregar carrinho
 async function loadCart() {
-  const cart = cartManager.getCart();
+  const cart = cartManager.getCart(); // ✅ SEM window
 
   if (cart.items.length === 0) {
     showEmptyCart();
@@ -254,12 +254,13 @@ function setupEventListeners() {
     }
 
     // Limpar carrinho
+    // Limpar carrinho
     if (e.target.closest("#clearCartBtn")) {
       e.preventDefault();
       if (confirm("Tem certeza que deseja limpar todo o carrinho?")) {
-        cartManager.clearCart();
+        cartManager.clearCart(); // ✅ SEM window
         showEmptyCart();
-        cartManager.updateCartCount();
+        cartManager.updateCartCount(); // ✅ SEM window
       }
     }
   });
@@ -330,8 +331,9 @@ function setupEventListeners() {
 // Atualizar item do carrinho
 // Atualizar item do carrinho
 // Atualizar item do carrinho
+// Atualizar item do carrinho
 function updateCartItem(productId, quantity) {
-  // Usar cartManager diretamente (já está disponível globalmente)
+  // ✅ Usar cartManager diretamente (sem window)
   const cart = cartManager.updateQuantity(productId, quantity);
 
   // Atualizar total do item na interface
@@ -364,7 +366,7 @@ function updateCartItem(productId, quantity) {
   calculateTotalWithShipping();
 
   // Atualizar contador do carrinho
-  cartManager.updateCartCount();
+  cartManager.updateCartCount(); // ✅ SEM window
 
   // Se o carrinho ficar vazio
   if (cart.items.length === 0) {
@@ -373,10 +375,9 @@ function updateCartItem(productId, quantity) {
 }
 
 // Calcular total incluindo frete
+// Calcular total incluindo frete
 function calculateTotalWithShipping() {
-  if (!window.cartManager) return;
-
-  const cart = window.cartManager.getCart();
+  const cart = cartManager.getCart(); // ✅ SEM window
   const subtotalElement = document.getElementById("subtotal");
   const totalElement = document.getElementById("total-price");
   const shippingSelect = document.getElementById("shipping-method");
@@ -403,11 +404,10 @@ function calculateTotalWithShipping() {
 }
 
 // Remover item do carrinho
+// Remover item do carrinho
 function removeCartItem(productId) {
-  if (!window.cartManager) return;
-
-  const cart = window.cartManager.removeFromCart(productId);
-  window.cartManager.updateCartCount();
+  const cart = cartManager.removeFromCart(productId); // ✅ SEM window
+  cartManager.updateCartCount(); // ✅ SEM window
 
   // Remover elemento da interface
   const itemElement = document.querySelector(
