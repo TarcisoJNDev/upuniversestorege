@@ -15,7 +15,7 @@ class Category {
     display_order,
     created_at,
     updated_at,
-    product_count = 0,
+    product_count = 0, // Garantir que product_count tem valor padrão
   }) {
     this.id = id;
     this.name = name;
@@ -29,7 +29,10 @@ class Category {
     this.display_order = display_order || 0;
     this.created_at = created_at;
     this.updated_at = updated_at;
-    this.product_count = parseInt(product_count) || 0;
+    this.product_count =
+      product_count !== undefined && product_count !== null
+        ? parseInt(product_count) || 0
+        : 0; // ← CORREÇÃO AQUI
   }
 
   static fromDatabase(row) {
@@ -51,17 +54,18 @@ class Category {
   }
 
   // CORRIGIDO: Buscar categorias com contagem REAL de produtos
+  // models/Category.js - CORREÇÃO DO MÉTODO findAllWithProductCount
   static async findAllWithProductCount(filters = {}) {
     const connection = await pool.getConnection();
     try {
       let query = `
-        SELECT 
-          c.*,
-          COUNT(DISTINCT p.id) as product_count
-        FROM categories c
-        LEFT JOIN products p ON c.id = p.category_id
-        WHERE 1=1
-      `;
+      SELECT 
+        c.*,
+        COALESCE(COUNT(DISTINCT p.id), 0) as product_count
+      FROM categories c
+      LEFT JOIN products p ON c.id = p.category_id
+      WHERE 1=1
+    `;
 
       const params = [];
 
@@ -79,10 +83,28 @@ class Category {
         params.push(filters.status);
       }
 
-      query += " GROUP BY c.id ORDER BY c.display_order ASC, c.name ASC";
+      query +=
+        " GROUP BY c.id, c.name, c.slug, c.description, c.image_url, c.icon, c.color, c.parent_id, c.status, c.display_order, c.created_at, c.updated_at";
+      query += " ORDER BY c.display_order ASC, c.name ASC";
+
+      console.log("📝 Query findAllWithProductCount:", query);
+      console.log("📝 Parâmetros:", params);
 
       const [rows] = await connection.query(query, params);
-      return rows.map((row) => this.fromDatabase(row));
+
+      // Garantir que todas as colunas estão presentes
+      const categories = rows.map((row) => {
+        // Garantir que product_count existe
+        if (row.product_count === undefined || row.product_count === null) {
+          row.product_count = 0;
+        }
+        return this.fromDatabase(row);
+      });
+
+      return categories;
+    } catch (error) {
+      console.error("❌ Erro no findAllWithProductCount:", error);
+      throw error;
     } finally {
       connection.release();
     }
