@@ -331,10 +331,13 @@ function setupEventListeners() {
 // Atualizar item do carrinho
 // Atualizar item do carrinho
 function updateCartItem(productId, quantity) {
-  // 1. Atualizar a quantidade - isso já retorna o carrinho atualizado
-  const updatedCart = cartManager.updateQuantity(productId, quantity);
+  // 1. Atualizar a quantidade no cartManager
+  cartManager.updateQuantity(productId, quantity);
 
-  // 2. Atualizar o total do item na interface
+  // 2. 🔴🔴🔴 PEGAR O CARRINHO ATUALIZADO DIRETAMENTE DO LOCALSTORAGE
+  const updatedCart = cartManager.getCart();
+
+  // 3. Atualizar o total do item na interface
   const itemElement = document.querySelector(
     `.cart-item[data-product-id="${productId}"]`,
   );
@@ -360,10 +363,18 @@ function updateCartItem(productId, quantity) {
     totalElement.textContent = `R$ ${total.toFixed(2)}`;
   }
 
-  // 3. 🔴🔴🔴 Usar o updatedCart que já voltou do updateQuantity
+  // 4. 🔴🔴🔴 RECALCULAR O SUBTOTAL TOTAL
   const subtotalElement = document.getElementById("subtotal");
   const totalElement = document.getElementById("total-price");
   const shippingSelect = document.getElementById("shipping-method");
+
+  // Recalcular o subtotal somando todos os itens
+  let novoSubtotal = 0;
+  document.querySelectorAll(".cart-item").forEach((item) => {
+    const totalValue = item.querySelector(".total-value").textContent;
+    const valor = parseFloat(totalValue.replace("R$", "").replace(",", "."));
+    novoSubtotal += valor;
+  });
 
   // Obter valor do frete baseado na seleção
   let shipping = 0;
@@ -374,14 +385,14 @@ function updateCartItem(productId, quantity) {
   }
 
   // Calcular novo total
-  const newTotal = updatedCart.total + shipping;
+  const newTotal = novoSubtotal + shipping;
 
   // Atualizar interface
-  subtotalElement.textContent = `R$ ${updatedCart.total.toFixed(2)}`;
+  subtotalElement.textContent = `R$ ${novoSubtotal.toFixed(2)}`;
   totalElement.textContent = `R$ ${newTotal.toFixed(2)}`;
 
   console.log(
-    `📊 Cálculo: Subtotal R$ ${updatedCart.total.toFixed(2)} + Frete R$ ${shipping.toFixed(2)} = Total R$ ${newTotal.toFixed(2)}`,
+    `📊 Cálculo: Subtotal R$ ${novoSubtotal.toFixed(2)} + Frete R$ ${shipping.toFixed(2)} = Total R$ ${newTotal.toFixed(2)}`,
   );
 
   // Atualizar contador do carrinho
@@ -391,9 +402,10 @@ function updateCartItem(productId, quantity) {
   if (updatedCart.items.length === 0) {
     showEmptyCart();
   }
+
+  calculateTotalWithShipping();
 }
 
-// Calcular total incluindo frete
 // Calcular total incluindo frete
 function calculateTotalWithShipping() {
   const cart = cartManager.getCart(); // ✅ Pega o carrinho SEMPRE atualizado
