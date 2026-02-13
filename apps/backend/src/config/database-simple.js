@@ -395,14 +395,14 @@ async function forceResetCategories() {
   try {
     console.log("⚠️ FORÇANDO RESET DA TABELA CATEGORIES...");
     connection = await pool.getConnection();
-    
+
     // Drop da tabela categories (e suas dependências)
     await connection.query("DROP TABLE IF EXISTS product_categories");
     await connection.query("DROP TABLE IF EXISTS products");
     await connection.query("DROP TABLE IF EXISTS categories");
-    
+
     console.log("✅ Tabelas removidas");
-    
+
     // Recriar categories DO ZERO
     await connection.query(`
       CREATE TABLE categories (
@@ -421,7 +421,7 @@ async function forceResetCategories() {
       )
     `);
     console.log("✅ Tabela categories recriada");
-    
+
     // Recriar foreign key DEPOIS
     await connection.query(`
       ALTER TABLE categories 
@@ -431,23 +431,30 @@ async function forceResetCategories() {
       ON DELETE SET NULL
     `);
     console.log("✅ Foreign key recriada");
-    
+
     // Inserir categorias padrão
     const categories = [
-      ["Esculturas 3D", "esculturas-3d", "Réplicas detalhadas", "🏺", "#C084FC", 1],
+      [
+        "Esculturas 3D",
+        "esculturas-3d",
+        "Réplicas detalhadas",
+        "🏺",
+        "#C084FC",
+        1,
+      ],
       ["Decoração", "decoracao", "Peças decorativas", "🏠", "#DF38FF", 2],
       ["Utilitários", "utilitarios", "Objetos funcionais", "🔧", "#4CAF50", 3],
       ["Brinquedos", "brinquedos", "Brinquedos educativos", "🧸", "#FFC107", 4],
     ];
-    
+
     for (const cat of categories) {
       await connection.query(
         `INSERT INTO categories (name, slug, description, icon, color, display_order) VALUES (?, ?, ?, ?, ?, ?)`,
-        cat
+        cat,
       );
     }
     console.log("✅ Categorias padrão inseridas");
-    
+
     // Recriar tabela products (simplificada para teste)
     await connection.query(`
       CREATE TABLE products (
@@ -462,7 +469,7 @@ async function forceResetCategories() {
       )
     `);
     console.log("✅ Tabela products recriada");
-    
+
     connection.release();
     console.log("🎉 RESET CONCLUÍDO!");
     return true;
@@ -513,4 +520,4 @@ module.exports = {
   resetDatabase, // Exportar também a função de reset
 };
 
-forceResetCategories().then(() => console.log("Reset executado"));
+// forceResetCategories().then(() => console.log("Reset executado"));
