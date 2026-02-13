@@ -102,6 +102,7 @@ function createProductCard(product) {
   article.className = "product-card";
   article.dataset.productId = product.id;
 
+  /*
   // Badge de destaque
   if (product.featured) {
     const badge = document.createElement("span");
@@ -109,7 +110,7 @@ function createProductCard(product) {
     badge.innerHTML = '<i class="fas fa-star"></i> Destaque';
     article.appendChild(badge);
   }
-
+*/
   // Imagem
   const figure = document.createElement("figure");
   figure.className = "product-image";
