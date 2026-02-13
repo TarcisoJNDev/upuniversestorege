@@ -468,30 +468,83 @@ function viewProductDetails(productId) {
 }
 
 function addToCart(product) {
-  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  // USAR A MESMA CHAVE DO CART MANAGER
+  const CART_KEY = "universo_paralelo_cart";
 
-  const existingItem = cart.find((item) => item.id === product.id);
+  let cart = JSON.parse(
+    localStorage.getItem(CART_KEY) || '{"items":[],"total":0,"count":0}',
+  );
 
-  if (existingItem) {
-    existingItem.quantity = (existingItem.quantity || 1) + 1;
+  // Se o carrinho estiver no formato antigo (array simples), converter
+  if (Array.isArray(cart)) {
+    const items = cart;
+    cart = { items: [], total: 0, count: 0 };
+
+    items.forEach((item) => {
+      cart.items.push(item);
+      cart.count += item.quantity || 1;
+      cart.total += (item.price || 0) * (item.quantity || 1);
+    });
+  }
+
+  const existingItemIndex = cart.items.findIndex(
+    (item) => item.id === product.id,
+  );
+
+  if (existingItemIndex > -1) {
+    cart.items[existingItemIndex].quantity =
+      (cart.items[existingItemIndex].quantity || 1) + 1;
   } else {
-    cart.push({
+    cart.items.push({
       id: product.id,
       name: product.name,
       price: product.promotional_price || product.price,
-      image: product.image_url,
+      image_url: product.image_url,
+      category: getCategoryName(product.category_id),
       quantity: 1,
     });
   }
 
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartCount();
+  // Recalcular totais
+  cart.total = cart.items.reduce((sum, item) => {
+    return sum + item.price * (item.quantity || 1);
+  }, 0);
+
+  cart.count = cart.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+
+  // Usar o cartManager se disponível
+  if (window.cartManager) {
+    window.cartManager.updateCartCount();
+  } else {
+    updateCartCount();
+  }
+
   showNotification("✅ Produto adicionado ao carrinho!", "success");
 }
 
 function updateCartCount() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+  const CART_KEY = "universo_paralelo_cart";
+  const cartData = localStorage.getItem(CART_KEY);
+
+  let count = 0;
+
+  if (cartData) {
+    try {
+      const cart = JSON.parse(cartData);
+      if (Array.isArray(cart)) {
+        count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+      } else if (cart.items) {
+        count =
+          cart.count ||
+          cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
+      }
+    } catch (e) {
+      console.error("Erro ao ler carrinho:", e);
+    }
+  }
+
   document.getElementById("cartCount").textContent = count;
 }
 
