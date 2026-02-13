@@ -420,7 +420,9 @@ function removeCartItem(productId) {
 }
 
 // Finalizar compra (WhatsApp)
+// Finalizar compra (WhatsApp) - VERSÃO CORRIGIDA
 function finalizePurchase() {
+  // 🔴🔴🔴 FORÇAR A LEITURA DO CARRINHO ATUALIZADO
   const cart = cartManager.getCart();
 
   if (cart.items.length === 0) {
@@ -428,19 +430,60 @@ function finalizePurchase() {
     return;
   }
 
-  // Gerar mensagem para WhatsApp
-  const message = cartManager.generateWhatsAppMessage();
+  // 🔴🔴🔴 RECALCULAR OS TOTAIS PARA GARANTIR QUE ESTÃO CORRETOS
+  let mensagem =
+    "Olá! Gostaria de fazer um pedido na Universo Paralelo Store.\n\n";
+  mensagem += "*RESUMO DO PEDIDO*\n\n";
+  mensagem += "*Itens:*\n";
 
-  if (!message) {
-    alert("Erro ao gerar mensagem para WhatsApp");
-    return;
+  let totalPedido = 0;
+
+  // Usar os itens do carrinho ATUALIZADO
+  cart.items.forEach((item, index) => {
+    const preco = item.promotional_price || item.price;
+    const subtotal = preco * item.quantity;
+    totalPedido += subtotal;
+
+    mensagem += `${index + 1}. *${item.name}*\n`;
+    mensagem += `   Quantidade: ${item.quantity}\n`;
+    mensagem += `   Preço unitário: R$ ${preco.toFixed(2)}\n`;
+    mensagem += `   Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
+  });
+
+  // Adicionar frete
+  const shippingSelect = document.getElementById("shipping-method");
+  let frete = 0;
+  let metodoFrete = "Retirada na Loja";
+
+  if (shippingSelect) {
+    if (shippingSelect.value === "standard") {
+      frete = 15;
+      metodoFrete = "Entrega Padrão";
+    } else if (shippingSelect.value === "express") {
+      frete = 25;
+      metodoFrete = "Entrega Expressa";
+    }
   }
 
+  mensagem += `*Frete:* ${metodoFrete} - R$ ${frete.toFixed(2)}\n\n`;
+  mensagem += `*TOTAL DO PEDIDO: R$ ${(totalPedido + frete).toFixed(2)}*\n\n`;
+  mensagem += "Por favor, confirme os dados para finalizarmos o pedido!\n";
+  mensagem += "Obrigado!";
+
+  // Codificar para URL
+  const mensagemCodificada = encodeURIComponent(mensagem);
+
   // Número do WhatsApp da loja (SUBSTITUA pelo número real)
-  const phoneNumber = "5521999999999";
+  const phoneNumber = "558182047692"; // (21) 99999-9999
 
   // Abrir WhatsApp
-  window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+  window.open(
+    `https://wa.me/${phoneNumber}?text=${mensagemCodificada}`,
+    "_blank",
+  );
+
+  console.log("📤 Mensagem gerada com sucesso!");
+  console.log("📊 Carrinho usado:", cart);
 }
 
 // Carregar produtos recomendados da API
