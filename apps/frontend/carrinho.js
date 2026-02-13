@@ -330,8 +330,6 @@ function setupEventListeners() {
 
 // Atualizar item do carrinho
 // Atualizar item do carrinho
-// Atualizar item do carrinho
-// Atualizar item do carrinho
 function updateCartItem(productId, quantity) {
   // ✅ Usar cartManager diretamente (sem window)
   const cart = cartManager.updateQuantity(productId, quantity);
@@ -362,11 +360,11 @@ function updateCartItem(productId, quantity) {
     totalElement.textContent = `R$ ${total.toFixed(2)}`;
   }
 
-  // Recalcular resumo com frete
+  // 🔴🔴🔴 FORÇAR O RECÁLCULO com o carrinho atualizado
   calculateTotalWithShipping();
 
   // Atualizar contador do carrinho
-  cartManager.updateCartCount(); // ✅ SEM window
+  cartManager.updateCartCount();
 
   // Se o carrinho ficar vazio
   if (cart.items.length === 0) {
@@ -374,10 +372,11 @@ function updateCartItem(productId, quantity) {
   }
 }
 
+
 // Calcular total incluindo frete
 // Calcular total incluindo frete
 function calculateTotalWithShipping() {
-  const cart = cartManager.getCart(); // ✅ SEM window
+  const cart = cartManager.getCart(); // ✅ Pega o carrinho SEMPRE atualizado
   const subtotalElement = document.getElementById("subtotal");
   const totalElement = document.getElementById("total-price");
   const shippingSelect = document.getElementById("shipping-method");
