@@ -1,8 +1,22 @@
-// public/js/cart.js
+// public/js/cart.js - VERSÃO COMPLETA COM INTEGRAÇÃO AO RENDER
+
+// ============================================
+// ===== CONFIGURAÇÃO DA API =====
+// ============================================
+const IS_LOCALHOST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const API_BASE_URL = IS_LOCALHOST
+  ? "http://localhost:5000/api"
+  : "https://upuniversestorege.onrender.com/api";
+
+// ============================================
+// ===== CART MANAGER =====
+// ============================================
 class CartManager {
   constructor() {
     this.cartKey = "universo_paralelo_cart";
-    this.apiBaseUrl = "http://localhost:5000/api";
+    this.apiBaseUrl = API_BASE_URL;
   }
 
   // Obter o carrinho atual
@@ -31,7 +45,7 @@ class CartManager {
 
       // Verificar se o produto já está no carrinho
       const existingItemIndex = cart.items.findIndex(
-        (item) => item.id === productId,
+        (item) => item.id == productId,
       );
 
       if (existingItemIndex > -1) {
@@ -42,12 +56,14 @@ class CartManager {
         cart.items.push({
           id: product.id,
           name: product.name,
-          price: product.price,
-          promotional_price: product.promotional_price,
+          price: parseFloat(product.price) || 0,
+          promotional_price: product.promotional_price
+            ? parseFloat(product.promotional_price)
+            : null,
           image_url: product.image_url,
-          category: product.category,
+          category: product.category || "Sem categoria",
           quantity: quantity,
-          stock: product.stock,
+          stock: product.stock || 0,
         });
       }
 
@@ -72,7 +88,7 @@ class CartManager {
   // Remover produto do carrinho
   removeFromCart(productId) {
     const cart = this.getCart();
-    cart.items = cart.items.filter((item) => item.id !== productId);
+    cart.items = cart.items.filter((item) => item.id != productId);
     this.calculateTotals(cart);
     this.saveCart(cart);
     return cart;
@@ -81,7 +97,7 @@ class CartManager {
   // Atualizar quantidade
   updateQuantity(productId, quantity) {
     const cart = this.getCart();
-    const itemIndex = cart.items.findIndex((item) => item.id === productId);
+    const itemIndex = cart.items.findIndex((item) => item.id == productId);
 
     if (itemIndex > -1) {
       if (quantity <= 0) {
@@ -177,7 +193,22 @@ class CartManager {
 // Instância global do gerenciador de carrinho
 const cartManager = new CartManager();
 
+// Função auxiliar para URL de imagens
+function getImageUrl(imagePath) {
+  if (!imagePath) {
+    return "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
+  }
+  if (imagePath.startsWith("http")) return imagePath;
+  if (imagePath.startsWith("/"))
+    return `https://upuniversestorege.onrender.com${imagePath}`;
+  return `https://upuniversestorege.onrender.com/uploads/${imagePath}`;
+}
+
 // Inicializar contador do carrinho quando a página carregar
 document.addEventListener("DOMContentLoaded", function () {
   cartManager.updateCartCount();
 });
+
+// Exportar para uso em outras páginas
+window.cartManager = cartManager;
+window.getImageUrl = getImageUrl;

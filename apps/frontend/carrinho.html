@@ -7,6 +7,8 @@
   <title>Universo Paralelo Store | Carrinho</title>
   <link rel="stylesheet" href="./public/css/style(OFC).css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/public/js/config.js"></script>
+  <script src="/public/js/cart.js"></script>
   <style>
     /* =========================
      ESTILOS PARA CARRINHO
@@ -889,7 +891,7 @@
       <i class="fas fa-shopping-cart fa-3x"></i>
       <h3>Seu carrinho está vazio</h3>
       <p>Adicione produtos incríveis ao seu carrinho!</p>
-      <a href="catalago.html" class="btn-primary">Ver Catálogo</a>
+      <a href="catalogo.html" class="btn-primary">Ver Catálogo</a>
     </div>
 
     <!-- Produtos Recomendados (carregados da API) -->
@@ -935,7 +937,7 @@
       <section>
         <h4>NEWSLETTER</h4>
         <p>Receba ofertas exclusivas e novidades</p>
-        <form class="newsletter-form">
+        <form class="newsletter-form" id="newsletterForm">
           <input type="email" placeholder="Seu e-mail" required>
           <button type="submit"><i class="fas fa-paper-plane"></i></button>
         </form>
@@ -943,7 +945,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>Universo Paralelo Store © 2023 - Todos os direitos reservados</p>
+      <p>Universo Paralelo Store © 2025 - Todos os direitos reservados</p>
     </div>
   </footer>
 
@@ -957,7 +959,7 @@
         <i class="fas fa-check-circle"></i>
       </div>
       <h2 class="modal-title">Produto Adicionado!</h2>
-      <p class="modal-message">O produto foi adicionado ao seu carrinho com sucesso.</p>
+      <p class="modal-message" id="modalMessage">O produto foi adicionado ao seu carrinho com sucesso.</p>
       <div class="modal-actions">
         <button class="btn-continue-modal" id="continueShopping">Continuar Comprando</button>
         <a href="carrinho.html" class="btn-view-cart">Ver Carrinho</a>
@@ -965,13 +967,23 @@
     </div>
   </div>
 
-  <!-- Script do Carrinho (cart.js) - Deve ser criado separadamente -->
   <script>
-    // ========== CART MANAGER ==========
+    // ============================================
+    // ===== CONFIGURAÇÃO DA API =====
+    // ============================================
+    const IS_LOCALHOST = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_BASE_URL = IS_LOCALHOST ? 'http://localhost:5000/api' : 'https://upuniversestorege.onrender.com/api';
+
+    console.log('🚀 Carrinho iniciado');
+    console.log('🌐 API Base URL:', API_BASE_URL);
+
+    // ============================================
+    // ===== CART MANAGER - VERSÃO CORRIGIDA =====
+    // ============================================
     class CartManager {
       constructor() {
         this.cartKey = 'universo_paralelo_cart';
-        this.apiBaseUrl = 'http://localhost:5000/api';
+        this.apiBaseUrl = API_BASE_URL;
       }
 
       // Obter o carrinho atual
@@ -1027,7 +1039,6 @@
             message: 'Produto adicionado ao carrinho',
             cart: cart
           };
-
         } catch (error) {
           console.error('Erro ao adicionar ao carrinho:', error);
           return {
@@ -1107,9 +1118,9 @@
           return null;
         }
 
-        let message = "Olá! Gostaria de fazer um pedido na Universo Paralelo Store.\n\n";
-        message += "*RESUMO DO PEDIDO*\n\n";
-        message += "*Itens:*\n";
+        let message = 'Olá! Gostaria de fazer um pedido na Universo Paralelo Store.\n\n';
+        message += '*RESUMO DO PEDIDO*\n\n';
+        message += '*Itens:*\n';
 
         cart.items.forEach((item, index) => {
           const price = item.promotional_price || item.price;
@@ -1118,19 +1129,47 @@
         });
 
         message += `\n*Total do Pedido: R$ ${cart.total.toFixed(2)}*\n\n`;
-        message += "Por favor, entre em contato para finalizar a compra!\n";
-        message += "Obrigado!";
+        message += 'Por favor, entre em contato para finalizar a compra!\n';
+        message += 'Obrigado!';
 
         return encodeURIComponent(message);
+      }
+
+      // Verificar disponibilidade em estoque
+      async checkStock(productId, quantity = 1) {
+        try {
+          const response = await fetch(`${this.apiBaseUrl}/products/${productId}`);
+          if (!response.ok) return false;
+
+          const data = await response.json();
+          const product = data.product;
+
+          return product.stock >= quantity;
+        } catch (error) {
+          console.error('Erro ao verificar estoque:', error);
+          return false;
+        }
       }
     }
 
     // Instância global do gerenciador de carrinho
     const cartManager = new CartManager();
-  </script>
 
-  <script>
-    // ========== CARRINHO DE COMPRAS - FUNCIONALIDADES ==========
+    // ============================================
+    // ===== FUNÇÕES AUXILIARES =====
+    // ============================================
+    function getImageUrl(imagePath) {
+      if (!imagePath) {
+        return 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+      }
+      if (imagePath.startsWith('http')) return imagePath;
+      if (imagePath.startsWith('/')) return `https://upuniversestorege.onrender.com${imagePath}`;
+      return `https://upuniversestorege.onrender.com/uploads/${imagePath}`;
+    }
+
+    // ============================================
+    // ===== FUNÇÕES DO CARRINHO =====
+    // ============================================
     document.addEventListener('DOMContentLoaded', function () {
       // Inicializar carrinho
       loadCart();
@@ -1140,6 +1179,16 @@
 
       // Atualizar contador do carrinho
       cartManager.updateCartCount();
+
+      // Newsletter
+      const newsletterForm = document.getElementById('newsletterForm');
+      if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          alert('Inscrição realizada com sucesso!');
+          this.reset();
+        });
+      }
     });
 
     // Carregar carrinho
@@ -1162,41 +1211,29 @@
       cartItemsContainer.innerHTML = '';
 
       // Cabeçalho da tabela
-      cartItemsContainer.innerHTML = `
-        <div class="cart-table-header">
-          <div class="header-product">Produto</div>
-          <div class="header-price">Preço</div>
-          <div class="header-quantity">Quantidade</div>
-          <div class="header-total">Total</div>
-          <div class="header-remove">Remover</div>
-        </div>
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'cart-table-header';
+      headerDiv.innerHTML = `
+        <div class="header-product">Produto</div>
+        <div class="header-price">Preço</div>
+        <div class="header-quantity">Quantidade</div>
+        <div class="header-total">Total</div>
+        <div class="header-remove">Remover</div>
       `;
+      cartItemsContainer.appendChild(headerDiv);
 
       // Para cada item do carrinho, buscar detalhes da API
       for (const item of cart.items) {
         try {
-          const response = await fetch(`http://localhost:5000/api/products/${item.id}`);
+          const response = await fetch(`${API_BASE_URL}/products/${item.id}`);
 
           if (response.ok) {
             const data = await response.json();
             const product = data.product;
 
-            // Construir URL da imagem
-            function buildImageUrl(imagePath) {
-              if (!imagePath) return 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
-
-              if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) {
-                return imagePath;
-              }
-
-              if (imagePath.startsWith('/')) {
-                return `http://localhost:5000${imagePath}`;
-              }
-
-              return `http://localhost:5000/uploads/${imagePath}`;
-            }
-
-            const itemTotal = (item.promotional_price || item.price) * item.quantity;
+            const imageUrl = getImageUrl(product.image_url);
+            const itemPrice = item.promotional_price || item.price;
+            const itemTotal = itemPrice * item.quantity;
             const stock = product.stock || 10;
             const maxQuantity = Math.min(stock, 10); // Limitar a 10 unidades
 
@@ -1206,7 +1243,7 @@
             itemElement.innerHTML = `
               <div class="item-product">
                 <div class="product-image">
-                  <img src="${buildImageUrl(product.image_url)}" alt="${product.name}" onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'">
+                  <img src="${imageUrl}" alt="${product.name}" onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'">
                 </div>
                 <div class="product-info">
                   <h3 class="product-name">${product.name}</h3>
@@ -1260,13 +1297,13 @@
       const actionsElement = document.createElement('div');
       actionsElement.className = 'cart-actions';
       actionsElement.innerHTML = `
-  <a href="catalago.html" class="btn-continue">
-    <i class="fas fa-arrow-left"></i> Continuar Comprando
-  </a>
-  <button class="btn-clear" id="clearCartBtn">
-    <i class="fas fa-trash"></i> Limpar Carrinho
-  </button>
-`;
+        <a href="catalogo.html" class="btn-continue">
+          <i class="fas fa-arrow-left"></i> Continuar Comprando
+        </a>
+        <button class="btn-clear" id="clearCartBtn">
+          <i class="fas fa-trash"></i> Limpar Carrinho
+        </button>
+      `;
       cartItemsContainer.appendChild(actionsElement);
 
       // Mostrar resumo
@@ -1279,18 +1316,16 @@
 
     // Mostrar carrinho vazio
     function showEmptyCart() {
-        document.getElementById('cartItems').innerHTML = `
-    <div class="empty-cart">
-      <i class="fas fa-shopping-cart"></i>
-      <h3>Seu carrinho está vazio</h3>
-      <p>Adicione produtos incríveis ao seu carrinho!</p>
-      <a href="catalago.html" class="btn-primary">Ver Catálogo</a>
-    </div>
-  `;
-        // ... resto do código ...
-      
+      document.getElementById('cartItems').innerHTML = `
+        <div class="empty-cart">
+          <i class="fas fa-shopping-cart fa-3x"></i>
+          <h3>Seu carrinho está vazio</h3>
+          <p>Adicione produtos incríveis ao seu carrinho!</p>
+          <a href="catalogo.html" class="btn-primary">Ver Catálogo</a>
+        </div>
+      `;
+
       document.getElementById('cartSummary').style.display = 'none';
-      document.getElementById('emptyCart').style.display = 'none';
       document.getElementById('cartSubtitle').textContent = 'Seu carrinho está vazio';
       document.getElementById('checkout-btn').disabled = true;
     }
@@ -1303,8 +1338,9 @@
 
       let shipping = 0;
       if (shippingSelect) {
-        if (shippingSelect.value === 'standard') shipping = 15;
-        else if (shippingSelect.value === 'express') shipping = 25;
+        const value = shippingSelect.value;
+        if (value === 'standard') shipping = 15;
+        else if (value === 'express') shipping = 25;
       }
 
       const total = cart.total + shipping;
@@ -1321,6 +1357,8 @@
         if (e.target.closest('.minus-btn')) {
           e.preventDefault();
           const item = e.target.closest('.cart-item');
+          if (!item) return;
+
           const productId = item.dataset.productId;
           const input = item.querySelector('.quantity-input');
           let quantity = parseInt(input.value);
@@ -1336,6 +1374,8 @@
         if (e.target.closest('.plus-btn')) {
           e.preventDefault();
           const item = e.target.closest('.cart-item');
+          if (!item) return;
+
           const productId = item.dataset.productId;
           const input = item.querySelector('.quantity-input');
           let quantity = parseInt(input.value);
@@ -1354,6 +1394,8 @@
         if (e.target.closest('.remove-btn')) {
           e.preventDefault();
           const item = e.target.closest('.cart-item');
+          if (!item) return;
+
           const productId = item.dataset.productId;
           const productName = item.querySelector('.product-name').textContent;
 
@@ -1377,6 +1419,8 @@
       document.addEventListener('change', function (e) {
         if (e.target.classList.contains('quantity-input')) {
           const item = e.target.closest('.cart-item');
+          if (!item) return;
+
           const productId = item.dataset.productId;
           const quantity = parseInt(e.target.value);
           const max = parseInt(e.target.max);
@@ -1507,9 +1551,8 @@
         return;
       }
 
-      // Número do WhatsApp do seu amigo (SUBSTITUA pelo número real)
-      // Formato: 55 + DDD + número (ex: 5521999999999 para (21) 99999-9999)
-      const phoneNumber = '5521999999999';
+      // Número do WhatsApp da loja (SUBSTITUA pelo número real)
+      const phoneNumber = '5521999999999'; // (21) 99999-9999
 
       // Abrir WhatsApp
       window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
@@ -1518,7 +1561,7 @@
     // Carregar produtos recomendados da API
     async function loadRecommendedProducts() {
       try {
-        const response = await fetch('http://localhost:5000/api/products?limit=4&featured=true');
+        const response = await fetch(`${API_BASE_URL}/products?limit=4&featured=true`);
 
         if (response.ok) {
           const data = await response.json();
@@ -1529,25 +1572,14 @@
             recommendationsGrid.innerHTML = '';
 
             products.forEach(product => {
-              function buildImageUrl(imagePath) {
-                if (!imagePath) return 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
-
-                if (imagePath.startsWith('http') || imagePath.startsWith('data:image')) {
-                  return imagePath;
-                }
-
-                if (imagePath.startsWith('/')) {
-                  return `http://localhost:5000${imagePath}`;
-                }
-
-                return `http://localhost:5000/uploads/${imagePath}`;
-              }
+              const imageUrl = getImageUrl(product.image_url);
+              const price = product.promotional_price || product.price;
 
               const productCard = document.createElement('div');
               productCard.className = 'recommended-product';
               productCard.innerHTML = `
                 <div class="product-image">
-                  <img src="${buildImageUrl(product.image_url)}" alt="${product.name}" onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'">
+                  <img src="${imageUrl}" alt="${product.name}" onerror="this.src='https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'">
                 </div>
                 <div class="product-info">
                   <h3>${product.name}</h3>
@@ -1574,12 +1606,12 @@
               button.addEventListener('click', async function (e) {
                 e.preventDefault();
                 const productId = this.dataset.productId;
-                const result = await cartManager.addToCart(productId);
+                const result = await cartManager.addToCart(productId, 1);
 
                 if (result.success) {
                   // Mostrar modal de confirmação
                   const modal = document.getElementById('confirmation-modal');
-                  const message = modal.querySelector('.modal-message');
+                  const message = modal.querySelector('#modalMessage');
                   const productName = this.closest('.recommended-product').querySelector('h3').textContent;
                   message.textContent = `"${productName}" foi adicionado ao seu carrinho com sucesso.`;
                   modal.style.display = 'flex';
