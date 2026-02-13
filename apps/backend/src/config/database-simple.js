@@ -389,6 +389,90 @@ async function testDatabaseConnection() {
   }
 }
 
+// Adicione esta função TEMPORÁRIA no database-simple.js
+async function forceResetCategories() {
+  let connection;
+  try {
+    console.log("⚠️ FORÇANDO RESET DA TABELA CATEGORIES...");
+    connection = await pool.getConnection();
+    
+    // Drop da tabela categories (e suas dependências)
+    await connection.query("DROP TABLE IF EXISTS product_categories");
+    await connection.query("DROP TABLE IF EXISTS products");
+    await connection.query("DROP TABLE IF EXISTS categories");
+    
+    console.log("✅ Tabelas removidas");
+    
+    // Recriar categories DO ZERO
+    await connection.query(`
+      CREATE TABLE categories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        slug VARCHAR(100) UNIQUE NOT NULL,
+        description TEXT,
+        image_url VARCHAR(500),
+        icon VARCHAR(50) DEFAULT '🏷️',
+        color VARCHAR(20) DEFAULT '#7C3AED',
+        parent_id INT DEFAULT NULL,
+        status VARCHAR(20) DEFAULT 'active',
+        display_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+    console.log("✅ Tabela categories recriada");
+    
+    // Recriar foreign key DEPOIS
+    await connection.query(`
+      ALTER TABLE categories 
+      ADD CONSTRAINT fk_category_parent 
+      FOREIGN KEY (parent_id) 
+      REFERENCES categories(id) 
+      ON DELETE SET NULL
+    `);
+    console.log("✅ Foreign key recriada");
+    
+    // Inserir categorias padrão
+    const categories = [
+      ["Esculturas 3D", "esculturas-3d", "Réplicas detalhadas", "🏺", "#C084FC", 1],
+      ["Decoração", "decoracao", "Peças decorativas", "🏠", "#DF38FF", 2],
+      ["Utilitários", "utilitarios", "Objetos funcionais", "🔧", "#4CAF50", 3],
+      ["Brinquedos", "brinquedos", "Brinquedos educativos", "🧸", "#FFC107", 4],
+    ];
+    
+    for (const cat of categories) {
+      await connection.query(
+        `INSERT INTO categories (name, slug, description, icon, color, display_order) VALUES (?, ?, ?, ?, ?, ?)`,
+        cat
+      );
+    }
+    console.log("✅ Categorias padrão inseridas");
+    
+    // Recriar tabela products (simplificada para teste)
+    await connection.query(`
+      CREATE TABLE products (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        category_id INT,
+        stock INT DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+      )
+    `);
+    console.log("✅ Tabela products recriada");
+    
+    connection.release();
+    console.log("🎉 RESET CONCLUÍDO!");
+    return true;
+  } catch (error) {
+    console.error("❌ Erro no reset:", error);
+    if (connection) connection.release();
+    return false;
+  }
+}
+
 // ============================================
 // FUNÇÃO PARA REINICIAR O BANCO (APENAS DEV)
 // ============================================
@@ -428,3 +512,5 @@ module.exports = {
   testDatabaseConnection,
   resetDatabase, // Exportar também a função de reset
 };
+
+forceResetCategories().then(() => console.log("Reset executado"));
