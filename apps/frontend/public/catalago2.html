@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="/public/js/api.js"></script>
   <script src="/public/js/cart.js"></script>
+  <script src="/public/js/config.js"></script>
 </head>
 
 <body>
@@ -366,7 +367,7 @@
 
   <script>
     // ========== CONFIGURAÇÃO ==========
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = API_CONFIG.BASE_URL;
     const PRODUCTS_PER_PAGE = 9;
 
     // ========== VARIÁVEIS GLOBAIS ==========
@@ -386,19 +387,25 @@
     // ========== FUNÇÕES DE API ==========
     async function fetchProducts() {
       try {
-        console.log("📥 Buscando produtos da API...");
-        const response = await fetch(`${API_BASE_URL}/products`);
+        const url = getApiUrl(API_CONFIG.ENDPOINTS.PRODUCTS);
+        console.log("📥 Buscando produtos:", url);
 
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(`✅ ${data.products?.length || 0} produtos carregados`);
-        return data.products || [];
+        const response = await fetch(url);
+        // ... resto do código
       } catch (error) {
-        console.error("❌ Erro ao buscar produtos:", error);
-        showError("Erro ao carregar produtos. Tente novamente.");
+        console.error("❌ Erro:", error);
+        // Mostrar erro amigável
+        document.getElementById('productsGrid').innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+          <i class="fas fa-wifi-slash fa-3x" style="color: #f44336;"></i>
+          <h3 style="margin: 20px 0;">Erro de conexão</h3>
+          <p>Não foi possível conectar à API.</p>
+          <p><small>URL da API: ${API_CONFIG.BASE_URL}</small></p>
+          <button onclick="testApiConnection()" style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            <i class="fas fa-sync-alt"></i> Testar conexão
+          </button>
+        </div>
+      `;
         return [];
       }
     }
