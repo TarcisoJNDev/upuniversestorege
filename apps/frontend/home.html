@@ -18,7 +18,7 @@
       <a href="/" class="logo">UNIVERSO PARALELO</a>
       <ul class="nav-menu">
         <li><a href="/" class="active">Início</a></li>
-        <li><a href="/catalogo">Catálogo 3D</a></li>
+        <li><a href="./catalogo">Catálogo 3D</a></li>
         <li><a href="/servicos">Serviços</a></li>
         <li><a href="#footer">Contato</a></li>
       </ul>
@@ -252,16 +252,7 @@
 
   <script>
     // ============================================
-    // ===== CONFIGURAÇÃO DA API =====
-    // ============================================
-    const IS_LOCALHOST = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_BASE_URL = IS_LOCALHOST ? 'http://localhost:5000/api' : 'https://upuniversestorege.onrender.com/api';
-
-    console.log('🚀 Home iniciada');
-    console.log('🌐 API Base URL:', API_BASE_URL);
-
-    // ============================================
-    // ===== FUNÇÕES AUXILIARES =====
+    // ===== FUNÇÕES AUXILIARES (SEM REDECLARAR IS_LOCALHOST) =====
     // ============================================
     function getImageUrl(imagePath) {
       if (!imagePath) {
@@ -279,13 +270,22 @@
       }).format(price || 0);
     }
 
+    // Cache de categorias
+    let categoriesCache = [];
+
+    function getCategoryName(categoryId) {
+      if (!categoryId) return 'Sem categoria';
+      const category = categoriesCache.find(c => c.id == categoryId);
+      return category ? category.name : 'Sem categoria';
+    }
+
     // ============================================
-    // ===== FUNÇÕES DE API =====
+    // ===== FUNÇÕES DE API (USANDO API_CONFIG.BASE_URL) =====
     // ============================================
     async function fetchProducts() {
       try {
         console.log("📥 Buscando produtos da API...");
-        const response = await fetch(`${API_BASE_URL}/products`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/products`);
 
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
@@ -313,7 +313,7 @@
     async function fetchCategories() {
       try {
         console.log("🏷️ Buscando categorias da API...");
-        const response = await fetch(`${API_BASE_URL}/categories/with-count`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/categories/with-count`);
 
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
@@ -337,12 +337,12 @@
 
         // Fallback para categorias simples
         try {
-          const fallbackResponse = await fetch(`${API_BASE_URL}/categories`);
+          const fallbackResponse = await fetch(`${API_CONFIG.BASE_URL}/categories`);
           const fallbackData = await fallbackResponse.json();
           const categories = fallbackData.categories || [];
 
           // Contar produtos manualmente
-          const productsResponse = await fetch(`${API_BASE_URL}/products`);
+          const productsResponse = await fetch(`${API_CONFIG.BASE_URL}/products`);
           const productsData = await productsResponse.json();
           const products = productsData.products || [];
 
@@ -390,7 +390,6 @@
         const addToCartDisabled = !inStock ? 'disabled' : '';
         const addToCartText = inStock ? 'Comprar' : 'Esgotado';
 
-        // Badge baseado em destaque ou promoção
         let badgeHTML = '';
         if (product.featured) {
           badgeHTML = '<span class="badge featured">Destaque</span>';
@@ -398,7 +397,6 @@
           badgeHTML = '<span class="badge">Oferta</span>';
         }
 
-        // Descrição curta
         const shortDescription = product.short_description || product.description || 'Produto impresso em 3D com qualidade premium e design exclusivo.';
         const truncatedDesc = shortDescription.length > 80 ? shortDescription.substring(0, 80) + '...' : shortDescription;
 
@@ -440,33 +438,24 @@
       const categoriesGrid = document.getElementById('categoriesGrid');
 
       if (!categories || categories.length === 0) {
-        // Mostrar categorias padrão se não houver
         categoriesGrid.innerHTML = `
           <a href="catalogo.html" class="category-card" onclick="filterByCategory('all')">
-            <div class="category-icon">
-              <i class="fas fa-tags"></i>
-            </div>
+            <div class="category-icon"><i class="fas fa-tags"></i></div>
             <h3>Todas Categorias</h3>
             <p>Explore nosso catálogo completo</p>
           </a>
           <a href="catalogo.html" class="category-card" onclick="filterByCategory('featured')">
-            <div class="category-icon">
-              <i class="fas fa-star"></i>
-            </div>
+            <div class="category-icon"><i class="fas fa-star"></i></div>
             <h3>Em Destaque</h3>
             <p>Produtos mais populares</p>
           </a>
           <a href="catalogo.html" class="category-card" onclick="filterByCategory('new')">
-            <div class="category-icon">
-              <i class="fas fa-bolt"></i>
-            </div>
+            <div class="category-icon"><i class="fas fa-bolt"></i></div>
             <h3>Novidades</h3>
             <p>Últimos lançamentos</p>
           </a>
           <a href="catalogo.html" class="category-card" onclick="filterByCategory('exclusive')">
-            <div class="category-icon">
-              <i class="fas fa-gem"></i>
-            </div>
+            <div class="category-icon"><i class="fas fa-gem"></i></div>
             <h3>Exclusivos</h3>
             <p>Peças únicas e especiais</p>
           </a>
@@ -477,18 +466,15 @@
       let categoriesHTML = '';
 
       categories.forEach(category => {
-        // Processar ícone
         let iconHTML = category.icon || '<i class="fas fa-tag"></i>';
         let iconClass = '';
 
-        // Se for um emoji, usar classe especial
         if (iconHTML.includes('🏺') || iconHTML.includes('🏠') || iconHTML.includes('🔧') ||
           iconHTML.includes('🧸') || iconHTML.includes('⚙️') || iconHTML.includes('🧪') ||
           iconHTML.includes('🎨') || iconHTML.includes('🎮')) {
           iconClass = 'emoji-icon';
         }
 
-        // Se for FontAwesome, manter como <i>
         if (iconHTML.includes('fa-')) {
           iconHTML = `<i class="fas ${iconHTML}"></i>`;
         }
@@ -510,12 +496,6 @@
       });
 
       categoriesGrid.innerHTML = categoriesHTML;
-    }
-
-    // Função auxiliar para obter nome da categoria
-    function getCategoryName(categoryId) {
-      // Esta função será preenchida quando as categorias forem carregadas
-      return 'Carregando...';
     }
 
     // ============================================
@@ -584,11 +564,7 @@
       const icon = type === 'success' ? 'check-circle' :
         type === 'error' ? 'exclamation-circle' : 'info-circle';
 
-      notification.innerHTML = `
-        <i class="fas fa-${icon}"></i>
-        <span>${message}</span>
-      `;
-
+      notification.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
       document.body.appendChild(notification);
 
       setTimeout(() => {
@@ -599,24 +575,17 @@
 
     function showAddToCartModal() {
       const modal = document.getElementById('cart-confirmation-modal');
-      if (modal) {
-        modal.style.display = 'flex';
-      }
+      if (modal) modal.style.display = 'flex';
     }
 
     window.closeAddToCartModal = function () {
       const modal = document.getElementById('cart-confirmation-modal');
-      if (modal) {
-        modal.style.display = 'none';
-      }
+      if (modal) modal.style.display = 'none';
     };
 
-    // Fechar modal ao clicar fora
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', (e) => {
       const modal = document.getElementById('cart-confirmation-modal');
-      if (modal && e.target === modal) {
-        closeAddToCartModal();
-      }
+      if (modal && e.target === modal) closeAddToCartModal();
     });
 
     // ============================================
@@ -626,51 +595,24 @@
       console.log("🚀 Inicializando home...");
 
       try {
-        // Buscar produtos e categorias em paralelo
         const [products, categories] = await Promise.all([
           fetchProducts(),
           fetchCategories()
         ]);
 
-        // Atualizar a função getCategoryName com as categorias carregadas
-        window.allCategories = categories;
-        window.getCategoryName = function (categoryId) {
-          if (!categoryId) return 'Sem categoria';
-          const category = window.allCategories.find(c => c.id == categoryId);
-          return category ? category.name : 'Sem categoria';
-        };
-
-        // Renderizar os dados
+        categoriesCache = categories;
         renderFeaturedProducts(products);
         renderCategories(categories);
 
-        // Atualizar contador do carrinho
-        if (cartManager) {
-          cartManager.updateCartCount();
-        }
-
-        console.log("✅ Home inicializada com sucesso!");
+        if (cartManager) cartManager.updateCartCount();
       } catch (error) {
-        console.error("❌ Erro ao inicializar home:", error);
-
-        // Mostrar mensagem de erro
+        console.error("❌ Erro fatal:", error);
         document.getElementById('featuredProductsGrid').innerHTML = `
-          <div class="error-message" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-            <i class="fas fa-exclamation-triangle fa-2x" style="color: #f44336; margin-bottom: 20px;"></i>
-            <h3 style="color: #666; margin-bottom: 10px;">Erro ao carregar produtos</h3>
-            <p style="color: #888;">Tente recarregar a página</p>
-            <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
-              <i class="fas fa-sync-alt"></i> Recarregar
-            </button>
-          </div>
-        `;
-
-        document.getElementById('categoriesGrid').innerHTML = `
-          <div class="error-message" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-            <i class="fas fa-exclamation-triangle fa-2x" style="color: #f44336; margin-bottom: 20px;"></i>
-            <h3 style="color: #666; margin-bottom: 10px;">Erro ao carregar categorias</h3>
-            <p style="color: #888;">Tente recarregar a página</p>
-            <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
+          <div class="error-message" style="grid-column:1/-1; text-align:center; padding:60px;">
+            <i class="fas fa-exclamation-triangle fa-3x" style="color:#f44336;"></i>
+            <h3>Erro ao carregar a página</h3>
+            <p>Tente recarregar.</p>
+            <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; background:#7C3AED; color:#fff; border:none; border-radius:8px;">
               <i class="fas fa-sync-alt"></i> Recarregar
             </button>
           </div>
@@ -679,7 +621,7 @@
     }
 
     // ============================================
-    // ===== CAROUSEL =====
+    // ===== CAROUSEL E SCROLL =====
     // ============================================
     function initCarousel() {
       const slides = document.querySelectorAll('.carousel-slide');
@@ -690,102 +632,57 @@
       let slideInterval;
 
       function showSlide(n) {
-        slides.forEach(slide => slide.classList.remove('active'));
-        dots.forEach(dot => dot.classList.remove('active'));
-
+        slides.forEach(s => s.classList.remove('active'));
+        dots.forEach(d => d.classList.remove('active'));
         currentSlide = (n + slides.length) % slides.length;
-
         slides[currentSlide].classList.add('active');
         dots[currentSlide].classList.add('active');
       }
 
-      function nextSlide() {
-        showSlide(currentSlide + 1);
-      }
+      function nextSlide() { showSlide(currentSlide + 1); }
+      function prevSlide() { showSlide(currentSlide - 1); }
+      function startCarousel() { slideInterval = setInterval(nextSlide, 5000); }
+      function stopCarousel() { clearInterval(slideInterval); }
 
-      function prevSlide() {
-        showSlide(currentSlide - 1);
-      }
+      if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); stopCarousel(); startCarousel(); });
+      if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); stopCarousel(); startCarousel(); });
 
-      function startCarousel() {
-        slideInterval = setInterval(nextSlide, 5000);
-      }
-
-      function stopCarousel() {
-        clearInterval(slideInterval);
-      }
-
-      if (prevBtn) prevBtn.addEventListener('click', () => {
-        prevSlide();
-        stopCarousel();
-        startCarousel();
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => { showSlide(i); stopCarousel(); startCarousel(); });
       });
 
-      if (nextBtn) nextBtn.addEventListener('click', () => {
-        nextSlide();
-        stopCarousel();
-        startCarousel();
-      });
-
-      dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-          showSlide(index);
-          stopCarousel();
-          startCarousel();
-        });
-      });
-
-      const carouselContainer = document.querySelector('.carousel-container');
-      if (carouselContainer) {
-        carouselContainer.addEventListener('mouseenter', stopCarousel);
-        carouselContainer.addEventListener('mouseleave', startCarousel);
+      const container = document.querySelector('.carousel-container');
+      if (container) {
+        container.addEventListener('mouseenter', stopCarousel);
+        container.addEventListener('mouseleave', startCarousel);
       }
-
       startCarousel();
     }
 
-    // ============================================
-    // ===== SCROLL REVEAL =====
-    // ============================================
     function initScrollReveal() {
-      const revealElements = document.querySelectorAll('.reveal');
-
-      function revealOnScroll() {
-        const windowHeight = window.innerHeight;
-        const revealPoint = 150;
-
-        revealElements.forEach(element => {
-          const revealTop = element.getBoundingClientRect().top;
-
-          if (revealTop < windowHeight - revealPoint) {
-            element.classList.add('active');
-          }
-        });
-      }
-
-      window.addEventListener('scroll', revealOnScroll);
-      revealOnScroll();
+      const reveals = document.querySelectorAll('.reveal');
+      const observer = new IntersectionObserver(
+        (entries) => entries.forEach(e => e.isIntersecting && e.target.classList.add('active')),
+        { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+      );
+      reveals.forEach(r => observer.observe(r));
     }
 
-    // ============================================
-    // ===== NEWSLETTER =====
-    // ============================================
     function initNewsletter() {
-      const newsletterForm = document.getElementById('newsletterForm');
-      if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function (e) {
+      const form = document.getElementById('newsletterForm');
+      if (form) {
+        form.addEventListener('submit', (e) => {
           e.preventDefault();
-          const email = document.getElementById('newsletterEmail').value;
-          showNotification('📧 Inscrição realizada com sucesso!', 'success');
-          this.reset();
+          showNotification('📧 Inscrição realizada!', 'success');
+          form.reset();
         });
       }
     }
 
     // ============================================
-    // ===== DOM CONTENT LOADED =====
+    // ===== START =====
     // ============================================
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', () => {
       initCarousel();
       initScrollReveal();
       initNewsletter();
