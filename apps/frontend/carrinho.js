@@ -1,15 +1,8 @@
 // ============================================
-// ===== CONFIGURAÇÃO DA API =====
+// ===== CONFIGURAÇÃO DA API (USANDO API_CONFIG) =====
 // ============================================
-const IS_LOCALHOST =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const API_BASE_URL = IS_LOCALHOST
-  ? "http://localhost:5000/api"
-  : "https://upuniversestorege.onrender.com/api";
-
 console.log("🚀 Carrinho iniciado");
-console.log("🌐 API Base URL:", API_BASE_URL);
+console.log("🌐 API Base URL:", API_CONFIG.BASE_URL);
 
 // ============================================
 // ===== FUNÇÕES AUXILIARES =====
@@ -82,7 +75,9 @@ async function renderCartItems(cart) {
   // Para cada item do carrinho, buscar detalhes da API
   for (const item of cart.items) {
     try {
-      const response = await fetch(`${API_BASE_URL}/products/${item.id}`);
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/products/${item.id}`,
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -419,7 +414,6 @@ function removeCartItem(productId) {
   }
 }
 
-// Finalizar compra (WhatsApp)
 // Finalizar compra (WhatsApp) - VERSÃO CORRIGIDA
 function finalizePurchase() {
   // 🔴🔴🔴 FORÇAR A LEITURA DO CARRINHO ATUALIZADO
@@ -474,7 +468,7 @@ function finalizePurchase() {
   const mensagemCodificada = encodeURIComponent(mensagem);
 
   // Número do WhatsApp da loja (SUBSTITUA pelo número real)
-  const phoneNumber = "558182047692"; // (21) 99999-9999
+  const phoneNumber = "558182047692";
 
   // Abrir WhatsApp
   window.open(
@@ -490,7 +484,7 @@ function finalizePurchase() {
 async function loadRecommendedProducts() {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/products?limit=4&featured=true`,
+      `${API_CONFIG.BASE_URL}/products?limit=4&featured=true`,
     );
 
     if (response.ok) {
