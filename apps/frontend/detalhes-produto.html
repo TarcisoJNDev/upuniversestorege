@@ -873,13 +873,10 @@
 
   <script>
     // ============================================
-    // ===== CONFIGURAÇÃO DA API =====
+    // ===== CONFIGURAÇÃO DA API (USANDO API_CONFIG) =====
     // ============================================
-    const IS_LOCALHOST = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_BASE_URL = IS_LOCALHOST ? 'http://localhost:5000/api' : 'https://upuniversestorege.onrender.com/api';
-
     console.log('🚀 Detalhes do produto iniciado');
-    console.log('🌐 API Base URL:', API_BASE_URL);
+    console.log('🌐 API Base URL:', API_CONFIG.BASE_URL);
 
     // ============================================
     // ===== VARIÁVEIS GLOBAIS =====
@@ -894,7 +891,7 @@
     async function fetchProductById(productId) {
       try {
         console.log(`📥 Buscando produto ${productId} da API...`);
-        const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/products/${productId}`);
 
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
@@ -910,7 +907,7 @@
 
     async function fetchCategories() {
       try {
-        const response = await fetch(`${API_BASE_URL}/categories`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/categories`);
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
         }
@@ -924,7 +921,7 @@
 
     async function fetchAllProducts() {
       try {
-        const response = await fetch(`${API_BASE_URL}/products`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/products`);
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
         }
@@ -939,7 +936,7 @@
     async function fetchRelatedProducts(categoryId, currentProductId) {
       try {
         // Buscar produtos da mesma categoria
-        const response = await fetch(`${API_BASE_URL}/products/category-id/${categoryId}`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/products/category-id/${categoryId}`);
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
         }
@@ -1015,136 +1012,136 @@
 
       // Criar HTML do produto
       const productHTML = `
-        <div class="product-container">
-          
-          <!-- Galeria de Imagens -->
-          <div class="product-gallery">
-            <div class="main-image">
-              <img id="mainImage" src="${mainImageUrl}" alt="${product.name}">
-              ${product.featured ? '<span class="badge featured">Destaque</span>' : ''}
-              ${hasDiscount ? '<span class="badge promotion">Promoção</span>' : ''}
-            </div>
-
-            <div class="image-thumbnails" id="imageThumbnails">
-              <div class="thumbnail active" data-image="${mainImageUrl}">
-                <img src="${mainImageUrl}" alt="Vista principal">
+          <div class="product-container">
+            
+            <!-- Galeria de Imagens -->
+            <div class="product-gallery">
+              <div class="main-image">
+                <img id="mainImage" src="${mainImageUrl}" alt="${product.name}">
+                ${product.featured ? '<span class="badge featured">Destaque</span>' : ''}
+                ${hasDiscount ? '<span class="badge promotion">Promoção</span>' : ''}
               </div>
-              ${galleryImages.map((img, index) => `
-                <div class="thumbnail" data-image="${getImageUrl(img)}">
-                  <img src="${getImageUrl(img)}" alt="Imagem ${index + 1}">
+  
+              <div class="image-thumbnails" id="imageThumbnails">
+                <div class="thumbnail active" data-image="${mainImageUrl}">
+                  <img src="${mainImageUrl}" alt="Vista principal">
                 </div>
-              `).join('')}
+                ${galleryImages.map((img, index) => `
+                  <div class="thumbnail" data-image="${getImageUrl(img)}">
+                    <img src="${getImageUrl(img)}" alt="Imagem ${index + 1}">
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+  
+            <!-- Informações do Produto -->
+            <div class="product-info">
+              <h1 class="product-title">${product.name}</h1>
+  
+              <div class="product-rating">
+                <div class="stars">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star-half-alt"></i>
+                </div>
+                <span class="rating-count">(0 avaliações)</span>
+                <span style="opacity: 0.7;">•</span>
+                <span class="product-category">${categoryName}</span>
+              </div>
+  
+              <p class="product-description">${shortDescription}</p>
+  
+              <!-- Seção de Preço -->
+              <div class="product-price-section">
+                ${hasDiscount ? `<div class="original-price">R$ ${formatPrice(price)}</div>` : ''}
+                <div class="current-price">R$ ${formatPrice(hasDiscount ? promoPrice : price)}</div>
+                ${hasDiscount ? `<span class="discount-badge">Economize R$ ${formatPrice(price - promoPrice)}</span>` : ''}
+  
+                <div class="stock-info">
+                  <i class="fas fa-${inStock ? 'check-circle in-stock' : 'times-circle out-of-stock'}"></i>
+                  <span class="${inStock ? 'in-stock' : 'out-of-stock'}">
+                    ${inStock ? `Em estoque (${product.stock} unidades)` : 'Esgotado'}
+                  </span>
+                  ${inStock ? '<span style="opacity: 0.7;">•</span><span>Disponível para envio</span>' : ''}
+                </div>
+              </div>
+  
+              <!-- Opções de Personalização (se houver) -->
+              ${renderCustomizationOptions(product)}
+  
+              <!-- Seletor de Quantidade -->
+              <div class="quantity-selector">
+                <span style="font-weight: 600;">Quantidade:</span>
+                <div class="quantity-control">
+                  <button class="quantity-btn minus-btn" ${!inStock ? 'disabled' : ''}>
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <input type="number" class="quantity-input" value="1" min="1" max="${product.stock}" ${!inStock ? 'disabled' : ''}>
+                  <button class="quantity-btn plus-btn" ${!inStock ? 'disabled' : ''}>
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+                <div style="font-size: 14px; opacity: 0.8;">
+                  ${inStock ? `Máximo: ${product.stock} unidades` : 'Indisponível'}
+                </div>
+              </div>
+  
+              <!-- Botões de Ação -->
+              <div class="product-actions">
+                <button class="btn-buy" id="buyNowBtn" ${!inStock ? 'disabled' : ''}>
+                  <i class="fas fa-shopping-cart"></i>
+                  <span>${inStock ? 'COMPRAR AGORA' : 'ESGOTADO'}</span>
+                </button>
+                <button class="btn-wishlist" id="wishlistBtn">
+                  <i class="far fa-heart"></i>
+                  Favoritar
+                </button>
+              </div>
+  
+              <!-- Informações Adicionais -->
+              <div class="product-meta">
+                <div class="meta-item">
+                  <div class="meta-icon">
+                    <i class="fas fa-truck"></i>
+                  </div>
+                  <div class="meta-text">
+                    <strong>Entrega Rápida</strong>
+                    <span>Envio em 2-5 dias úteis</span>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-icon">
+                    <i class="fas fa-shield-alt"></i>
+                  </div>
+                  <div class="meta-text">
+                    <strong>Garantia</strong>
+                    <span>12 meses contra defeitos</span>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-icon">
+                    <i class="fas fa-undo"></i>
+                  </div>
+                  <div class="meta-text">
+                    <strong>Devolução</strong>
+                    <span>30 dias para trocas</span>
+                  </div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-icon">
+                    <i class="fas fa-cube"></i>
+                  </div>
+                  <div class="meta-text">
+                    <strong>Material</strong>
+                    <span>${product.material || 'PLA Premium'}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          <!-- Informações do Produto -->
-          <div class="product-info">
-            <h1 class="product-title">${product.name}</h1>
-
-            <div class="product-rating">
-              <div class="stars">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star-half-alt"></i>
-              </div>
-              <span class="rating-count">(0 avaliações)</span>
-              <span style="opacity: 0.7;">•</span>
-              <span class="product-category">${categoryName}</span>
-            </div>
-
-            <p class="product-description">${shortDescription}</p>
-
-            <!-- Seção de Preço -->
-            <div class="product-price-section">
-              ${hasDiscount ? `<div class="original-price">R$ ${formatPrice(price)}</div>` : ''}
-              <div class="current-price">R$ ${formatPrice(hasDiscount ? promoPrice : price)}</div>
-              ${hasDiscount ? `<span class="discount-badge">Economize R$ ${formatPrice(price - promoPrice)}</span>` : ''}
-
-              <div class="stock-info">
-                <i class="fas fa-${inStock ? 'check-circle in-stock' : 'times-circle out-of-stock'}"></i>
-                <span class="${inStock ? 'in-stock' : 'out-of-stock'}">
-                  ${inStock ? `Em estoque (${product.stock} unidades)` : 'Esgotado'}
-                </span>
-                ${inStock ? '<span style="opacity: 0.7;">•</span><span>Disponível para envio</span>' : ''}
-              </div>
-            </div>
-
-            <!-- Opções de Personalização (se houver) -->
-            ${renderCustomizationOptions(product)}
-
-            <!-- Seletor de Quantidade -->
-            <div class="quantity-selector">
-              <span style="font-weight: 600;">Quantidade:</span>
-              <div class="quantity-control">
-                <button class="quantity-btn minus-btn" ${!inStock ? 'disabled' : ''}>
-                  <i class="fas fa-minus"></i>
-                </button>
-                <input type="number" class="quantity-input" value="1" min="1" max="${product.stock}" ${!inStock ? 'disabled' : ''}>
-                <button class="quantity-btn plus-btn" ${!inStock ? 'disabled' : ''}>
-                  <i class="fas fa-plus"></i>
-                </button>
-              </div>
-              <div style="font-size: 14px; opacity: 0.8;">
-                ${inStock ? `Máximo: ${product.stock} unidades` : 'Indisponível'}
-              </div>
-            </div>
-
-            <!-- Botões de Ação -->
-            <div class="product-actions">
-              <button class="btn-buy" id="buyNowBtn" ${!inStock ? 'disabled' : ''}>
-                <i class="fas fa-shopping-cart"></i>
-                <span>${inStock ? 'COMPRAR AGORA' : 'ESGOTADO'}</span>
-              </button>
-              <button class="btn-wishlist" id="wishlistBtn">
-                <i class="far fa-heart"></i>
-                Favoritar
-              </button>
-            </div>
-
-            <!-- Informações Adicionais -->
-            <div class="product-meta">
-              <div class="meta-item">
-                <div class="meta-icon">
-                  <i class="fas fa-truck"></i>
-                </div>
-                <div class="meta-text">
-                  <strong>Entrega Rápida</strong>
-                  <span>Envio em 2-5 dias úteis</span>
-                </div>
-              </div>
-              <div class="meta-item">
-                <div class="meta-icon">
-                  <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="meta-text">
-                  <strong>Garantia</strong>
-                  <span>12 meses contra defeitos</span>
-                </div>
-              </div>
-              <div class="meta-item">
-                <div class="meta-icon">
-                  <i class="fas fa-undo"></i>
-                </div>
-                <div class="meta-text">
-                  <strong>Devolução</strong>
-                  <span>30 dias para trocas</span>
-                </div>
-              </div>
-              <div class="meta-item">
-                <div class="meta-icon">
-                  <i class="fas fa-cube"></i>
-                </div>
-                <div class="meta-text">
-                  <strong>Material</strong>
-                  <span>${product.material || 'PLA Premium'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+        `;
 
       // Inserir HTML no container
       document.getElementById('productContainer').innerHTML = productHTML;
@@ -1168,29 +1165,29 @@
 
         if (sizes.length > 0) {
           html += `
-            <div class="customization-options">
-              <div class="option-group">
-                <div class="option-title">
-                  <i class="fas fa-expand-alt"></i>
-                  <span>Tamanho</span>
-                </div>
-                <div class="size-options" id="sizeOptions">
-          `;
+              <div class="customization-options">
+                <div class="option-group">
+                  <div class="option-title">
+                    <i class="fas fa-expand-alt"></i>
+                    <span>Tamanho</span>
+                  </div>
+                  <div class="size-options" id="sizeOptions">
+            `;
 
           sizes.forEach((size, index) => {
             html += `
-              <div class="size-option ${index === 0 ? 'active' : ''}" data-size="${size.size}" data-price="${size.price || product.price}">
-                <div>${size.size}</div>
-                <div class="size-details">R$ ${formatPrice(size.price || product.price)}</div>
-              </div>
-            `;
+                <div class="size-option ${index === 0 ? 'active' : ''}" data-size="${size.size}" data-price="${size.price || product.price}">
+                  <div>${size.size}</div>
+                  <div class="size-details">R$ ${formatPrice(size.price || product.price)}</div>
+                </div>
+              `;
           });
 
           html += `
+                  </div>
                 </div>
               </div>
-            </div>
-          `;
+            `;
         }
       }
 
@@ -1216,32 +1213,32 @@
           };
 
           html += `
-            <div class="customization-options">
-              <div class="option-group">
-                <div class="option-title">
-                  <i class="fas fa-palette"></i>
-                  <span>Cor do Filamento</span>
-                </div>
-                <div class="color-options" id="colorOptions">
-          `;
+              <div class="customization-options">
+                <div class="option-group">
+                  <div class="option-title">
+                    <i class="fas fa-palette"></i>
+                    <span>Cor do Filamento</span>
+                  </div>
+                  <div class="color-options" id="colorOptions">
+            `;
 
           colors.forEach((color, index) => {
             const colorCode = colorMap[color] || '#7C3AED';
             html += `
-              <div class="color-option ${index === 0 ? 'active' : ''}" 
-                   style="background: ${colorCode};" 
-                   data-color="${color.toLowerCase()}" 
-                   data-colorname="${color}">
-                <span class="color-name">${color}</span>
-              </div>
-            `;
+                <div class="color-option ${index === 0 ? 'active' : ''}" 
+                     style="background: ${colorCode};" 
+                     data-color="${color.toLowerCase()}" 
+                     data-colorname="${color}">
+                  <span class="color-name">${color}</span>
+                </div>
+              `;
           });
 
           html += `
+                  </div>
                 </div>
               </div>
-            </div>
-          `;
+            `;
         }
       }
 
@@ -1286,41 +1283,41 @@
         // Material
         if (product.material) {
           specsHTML += `
-            <div class="spec-item">
-              <span class="spec-label">Material:</span>
-              <span class="spec-value">${product.material}</span>
-            </div>
-          `;
+              <div class="spec-item">
+                <span class="spec-label">Material:</span>
+                <span class="spec-value">${product.material}</span>
+              </div>
+            `;
         }
 
         // Dimensões
         if (product.dimensions) {
           specsHTML += `
-            <div class="spec-item">
-              <span class="spec-label">Dimensões:</span>
-              <span class="spec-value">${product.dimensions}</span>
-            </div>
-          `;
+              <div class="spec-item">
+                <span class="spec-label">Dimensões:</span>
+                <span class="spec-value">${product.dimensions}</span>
+              </div>
+            `;
         }
 
         // Peso
         if (product.weight) {
           specsHTML += `
-            <div class="spec-item">
-              <span class="spec-label">Peso:</span>
-              <span class="spec-value">${product.weight}</span>
-            </div>
-          `;
+              <div class="spec-item">
+                <span class="spec-label">Peso:</span>
+                <span class="spec-value">${product.weight}</span>
+              </div>
+            `;
         }
 
         // SKU
         if (product.sku) {
           specsHTML += `
-            <div class="spec-item">
-              <span class="spec-label">SKU:</span>
-              <span class="spec-value">${product.sku}</span>
-            </div>
-          `;
+              <div class="spec-item">
+                <span class="spec-label">SKU:</span>
+                <span class="spec-value">${product.sku}</span>
+              </div>
+            `;
         }
 
         // Especificações do JSON
@@ -1328,46 +1325,46 @@
           product.specifications.forEach(spec => {
             if (typeof spec === 'object' && spec.key && spec.value) {
               specsHTML += `
-                <div class="spec-item">
-                  <span class="spec-label">${spec.key}:</span>
-                  <span class="spec-value">${spec.value}</span>
-                </div>
-              `;
+                  <div class="spec-item">
+                    <span class="spec-label">${spec.key}:</span>
+                    <span class="spec-value">${spec.value}</span>
+                  </div>
+                `;
             }
           });
         }
 
         specificationsList.innerHTML = specsHTML || `
-          <div style="grid-column: 1/-1; text-align: center; padding: 30px; color: #aaa;">
-            <i class="fas fa-info-circle fa-2x" style="margin-bottom: 10px;"></i>
-            <p>Não há especificações técnicas disponíveis</p>
-          </div>
-        `;
+            <div style="grid-column: 1/-1; text-align: center; padding: 30px; color: #aaa;">
+              <i class="fas fa-info-circle fa-2x" style="margin-bottom: 10px;"></i>
+              <p>Não há especificações técnicas disponíveis</p>
+            </div>
+          `;
       }
 
       // Informações de envio
       const shippingInfo = document.getElementById('shippingInfo');
       if (shippingInfo) {
         let shippingHTML = `
-          <p>Entregamos para todo o Brasil com prazos variáveis conforme a região:</p>
-          
-          <div style="margin: 25px 0;">
-            <h4>Prazos estimados:</h4>
+            <p>Entregamos para todo o Brasil com prazos variáveis conforme a região:</p>
+            
+            <div style="margin: 25px 0;">
+              <h4>Prazos estimados:</h4>
+              <ul style="margin: 15px 0; padding-left: 20px; line-height: 1.8;">
+                <li><strong>Grandes Capitais:</strong> 2-3 dias úteis</li>
+                <li><strong>Interior Sudeste:</strong> 3-5 dias úteis</li>
+                <li><strong>Nordeste/Norte:</strong> 5-8 dias úteis</li>
+                <li><strong>Sul/Centro-Oeste:</strong> 4-6 dias úteis</li>
+              </ul>
+            </div>
+  
+            <h4>Opções de frete:</h4>
             <ul style="margin: 15px 0; padding-left: 20px; line-height: 1.8;">
-              <li><strong>Grandes Capitais:</strong> 2-3 dias úteis</li>
-              <li><strong>Interior Sudeste:</strong> 3-5 dias úteis</li>
-              <li><strong>Nordeste/Norte:</strong> 5-8 dias úteis</li>
-              <li><strong>Sul/Centro-Oeste:</strong> 4-6 dias úteis</li>
+              <li><strong>Econômico:</strong> R$ 15,90 (5-8 dias úteis)</li>
+              <li><strong>Padrão:</strong> R$ 22,90 (3-5 dias úteis)</li>
+              <li><strong>Expresso:</strong> R$ 34,90 (1-2 dias úteis)</li>
             </ul>
-          </div>
-
-          <h4>Opções de frete:</h4>
-          <ul style="margin: 15px 0; padding-left: 20px; line-height: 1.8;">
-            <li><strong>Econômico:</strong> R$ 15,90 (5-8 dias úteis)</li>
-            <li><strong>Padrão:</strong> R$ 22,90 (3-5 dias úteis)</li>
-            <li><strong>Expresso:</strong> R$ 34,90 (1-2 dias úteis)</li>
-          </ul>
-        `;
+          `;
 
         // Adicionar informações específicas do produto
         if (product.shipping_info) {
@@ -1387,10 +1384,10 @@
         }
 
         shippingHTML += `
-          <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
-            <i class="fas fa-info-circle"></i> Produtos personalizados têm prazo adicional de 3-5 dias para produção.
-          </p>
-        `;
+            <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
+              <i class="fas fa-info-circle"></i> Produtos personalizados têm prazo adicional de 3-5 dias para produção.
+            </p>
+          `;
 
         shippingInfo.innerHTML = shippingHTML;
       }
@@ -1426,18 +1423,18 @@
           const relatedCategory = getCategoryName(relatedProduct.category_id);
 
           return `
-            <a href="detalhes-produto.html?id=${relatedProduct.id}" class="product-card">
-              ${relatedProduct.featured ? '<span class="badge">Destaque</span>' : ''}
-              <figure class="product-image">
-                <img src="${relatedImageUrl}" alt="${relatedProduct.name}">
-              </figure>
-              <section class="product-details">
-                <div class="product-category">${relatedCategory}</div>
-                <h3>${relatedProduct.name}</h3>
-                <p class="price">R$ ${formatPrice(relatedPrice)}</p>
-              </section>
-            </a>
-          `;
+              <a href="detalhes-produto.html?id=${relatedProduct.id}" class="product-card">
+                ${relatedProduct.featured ? '<span class="badge">Destaque</span>' : ''}
+                <figure class="product-image">
+                  <img src="${relatedImageUrl}" alt="${relatedProduct.name}">
+                </figure>
+                <section class="product-details">
+                  <div class="product-category">${relatedCategory}</div>
+                  <h3>${relatedProduct.name}</h3>
+                  <p class="price">R$ ${formatPrice(relatedPrice)}</p>
+                </section>
+              </a>
+            `;
         }).join('');
 
       } catch (error) {
@@ -1731,30 +1728,30 @@
     function showNotification(message, type = 'info') {
       const notification = document.createElement('div');
       notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: linear-gradient(135deg, #1a002b, #0b0015);
-        border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
-        color: white;
-        padding: 15px 25px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 1000;
-        animation: slideIn 0.3s ease;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      `;
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: linear-gradient(135deg, #1a002b, #0b0015);
+          border: 2px solid ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#7C3AED'};
+          color: white;
+          padding: 15px 25px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          z-index: 1000;
+          animation: slideIn 0.3s ease;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        `;
 
       const icon = type === 'success' ? 'check-circle' :
         type === 'error' ? 'exclamation-circle' :
           type === 'warning' ? 'exclamation-triangle' : 'info-circle';
 
       notification.innerHTML = `
-        <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
-        <span>${message}</span>
-      `;
+          <i class="fas fa-${icon}" style="color: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#7C3AED'}; font-size: 20px;"></i>
+          <span>${message}</span>
+        `;
 
       document.body.appendChild(notification);
 
@@ -1769,16 +1766,16 @@
     // ============================================
     function showError(message) {
       document.getElementById('productContainer').innerHTML = `
-        <div class="error-message">
-          <i class="fas fa-exclamation-triangle"></i>
-          <h3>Ops! Algo deu errado</h3>
-          <p>${message}</p>
-          <button onclick="window.location.href='catalogo.html'" 
-                  style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            <i class="fas fa-arrow-left"></i> Voltar ao Catálogo
-          </button>
-        </div>
-      `;
+          <div class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Ops! Algo deu errado</h3>
+            <p>${message}</p>
+            <button onclick="window.location.href='catalogo.html'" 
+                    style="margin-top: 20px; padding: 10px 20px; background: #7C3AED; color: white; border: none; border-radius: 8px; cursor: pointer;">
+              <i class="fas fa-arrow-left"></i> Voltar ao Catálogo
+            </button>
+          </div>
+        `;
     }
 
     // ============================================
@@ -1858,7 +1855,6 @@
       }
     });
   </script>
-
 </body>
 
 </html>
