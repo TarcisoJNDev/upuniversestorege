@@ -197,10 +197,10 @@ function showEmptyCart() {
   document.getElementById("checkout-btn").disabled = true;
 }
 
-// Configurar event listeners (agora com funções assíncronas)
+// Configurar event listeners (com suporte a mobile)
 function setupEventListeners() {
-  // Delegar eventos para elementos dinâmicos
-  document.addEventListener("click", async function (e) {
+  // Função para lidar com eventos (clique ou toque)
+  async function handleCartAction(e) {
     // Botão menos
     if (e.target.closest(".minus-btn")) {
       e.preventDefault();
@@ -261,9 +261,13 @@ function setupEventListeners() {
         cartManager.updateCartCount();
       }
     }
-  });
+  }
 
-  // Input de quantidade
+  // Adicionar listeners para clique (desktop) e toque (mobile)
+  document.addEventListener("click", handleCartAction);
+  document.addEventListener("touchstart", handleCartAction, { passive: false });
+
+  // Input de quantidade (já funciona em mobile)
   document.addEventListener("change", async function (e) {
     if (e.target.classList.contains("quantity-input")) {
       const item = e.target.closest(".cart-item");
@@ -291,7 +295,7 @@ function setupEventListeners() {
     });
   }
 
-  // Botão de finalizar compra (agora usando o método do cartManager)
+  // Botão de finalizar compra
   const checkoutBtn = document.getElementById("checkout-btn");
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", function () {
@@ -309,7 +313,6 @@ function setupEventListeners() {
         }
       }
 
-      // Usa o método do cartManager (que já tem o número do WhatsApp)
       cartManager.finalizePurchase(frete, metodoFrete);
     });
   }
@@ -323,16 +326,27 @@ function setupEventListeners() {
     modalClose.addEventListener("click", () => {
       modal.style.display = "none";
     });
+    modalClose.addEventListener("touchstart", () => {
+      modal.style.display = "none";
+    });
   }
 
   if (continueShopping) {
     continueShopping.addEventListener("click", () => {
       modal.style.display = "none";
     });
+    continueShopping.addEventListener("touchstart", () => {
+      modal.style.display = "none";
+    });
   }
 
   if (modal) {
     modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+    modal.addEventListener("touchstart", (e) => {
       if (e.target === modal) {
         modal.style.display = "none";
       }
