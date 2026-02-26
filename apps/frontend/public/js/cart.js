@@ -1,4 +1,4 @@
-// public/js/cart.js - VERSÃO CORRIGIDA (USA CONFIG.JS)
+// public/js/cart.js - VERSÃO COMPLETA COM WHATSAPP
 
 // ============================================
 // ===== DEBUG INICIAL =====
@@ -17,6 +17,9 @@ class CartManager {
     this.apiBaseUrl = window.API_CONFIG
       ? window.API_CONFIG.BASE_URL
       : "https://upuniversestorege.onrender.com/";
+
+    // Número do WhatsApp
+    this.whatsappNumber = "558182047692";
 
     console.log("🛒 CartManager inicializado com URL:", this.apiBaseUrl);
   }
@@ -147,7 +150,7 @@ class CartManager {
     });
   }
 
-  // Gerar mensagem para WhatsApp
+  // Gerar mensagem para WhatsApp (sem abrir)
   generateWhatsAppMessage() {
     const cart = this.getCart();
 
@@ -171,6 +174,52 @@ class CartManager {
     message += "Obrigado!";
 
     return encodeURIComponent(message);
+  }
+
+  // 🔴🔴🔴 NOVO MÉTODO: Finalizar compra via WhatsApp 🔴🔴🔴
+  finalizePurchase(frete = 0, metodoFrete = "Retirada na Loja") {
+    const cart = this.getCart();
+
+    if (cart.items.length === 0) {
+      alert("Seu carrinho está vazio!");
+      return false;
+    }
+
+    let mensagem =
+      "Olá! Gostaria de fazer um pedido na Universo Paralelo Store.\n\n";
+    mensagem += "*RESUMO DO PEDIDO*\n\n";
+    mensagem += "*Itens:*\n";
+
+    let totalPedido = 0;
+
+    cart.items.forEach((item, index) => {
+      const preco = item.promotional_price || item.price;
+      const subtotal = preco * item.quantity;
+      totalPedido += subtotal;
+
+      mensagem += `${index + 1}. *${item.name}*\n`;
+      mensagem += `   Quantidade: ${item.quantity}\n`;
+      mensagem += `   Preço unitário: R$ ${preco.toFixed(2)}\n`;
+      mensagem += `   Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
+    });
+
+    mensagem += `*Frete:* ${metodoFrete} - R$ ${frete.toFixed(2)}\n\n`;
+    mensagem += `*TOTAL DO PEDIDO: R$ ${(totalPedido + frete).toFixed(2)}*\n\n`;
+    mensagem += "Por favor, confirme os dados para finalizarmos o pedido!\n";
+    mensagem += "Obrigado!";
+
+    const mensagemCodificada = encodeURIComponent(mensagem);
+
+    // Abrir WhatsApp com o número salvo
+    window.open(
+      `https://wa.me/${this.whatsappNumber}?text=${mensagemCodificada}`,
+      "_blank",
+    );
+
+    console.log("📤 Mensagem gerada com sucesso!");
+    console.log("📊 Carrinho usado:", cart);
+
+    return true;
   }
 
   // Verificar disponibilidade em estoque
