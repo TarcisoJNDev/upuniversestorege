@@ -1,35 +1,11 @@
-// public/js/cart.js - VERSÃO COMPLETA COM INTEGRAÇÃO AO RENDER
+// public/js/cart.js - VERSÃO CORRIGIDA (USA CONFIG.JS)
 
 // ============================================
-// ===== CONFIGURAÇÃO DA API =====
+// ===== DEBUG INICIAL =====
 // ============================================
-console.log("🔥🔥🔥 ARQUIVO CART.JS CORRETO ESTÁ SENDO EXECUTADO! 🔥🔥🔥");
-console.log("📁 Caminho do arquivo:", document.currentScript.src);
-console.log("🔍 DEBUG - window.API_CONFIG existe?", !!window.API_CONFIG);
-if (window.API_CONFIG) {
-  console.log("🔍 DEBUG - API_CONFIG.BASE_URL:", window.API_CONFIG.BASE_URL);
-} else {
-  console.error(
-    "❌ ERRO: window.API_CONFIG não existe! O config.js não foi carregado antes?",
-  );
-}
-console.log("🔥🔥🔥 ARQUIVO CART.JS CORRETO ESTÁ SENDO EXECUTADO! 🔥🔥🔥");
-console.log("📁 Caminho do arquivo:", document.currentScript.src);
-console.log("🔍 DEBUG - window.API_CONFIG existe?", !!window.API_CONFIG);
-if (window.API_CONFIG) {
-  console.log("🔍 DEBUG - API_CONFIG.BASE_URL:", window.API_CONFIG.BASE_URL);
-} else {
-  console.error(
-    "❌ ERRO: window.API_CONFIG não existe! O config.js não foi carregado antes?",
-  );
-}
-
-const IS_LOCALHOST =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const API_BASE_URL = IS_LOCALHOST
-  ? "http://localhost:5000/api"
-  : "https://upuniversestorege.onrender.com/api";
+console.log("🔥🔥🔥 NOVO CART.JS CARREGADO! 🔥🔥🔥");
+console.log("📁 window.API_CONFIG existe?", !!window.API_CONFIG);
+console.log("📁 API_CONFIG.BASE_URL:", window.API_CONFIG?.BASE_URL);
 
 // ============================================
 // ===== CART MANAGER =====
@@ -37,7 +13,12 @@ const API_BASE_URL = IS_LOCALHOST
 class CartManager {
   constructor() {
     this.cartKey = "universo_paralelo_cart";
-    this.apiBaseUrl = API_BASE_URL;
+    // 🔴🔴🔴 USA O CONFIG.JS - ESSA É A MUDANÇA CRÍTICA 🔴🔴🔴
+    this.apiBaseUrl = window.API_CONFIG
+      ? window.API_CONFIG.BASE_URL
+      : "https://upuniversestorege.onrender.com/api";
+
+    console.log("🛒 CartManager inicializado com URL:", this.apiBaseUrl);
   }
 
   // Obter o carrinho atual
@@ -55,7 +36,9 @@ class CartManager {
   // Adicionar produto ao carrinho
   async addToCart(productId, quantity = 1) {
     try {
-      // Buscar detalhes do produto da API
+      console.log(`📥 Buscando produto ${productId} da API...`);
+      console.log(`🌐 URL: ${this.apiBaseUrl}/products/${productId}`);
+
       const response = await fetch(`${this.apiBaseUrl}/products/${productId}`);
       if (!response.ok) throw new Error("Produto não encontrado");
 
@@ -70,10 +53,8 @@ class CartManager {
       );
 
       if (existingItemIndex > -1) {
-        // Atualizar quantidade se já existir
         cart.items[existingItemIndex].quantity += quantity;
       } else {
-        // Adicionar novo item
         cart.items.push({
           id: product.id,
           name: product.name,
@@ -88,7 +69,6 @@ class CartManager {
         });
       }
 
-      // Recalcular totais
       this.calculateTotals(cart);
       this.saveCart(cart);
 
@@ -98,10 +78,10 @@ class CartManager {
         cart: cart,
       };
     } catch (error) {
-      console.error("Erro ao adicionar ao carrinho:", error);
+      console.error("❌ Erro ao adicionar ao carrinho:", error);
       return {
         success: false,
-        message: "Erro ao adicionar produto ao carrinho",
+        message: "Erro ao adicionar produto ao carrinho: " + error.message,
       };
     }
   }
@@ -160,7 +140,6 @@ class CartManager {
     cartCountElements.forEach((element) => {
       element.textContent = cart.count;
 
-      // Adicionar animação
       if (cart.count > 0) {
         element.classList.add("pulse");
         setTimeout(() => element.classList.remove("pulse"), 300);
