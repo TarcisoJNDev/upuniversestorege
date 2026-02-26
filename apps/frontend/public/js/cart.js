@@ -16,7 +16,7 @@ class CartManager {
     // 🔴🔴🔴 USA O CONFIG.JS - ESSA É A MUDANÇA CRÍTICA 🔴🔴🔴
     this.apiBaseUrl = window.API_CONFIG
       ? window.API_CONFIG.BASE_URL
-      : "https://upuniversestorege.onrender.com/api";
+      : "https://upuniversestorege.onrender.com/";
 
     console.log("🛒 CartManager inicializado com URL:", this.apiBaseUrl);
   }
