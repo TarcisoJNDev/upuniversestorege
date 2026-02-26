@@ -1,4 +1,29 @@
-// public/js/cart.js - VERSÃO COMPLETA COM INTEGRAÇÃO AO RENDER
+// public/js/cart.js - VERSÃO COM BACKEND (CARRINHO POR USUÁRIO)
+
+// ============================================
+// ===== GERENCIADOR DE SESSÃO =====
+// ============================================
+const SessionManager = {
+  // Gerar ou recuperar ID de sessão único
+  getSessionId() {
+    let sessionId = sessionStorage.getItem("universo_session_id");
+    if (!sessionId) {
+      // Gera ID único: timestamp + número aleatório + caracteres aleatórios
+      sessionId =
+        "sess_" +
+        Date.now() +
+        "_" +
+        Math.random().toString(36).substring(2, 15);
+      sessionStorage.setItem("universo_session_id", sessionId);
+    }
+    return sessionId;
+  },
+
+  // Limpar sessão (opcional - para logout)
+  clearSession() {
+    sessionStorage.removeItem("universo_session_id");
+  },
+};
 
 // ============================================
 // ===== CONFIGURAÇÃO DA API =====
@@ -11,23 +36,54 @@ const API_BASE_URL = IS_LOCALHOST
   : "https://upuniversestorege.onrender.com/api";
 
 // ============================================
-// ===== CART MANAGER =====
+// ===== CART MANAGER COM BACKEND =====
 // ============================================
 class CartManager {
   constructor() {
-    this.cartKey = "universo_paralelo_cart";
+    this.sessionId = SessionManager.getSessionId();
     this.apiBaseUrl = API_BASE_URL;
+    this.cart = { items: [], total: 0, count: 0 };
+    this.initialized = false;
+  }
+
+  // Inicializar (carregar do backend)
+  async initialize() {
+    if (this.initialized) return;
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/cart/${this.sessionId}`);
+      if (response.ok) {
+        const data = await response.json();
+        this.cart = data.cart || { items: [], total: 0, count: 0 };
+        console.log(
+          `🛒 Carrinho carregado para sessão: ${this.sessionId}`,
+          this.cart,
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao carregar carrinho do backend:", error);
+    }
+
+    this.initialized = true;
+    this.updateCartCount();
   }
 
   // Obter o carrinho atual
   getCart() {
-    const cart = localStorage.getItem(this.cartKey);
-    return cart ? JSON.parse(cart) : { items: [], total: 0, count: 0 };
+    return this.cart;
   }
 
-  // Salvar carrinho
-  saveCart(cart) {
-    localStorage.setItem(this.cartKey, JSON.stringify(cart));
+  // Salvar carrinho no backend
+  async saveCart() {
+    try {
+      await fetch(`${this.apiBaseUrl}/cart/${this.sessionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(this.cart),
+      });
+    } catch (error) {
+      console.error("Erro ao salvar carrinho no backend:", error);
+    }
     this.updateCartCount();
   }
 
@@ -41,19 +97,17 @@ class CartManager {
       const data = await response.json();
       const product = data.product;
 
-      const cart = this.getCart();
-
       // Verificar se o produto já está no carrinho
-      const existingItemIndex = cart.items.findIndex(
+      const existingItemIndex = this.cart.items.findIndex(
         (item) => item.id == productId,
       );
 
       if (existingItemIndex > -1) {
         // Atualizar quantidade se já existir
-        cart.items[existingItemIndex].quantity += quantity;
+        this.cart.items[existingItemIndex].quantity += quantity;
       } else {
         // Adicionar novo item
-        cart.items.push({
+        this.cart.items.push({
           id: product.id,
           name: product.name,
           price: parseFloat(product.price) || 0,
@@ -68,13 +122,13 @@ class CartManager {
       }
 
       // Recalcular totais
-      this.calculateTotals(cart);
-      this.saveCart(cart);
+      this.calculateTotals();
+      await this.saveCart();
 
       return {
         success: true,
         message: "Produto adicionado ao carrinho",
-        cart: cart,
+        cart: this.cart,
       };
     } catch (error) {
       console.error("Erro ao adicionar ao carrinho:", error);
@@ -86,61 +140,58 @@ class CartManager {
   }
 
   // Remover produto do carrinho
-  removeFromCart(productId) {
-    const cart = this.getCart();
-    cart.items = cart.items.filter((item) => item.id != productId);
-    this.calculateTotals(cart);
-    this.saveCart(cart);
-    return cart;
+  async removeFromCart(productId) {
+    this.cart.items = this.cart.items.filter((item) => item.id != productId);
+    this.calculateTotals();
+    await this.saveCart();
+    return this.cart;
   }
 
   // Atualizar quantidade
-  updateQuantity(productId, quantity) {
-    const cart = this.getCart();
-    const itemIndex = cart.items.findIndex((item) => item.id == productId);
+  async updateQuantity(productId, quantity) {
+    const itemIndex = this.cart.items.findIndex((item) => item.id == productId);
 
     if (itemIndex > -1) {
       if (quantity <= 0) {
-        cart.items.splice(itemIndex, 1);
+        this.cart.items.splice(itemIndex, 1);
       } else {
-        cart.items[itemIndex].quantity = quantity;
+        this.cart.items[itemIndex].quantity = quantity;
       }
-      this.calculateTotals(cart);
-      this.saveCart(cart);
+      this.calculateTotals();
+      await this.saveCart();
     }
 
-    return cart;
+    return this.cart;
   }
 
   // Limpar carrinho
-  clearCart() {
-    const cart = { items: [], total: 0, count: 0 };
-    this.saveCart(cart);
-    return cart;
+  async clearCart() {
+    this.cart = { items: [], total: 0, count: 0 };
+    await this.saveCart();
+    return this.cart;
   }
 
   // Calcular totais
-  calculateTotals(cart) {
-    cart.total = cart.items.reduce((sum, item) => {
+  calculateTotals() {
+    this.cart.total = this.cart.items.reduce((sum, item) => {
       const price = item.promotional_price || item.price;
       return sum + price * item.quantity;
     }, 0);
 
-    cart.count = cart.items.reduce((sum, item) => sum + item.quantity, 0);
-
-    return cart;
+    this.cart.count = this.cart.items.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
   }
 
   // Atualizar contador no header
   updateCartCount() {
-    const cart = this.getCart();
     const cartCountElements = document.querySelectorAll(".cart-count");
 
     cartCountElements.forEach((element) => {
-      element.textContent = cart.count;
+      element.textContent = this.cart.count;
 
-      // Adicionar animação
-      if (cart.count > 0) {
+      if (this.cart.count > 0) {
         element.classList.add("pulse");
         setTimeout(() => element.classList.remove("pulse"), 300);
       }
@@ -149,9 +200,7 @@ class CartManager {
 
   // Gerar mensagem para WhatsApp
   generateWhatsAppMessage() {
-    const cart = this.getCart();
-
-    if (cart.items.length === 0) {
+    if (this.cart.items.length === 0) {
       return null;
     }
 
@@ -160,37 +209,21 @@ class CartManager {
     message += "*RESUMO DO PEDIDO*\n\n";
     message += "*Itens:*\n";
 
-    cart.items.forEach((item, index) => {
+    this.cart.items.forEach((item, index) => {
       const price = item.promotional_price || item.price;
       const total = price * item.quantity;
       message += `${index + 1}. ${item.name} - ${item.quantity}x R$ ${price.toFixed(2)} = R$ ${total.toFixed(2)}\n`;
     });
 
-    message += `\n*Total do Pedido: R$ ${cart.total.toFixed(2)}*\n\n`;
+    message += `\n*Total do Pedido: R$ ${this.cart.total.toFixed(2)}*\n\n`;
     message += "Por favor, entre em contato para finalizar a compra!\n";
     message += "Obrigado!";
 
     return encodeURIComponent(message);
   }
-
-  // Verificar disponibilidade em estoque
-  async checkStock(productId, quantity = 1) {
-    try {
-      const response = await fetch(`${this.apiBaseUrl}/products/${productId}`);
-      if (!response.ok) return false;
-
-      const data = await response.json();
-      const product = data.product;
-
-      return product.stock >= quantity;
-    } catch (error) {
-      console.error("Erro ao verificar estoque:", error);
-      return false;
-    }
-  }
 }
 
-// Instância global do gerenciador de carrinho
+// Instância global
 const cartManager = new CartManager();
 
 // Função auxiliar para URL de imagens
@@ -204,11 +237,12 @@ function getImageUrl(imagePath) {
   return `https://upuniversestorege.onrender.com/uploads/${imagePath}`;
 }
 
-// Inicializar contador do carrinho quando a página carregar
-document.addEventListener("DOMContentLoaded", function () {
-  cartManager.updateCartCount();
+// Inicializar quando a página carregar
+document.addEventListener("DOMContentLoaded", async function () {
+  await cartManager.initialize();
 });
 
-// Exportar para uso em outras páginas
+// Exportar para uso global
 window.cartManager = cartManager;
 window.getImageUrl = getImageUrl;
+window.SessionManager = SessionManager;

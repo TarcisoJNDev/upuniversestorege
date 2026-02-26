@@ -468,6 +468,28 @@ function viewProductDetails(productId) {
   window.location.href = `detalhes-produto.html?id=${productId}`;
 }
 
+async function addToCart(productId) {
+  console.log("🛒 Adicionando ao carrinho:", productId);
+
+  try {
+    const result = await cartManager.addToCart(productId, 1);
+
+    if (result.success) {
+      showNotification("✅ Produto adicionado ao carrinho!", "success");
+
+      // Se tiver modal de confirmação
+      if (typeof showAddToCartModal === "function") {
+        showAddToCartModal();
+      }
+    } else {
+      showNotification("❌ Erro ao adicionar produto", "error");
+    }
+  } catch (error) {
+    console.error("Erro ao adicionar ao carrinho:", error);
+    showNotification("❌ Erro ao adicionar produto", "error");
+  }
+}
+/*
 function addToCart(product) {
   // USAR A MESMA CHAVE DO CART MANAGER
   const CART_KEY = "universo_paralelo_cart";
@@ -524,7 +546,7 @@ function addToCart(product) {
 
   showNotification("✅ Produto adicionado ao carrinho!", "success");
 }
-
+*/
 function updateCartCount() {
   const CART_KEY = "universo_paralelo_cart";
   const cartData = localStorage.getItem(CART_KEY);

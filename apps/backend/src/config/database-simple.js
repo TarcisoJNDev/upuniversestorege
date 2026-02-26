@@ -221,6 +221,24 @@ async function setupDatabase() {
     console.log("✅ Tabela 'product_categories' criada/verificada");
 
     // ============================================
+    // 6. TABELA CARTS (NOVA)
+    // ============================================
+    console.log("🛒 Criando/verificando tabela carts...");
+    await connection.query(`
+  CREATE TABLE IF NOT EXISTS carts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(100) UNIQUE NOT NULL,
+    items JSON,
+    total DECIMAL(10,2) DEFAULT 0,
+    count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_session (session_id)
+  )
+`);
+    console.log("✅ Tabela 'carts' criada/verificada");
+
+    // ============================================
     // 6. INSERIR ADMIN PADRÃO
     // ============================================
     console.log("👤 Verificando admin padrão...");

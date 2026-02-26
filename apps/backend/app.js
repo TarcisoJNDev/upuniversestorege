@@ -105,10 +105,12 @@ app.get("/api/cors-test", (req, res) => {
 const { setupDatabase } = require("./src/config/database-simple");
 const productRoutes = require("./src/routes/productRoutes");
 const categoryRoutes = require("./src/routes/categoryRoutes");
+const cartRoutes = require("./src/routes/cartRoutes");
 
 // Usar rotas
 app.use("/api", productRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api", cartRoutes); 
 
 // Rota para uploads
 app.get("/uploads/:filename", (req, res) => {

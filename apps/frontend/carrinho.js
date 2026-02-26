@@ -21,14 +21,11 @@ function getImageUrl(imagePath) {
 // ===== FUNÇÕES DO CARRINHO =====
 // ============================================
 document.addEventListener("DOMContentLoaded", function () {
-  // Inicializar carrinho
-  loadCart();
+  // Inicializar carrinho (agora assíncrono)
+  initializeCart();
   setupEventListeners();
   loadRecommendedProducts();
   setupScrollAnimation();
-
-  // Atualizar contador do carrinho
-  cartManager.updateCartCount();
 
   // Newsletter
   const newsletterForm = document.getElementById("newsletterForm");
@@ -41,7 +38,21 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Carregar carrinho
+// Nova função para inicializar o carrinho de forma assíncrona
+async function initializeCart() {
+  // Aguardar o cartManager ser inicializado
+  if (cartManager.initialize) {
+    await cartManager.initialize();
+  }
+
+  // Carregar o carrinho
+  await loadCart();
+
+  // Atualizar contador
+  cartManager.updateCartCount();
+}
+
+// Carregar carrinho (agora assíncrono)
 async function loadCart() {
   const cart = cartManager.getCart();
 
@@ -55,7 +66,7 @@ async function loadCart() {
   calculateTotalWithShipping();
 }
 
-// Renderizar itens do carrinho
+// Renderizar itens do carrinho (agora com verificação de estoque)
 async function renderCartItems(cart) {
   const cartItemsContainer = document.getElementById("cartItems");
   cartItemsContainer.innerHTML = "";
@@ -186,10 +197,10 @@ function showEmptyCart() {
   document.getElementById("checkout-btn").disabled = true;
 }
 
-// Configurar event listeners
+// Configurar event listeners (agora com funções assíncronas)
 function setupEventListeners() {
   // Delegar eventos para elementos dinâmicos
-  document.addEventListener("click", function (e) {
+  document.addEventListener("click", async function (e) {
     // Botão menos
     if (e.target.closest(".minus-btn")) {
       e.preventDefault();
@@ -203,7 +214,7 @@ function setupEventListeners() {
       if (quantity > 1) {
         quantity--;
         input.value = quantity;
-        updateCartItem(productId, quantity);
+        await updateCartItem(productId, quantity);
       }
     }
 
@@ -221,7 +232,7 @@ function setupEventListeners() {
       if (quantity < max) {
         quantity++;
         input.value = quantity;
-        updateCartItem(productId, quantity);
+        await updateCartItem(productId, quantity);
       } else {
         alert(`Limite máximo de ${max} unidades atingido`);
       }
@@ -237,7 +248,7 @@ function setupEventListeners() {
       const productName = item.querySelector(".product-name").textContent;
 
       if (confirm(`Deseja remover "${productName}" do carrinho?`)) {
-        removeCartItem(productId);
+        await removeCartItem(productId);
       }
     }
 
@@ -245,7 +256,7 @@ function setupEventListeners() {
     if (e.target.closest("#clearCartBtn")) {
       e.preventDefault();
       if (confirm("Tem certeza que deseja limpar todo o carrinho?")) {
-        cartManager.clearCart();
+        await cartManager.clearCart();
         showEmptyCart();
         cartManager.updateCartCount();
       }
@@ -253,7 +264,7 @@ function setupEventListeners() {
   });
 
   // Input de quantidade
-  document.addEventListener("change", function (e) {
+  document.addEventListener("change", async function (e) {
     if (e.target.classList.contains("quantity-input")) {
       const item = e.target.closest(".cart-item");
       if (!item) return;
@@ -263,11 +274,11 @@ function setupEventListeners() {
       const max = parseInt(e.target.max);
 
       if (quantity >= 1 && quantity <= max) {
-        updateCartItem(productId, quantity);
+        await updateCartItem(productId, quantity);
       } else {
         alert(`Quantidade deve ser entre 1 e ${max}`);
         e.target.value = 1;
-        updateCartItem(productId, 1);
+        await updateCartItem(productId, 1);
       }
     }
   });
@@ -314,46 +325,50 @@ function setupEventListeners() {
   }
 }
 
-// Atualizar item do carrinho
-function updateCartItem(productId, quantity) {
-  // Atualizar a quantidade no cartManager
-  cartManager.updateQuantity(productId, quantity);
+// Atualizar item do carrinho (agora async e usando await)
+async function updateCartItem(productId, quantity) {
+  try {
+    await cartManager.updateQuantity(productId, quantity);
 
-  // Atualizar o total do item na interface
-  const itemElement = document.querySelector(
-    `.cart-item[data-product-id="${productId}"]`,
-  );
-  if (itemElement) {
-    const priceElement = itemElement.querySelector(".price-value");
-    const priceText = priceElement.innerHTML;
+    // Atualizar o total do item na interface
+    const itemElement = document.querySelector(
+      `.cart-item[data-product-id="${productId}"]`,
+    );
+    if (itemElement) {
+      const priceElement = itemElement.querySelector(".price-value");
+      const priceText = priceElement.innerHTML;
 
-    // Extrair preço do HTML (pode ter promoção)
-    let price;
-    if (priceText.includes("text-decoration: line-through")) {
-      const promoMatch = priceText.match(
-        /R\$ ([\d.,]+)<\/span><br>\s*<span[^>]*>R\$ ([\d.,]+)/,
-      );
-      price = promoMatch ? parseFloat(promoMatch[2].replace(",", ".")) : 0;
-    } else {
-      const priceMatch = priceText.match(/R\$ ([\d.,]+)/);
-      price = priceMatch ? parseFloat(priceMatch[1].replace(",", ".")) : 0;
+      // Extrair preço do HTML (pode ter promoção)
+      let price;
+      if (priceText.includes("text-decoration: line-through")) {
+        const promoMatch = priceText.match(
+          /R\$ ([\d.,]+)<\/span><br>\s*<span[^>]*>R\$ ([\d.,]+)/,
+        );
+        price = promoMatch ? parseFloat(promoMatch[2].replace(",", ".")) : 0;
+      } else {
+        const priceMatch = priceText.match(/R\$ ([\d.,]+)/);
+        price = priceMatch ? parseFloat(priceMatch[1].replace(",", ".")) : 0;
+      }
+
+      const totalElement = itemElement.querySelector(".total-value");
+      const total = price * quantity;
+      totalElement.textContent = `R$ ${total.toFixed(2)}`;
     }
 
-    const totalElement = itemElement.querySelector(".total-value");
-    const total = price * quantity;
-    totalElement.textContent = `R$ ${total.toFixed(2)}`;
-  }
+    // Recalcular o total
+    calculateTotalWithShipping();
 
-  // Recalcular o total
-  calculateTotalWithShipping();
+    // Atualizar contador do carrinho
+    cartManager.updateCartCount();
 
-  // Atualizar contador do carrinho
-  cartManager.updateCartCount();
-
-  // Se o carrinho ficar vazio
-  const updatedCart = cartManager.getCart();
-  if (updatedCart.items.length === 0) {
-    showEmptyCart();
+    // Se o carrinho ficar vazio
+    const updatedCart = cartManager.getCart();
+    if (updatedCart.items.length === 0) {
+      showEmptyCart();
+    }
+  } catch (error) {
+    console.error("Erro ao atualizar item:", error);
+    showNotification("Erro ao atualizar quantidade", "error");
   }
 }
 
@@ -391,32 +406,37 @@ function calculateTotalWithShipping() {
   );
 }
 
-// Remover item do carrinho
-function removeCartItem(productId) {
-  const cart = cartManager.removeFromCart(productId);
-  cartManager.updateCartCount();
+// Remover item do carrinho (agora async)
+async function removeCartItem(productId) {
+  try {
+    const cart = await cartManager.removeFromCart(productId);
+    cartManager.updateCartCount();
 
-  // Remover elemento da interface
-  const itemElement = document.querySelector(
-    `.cart-item[data-product-id="${productId}"]`,
-  );
-  if (itemElement) {
-    itemElement.style.animation = "fadeOut 0.3s ease";
-    setTimeout(() => {
-      itemElement.remove();
+    // Remover elemento da interface
+    const itemElement = document.querySelector(
+      `.cart-item[data-product-id="${productId}"]`,
+    );
+    if (itemElement) {
+      itemElement.style.animation = "fadeOut 0.3s ease";
+      setTimeout(() => {
+        itemElement.remove();
 
-      if (cart.items.length === 0) {
-        showEmptyCart();
-      } else {
-        calculateTotalWithShipping();
-      }
-    }, 300);
+        if (cart.items.length === 0) {
+          showEmptyCart();
+        } else {
+          calculateTotalWithShipping();
+        }
+      }, 300);
+    }
+  } catch (error) {
+    console.error("Erro ao remover item:", error);
+    showNotification("Erro ao remover produto", "error");
   }
 }
 
 // Finalizar compra (WhatsApp) - VERSÃO CORRIGIDA
 function finalizePurchase() {
-  // 🔴🔴🔴 FORÇAR A LEITURA DO CARRINHO ATUALIZADO
+  // Forçar a leitura do carrinho atualizado
   const cart = cartManager.getCart();
 
   if (cart.items.length === 0) {
@@ -424,7 +444,7 @@ function finalizePurchase() {
     return;
   }
 
-  // 🔴🔴🔴 RECALCULAR OS TOTAIS PARA GARANTIR QUE ESTÃO CORRETOS
+  // Recalcular os totais para garantir que estão corretos
   let mensagem =
     "Olá! Gostaria de fazer um pedido na Universo Paralelo Store.\n\n";
   mensagem += "*RESUMO DO PEDIDO*\n\n";
@@ -544,7 +564,8 @@ async function loadRecommendedProducts() {
               message.textContent = `"${productName}" foi adicionado ao seu carrinho com sucesso.`;
               modal.style.display = "flex";
 
-              loadCart();
+              // Recarregar o carrinho
+              await loadCart();
             } else {
               alert("Erro ao adicionar produto");
             }
@@ -576,4 +597,38 @@ function setupScrollAnimation() {
 
   window.addEventListener("scroll", revealOnScroll);
   revealOnScroll();
+}
+
+// Função auxiliar para mostrar notificações
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${type === "success" ? "#4CAF50" : "#f44336"};
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  `;
+
+  const icon = type === "success" ? "check-circle" : "exclamation-circle";
+
+  notification.innerHTML = `
+    <i class="fas fa-${icon}"></i>
+    <span>${message}</span>
+  `;
+
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.animation = "fadeOut 0.3s ease";
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
 }
