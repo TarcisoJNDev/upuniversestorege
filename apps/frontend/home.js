@@ -1,6 +1,9 @@
 // ============================================
 // ===== FUNÇÕES AUXILIARES (SEM REDECLARAR IS_LOCALHOST) =====
 // ============================================
+// No início do home.js
+console.log("🔍 TESTE - window.API_CONFIG existe?", !!window.API_CONFIG);
+console.log("🔍 TESTE - window.API_CONFIG.BASE_URL:", window.API_CONFIG?.BASE_URL);
 function getImageUrl(imagePath) {
   if (!imagePath) {
     return "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
