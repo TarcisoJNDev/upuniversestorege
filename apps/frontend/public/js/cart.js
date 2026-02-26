@@ -1,5 +1,13 @@
 // public/js/cart.js - VERSÃO COMPLETA (com todas as funcionalidades)
-
+console.log("🔍 DEBUG - cart.js iniciado");
+console.log("🔍 DEBUG - window.API_CONFIG existe?", !!window.API_CONFIG);
+if (window.API_CONFIG) {
+  console.log("🔍 DEBUG - API_CONFIG.BASE_URL:", window.API_CONFIG.BASE_URL);
+  console.log(
+    "🔍 DEBUG - Ambiente:",
+    window.API_CONFIG.BASE_URL.includes("localhost") ? "LOCAL" : "PRODUÇÃO",
+  );
+}
 // ============================================
 // ===== GERENCIADOR DE SESSÃO =====
 // ============================================
