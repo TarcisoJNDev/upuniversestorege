@@ -1,5 +1,8 @@
 // public/js/cart.js - VERSÃO COMPLETA (com todas as funcionalidades)
 console.log("🔥🔥🔥 ARQUIVO CART.JS CORRETO ESTÁ SENDO EXECUTADO! 🔥🔥🔥");
+console.log("🔥🔥🔥 ARQUIVO CART.JS CARREGADO COM SUCESSO! 🔥🔥🔥");
+console.log("📁 Caminho do arquivo:", document.currentScript.src);
+
 console.log("🔍 DEBUG - cart.js iniciado");
 console.log("🔍 DEBUG - window.API_CONFIG existe?", !!window.API_CONFIG);
 if (window.API_CONFIG) {
