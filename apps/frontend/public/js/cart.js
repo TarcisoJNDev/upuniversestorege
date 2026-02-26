@@ -1,14 +1,12 @@
-// public/js/cart.js - VERSÃO COM BACKEND (CARRINHO POR USUÁRIO)
+// public/js/cart.js - VERSÃO COMPLETA (com todas as funcionalidades)
 
 // ============================================
 // ===== GERENCIADOR DE SESSÃO =====
 // ============================================
 const SessionManager = {
-  // Gerar ou recuperar ID de sessão único
   getSessionId() {
     let sessionId = sessionStorage.getItem("universo_session_id");
     if (!sessionId) {
-      // Gera ID único: timestamp + número aleatório + caracteres aleatórios
       sessionId =
         "sess_" +
         Date.now() +
@@ -18,32 +16,27 @@ const SessionManager = {
     }
     return sessionId;
   },
-
-  // Limpar sessão (opcional - para logout)
   clearSession() {
     sessionStorage.removeItem("universo_session_id");
   },
 };
 
 // ============================================
-// ===== CONFIGURAÇÃO DA API =====
+// ===== CONFIGURAÇÃO DA API (USANDO API_CONFIG GLOBAL) =====
 // ============================================
-const IS_LOCALHOST =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const API_BASE_URL = IS_LOCALHOST
-  ? "http://localhost:5000/api"
-  : "https://upuniversestorege.onrender.com/api";
+// NÃO redeclarar IS_LOCALHOST ou API_BASE_URL - usar window.API_CONFIG.BASE_URL
 
 // ============================================
-// ===== CART MANAGER COM BACKEND =====
+// ===== CART MANAGER COMPLETO =====
 // ============================================
 class CartManager {
   constructor() {
     this.sessionId = SessionManager.getSessionId();
-    this.apiBaseUrl = API_BASE_URL;
+    this.apiBaseUrl = window.API_CONFIG.BASE_URL; // USA A CONFIGURAÇÃO GLOBAL
     this.cart = { items: [], total: 0, count: 0 };
     this.initialized = false;
+    // Número do WhatsApp (mantido do seu código)
+    this.whatsappNumber = "558182047692";
   }
 
   // Inicializar (carregar do backend)
@@ -51,17 +44,15 @@ class CartManager {
     if (this.initialized) return;
 
     try {
+      console.log(`🔄 Inicializando carrinho para sessão: ${this.sessionId}`);
       const response = await fetch(`${this.apiBaseUrl}/cart/${this.sessionId}`);
       if (response.ok) {
         const data = await response.json();
         this.cart = data.cart || { items: [], total: 0, count: 0 };
-        console.log(
-          `🛒 Carrinho carregado para sessão: ${this.sessionId}`,
-          this.cart,
-        );
+        console.log(`✅ Carrinho carregado:`, this.cart);
       }
     } catch (error) {
-      console.error("Erro ao carregar carrinho do backend:", error);
+      console.warn("⚠️ Erro ao carregar carrinho do backend, usando local.");
     }
 
     this.initialized = true;
@@ -82,7 +73,7 @@ class CartManager {
         body: JSON.stringify(this.cart),
       });
     } catch (error) {
-      console.error("Erro ao salvar carrinho no backend:", error);
+      console.error("❌ Erro ao salvar carrinho no backend:", error);
     }
     this.updateCartCount();
   }
@@ -90,7 +81,7 @@ class CartManager {
   // Adicionar produto ao carrinho
   async addToCart(productId, quantity = 1) {
     try {
-      // Buscar detalhes do produto da API
+      console.log(`📥 Buscando produto ${productId} da API...`);
       const response = await fetch(`${this.apiBaseUrl}/products/${productId}`);
       if (!response.ok) throw new Error("Produto não encontrado");
 
@@ -131,10 +122,10 @@ class CartManager {
         cart: this.cart,
       };
     } catch (error) {
-      console.error("Erro ao adicionar ao carrinho:", error);
+      console.error("❌ Erro ao adicionar ao carrinho:", error);
       return {
         success: false,
-        message: "Erro ao adicionar produto ao carrinho",
+        message: "Erro ao adicionar produto ao carrinho: " + error.message,
       };
     }
   }
@@ -198,7 +189,7 @@ class CartManager {
     });
   }
 
-  // Gerar mensagem para WhatsApp
+  // 🔴🔴🔴 GERAR MENSAGEM COMPLETA PARA WHATSAPP (igual ao seu código original) 🔴🔴🔴
   generateWhatsAppMessage() {
     if (this.cart.items.length === 0) {
       return null;
@@ -209,17 +200,87 @@ class CartManager {
     message += "*RESUMO DO PEDIDO*\n\n";
     message += "*Itens:*\n";
 
+    let totalPedido = 0;
+
     this.cart.items.forEach((item, index) => {
-      const price = item.promotional_price || item.price;
-      const total = price * item.quantity;
-      message += `${index + 1}. ${item.name} - ${item.quantity}x R$ ${price.toFixed(2)} = R$ ${total.toFixed(2)}\n`;
+      const preco = item.promotional_price || item.price;
+      const subtotal = preco * item.quantity;
+      totalPedido += subtotal;
+
+      message += `${index + 1}. *${item.name}*\n`;
+      message += `   Quantidade: ${item.quantity}\n`;
+      message += `   Preço unitário: R$ ${preco.toFixed(2)}\n`;
+      message += `   Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
     });
 
+    // O frete será adicionado no carrinho.js, não aqui
+    // Deixamos o total sem frete para ser calculado na página do carrinho
+
     message += `\n*Total do Pedido: R$ ${this.cart.total.toFixed(2)}*\n\n`;
-    message += "Por favor, entre em contato para finalizar a compra!\n";
+    message += "Por favor, confirme os dados para finalizarmos o pedido!\n";
     message += "Obrigado!";
 
     return encodeURIComponent(message);
+  }
+
+  // 🔴🔴🔴 MÉTODO PARA FINALIZAR COMPRA (com o número do WhatsApp) 🔴🔴🔴
+  finalizePurchase(frete = 0, metodoFrete = "Retirada na Loja") {
+    if (this.cart.items.length === 0) {
+      alert("Seu carrinho está vazio!");
+      return false;
+    }
+
+    let mensagem =
+      "Olá! Gostaria de fazer um pedido na Universo Paralelo Store.\n\n";
+    mensagem += "*RESUMO DO PEDIDO*\n\n";
+    mensagem += "*Itens:*\n";
+
+    let totalPedido = 0;
+
+    this.cart.items.forEach((item, index) => {
+      const preco = item.promotional_price || item.price;
+      const subtotal = preco * item.quantity;
+      totalPedido += subtotal;
+
+      mensagem += `${index + 1}. *${item.name}*\n`;
+      mensagem += `   Quantidade: ${item.quantity}\n`;
+      mensagem += `   Preço unitário: R$ ${preco.toFixed(2)}\n`;
+      mensagem += `   Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
+    });
+
+    mensagem += `*Frete:* ${metodoFrete} - R$ ${frete.toFixed(2)}\n\n`;
+    mensagem += `*TOTAL DO PEDIDO: R$ ${(totalPedido + frete).toFixed(2)}*\n\n`;
+    mensagem += "Por favor, confirme os dados para finalizarmos o pedido!\n";
+    mensagem += "Obrigado!";
+
+    const mensagemCodificada = encodeURIComponent(mensagem);
+
+    // Abrir WhatsApp com o número salvo
+    window.open(
+      `https://wa.me/${this.whatsappNumber}?text=${mensagemCodificada}`,
+      "_blank",
+    );
+
+    console.log("📤 Mensagem gerada com sucesso!");
+    console.log("📊 Carrinho usado:", this.cart);
+
+    return true;
+  }
+
+  // Verificar disponibilidade em estoque
+  async checkStock(productId, quantity = 1) {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/products/${productId}`);
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      const product = data.product;
+
+      return product.stock >= quantity;
+    } catch (error) {
+      console.error("Erro ao verificar estoque:", error);
+      return false;
+    }
   }
 }
 

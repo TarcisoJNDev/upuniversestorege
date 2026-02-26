@@ -21,8 +21,8 @@ function getImageUrl(imagePath) {
 // ===== FUNÇÕES DO CARRINHO =====
 // ============================================
 document.addEventListener("DOMContentLoaded", function () {
-  // Inicializar carrinho (agora assíncrono)
-  initializeCart();
+  // Inicializar carrinho (agora com initialize)
+  initializeCartPage();
   setupEventListeners();
   loadRecommendedProducts();
   setupScrollAnimation();
@@ -38,8 +38,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Nova função para inicializar o carrinho de forma assíncrona
-async function initializeCart() {
+// Função para inicializar a página do carrinho
+async function initializeCartPage() {
   // Aguardar o cartManager ser inicializado
   if (cartManager.initialize) {
     await cartManager.initialize();
@@ -66,7 +66,7 @@ async function loadCart() {
   calculateTotalWithShipping();
 }
 
-// Renderizar itens do carrinho (agora com verificação de estoque)
+// Renderizar itens do carrinho
 async function renderCartItems(cart) {
   const cartItemsContainer = document.getElementById("cartItems");
   cartItemsContainer.innerHTML = "";
@@ -291,11 +291,26 @@ function setupEventListeners() {
     });
   }
 
-  // Botão de finalizar compra
+  // Botão de finalizar compra (agora usando o método do cartManager)
   const checkoutBtn = document.getElementById("checkout-btn");
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", function () {
-      finalizePurchase();
+      const shippingSelect = document.getElementById("shipping-method");
+      let frete = 0;
+      let metodoFrete = "Retirada na Loja";
+
+      if (shippingSelect) {
+        if (shippingSelect.value === "standard") {
+          frete = 15;
+          metodoFrete = "Entrega Padrão";
+        } else if (shippingSelect.value === "express") {
+          frete = 25;
+          metodoFrete = "Entrega Expressa";
+        }
+      }
+
+      // Usa o método do cartManager (que já tem o número do WhatsApp)
+      cartManager.finalizePurchase(frete, metodoFrete);
     });
   }
 
@@ -325,7 +340,7 @@ function setupEventListeners() {
   }
 }
 
-// Atualizar item do carrinho (agora async e usando await)
+// Atualizar item do carrinho (agora async)
 async function updateCartItem(productId, quantity) {
   try {
     await cartManager.updateQuantity(productId, quantity);
@@ -432,72 +447,6 @@ async function removeCartItem(productId) {
     console.error("Erro ao remover item:", error);
     showNotification("Erro ao remover produto", "error");
   }
-}
-
-// Finalizar compra (WhatsApp) - VERSÃO CORRIGIDA
-function finalizePurchase() {
-  // Forçar a leitura do carrinho atualizado
-  const cart = cartManager.getCart();
-
-  if (cart.items.length === 0) {
-    alert("Seu carrinho está vazio!");
-    return;
-  }
-
-  // Recalcular os totais para garantir que estão corretos
-  let mensagem =
-    "Olá! Gostaria de fazer um pedido na Universo Paralelo Store.\n\n";
-  mensagem += "*RESUMO DO PEDIDO*\n\n";
-  mensagem += "*Itens:*\n";
-
-  let totalPedido = 0;
-
-  // Usar os itens do carrinho ATUALIZADO
-  cart.items.forEach((item, index) => {
-    const preco = item.promotional_price || item.price;
-    const subtotal = preco * item.quantity;
-    totalPedido += subtotal;
-
-    mensagem += `${index + 1}. *${item.name}*\n`;
-    mensagem += `   Quantidade: ${item.quantity}\n`;
-    mensagem += `   Preço unitário: R$ ${preco.toFixed(2)}\n`;
-    mensagem += `   Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
-  });
-
-  // Adicionar frete
-  const shippingSelect = document.getElementById("shipping-method");
-  let frete = 0;
-  let metodoFrete = "Retirada na Loja";
-
-  if (shippingSelect) {
-    if (shippingSelect.value === "standard") {
-      frete = 15;
-      metodoFrete = "Entrega Padrão";
-    } else if (shippingSelect.value === "express") {
-      frete = 25;
-      metodoFrete = "Entrega Expressa";
-    }
-  }
-
-  mensagem += `*Frete:* ${metodoFrete} - R$ ${frete.toFixed(2)}\n\n`;
-  mensagem += `*TOTAL DO PEDIDO: R$ ${(totalPedido + frete).toFixed(2)}*\n\n`;
-  mensagem += "Por favor, confirme os dados para finalizarmos o pedido!\n";
-  mensagem += "Obrigado!";
-
-  // Codificar para URL
-  const mensagemCodificada = encodeURIComponent(mensagem);
-
-  // Número do WhatsApp da loja (SUBSTITUA pelo número real)
-  const phoneNumber = "558182047692";
-
-  // Abrir WhatsApp
-  window.open(
-    `https://wa.me/${phoneNumber}?text=${mensagemCodificada}`,
-    "_blank",
-  );
-
-  console.log("📤 Mensagem gerada com sucesso!");
-  console.log("📊 Carrinho usado:", cart);
 }
 
 // Carregar produtos recomendados da API
