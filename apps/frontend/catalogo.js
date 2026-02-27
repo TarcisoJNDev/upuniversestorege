@@ -1,16 +1,10 @@
 // ============================================
-// ===== CONFIGURAÇÃO DA API =====
+// ===== CONFIGURAÇÃO DA API (USANDO API_CONFIG) =====
 // ============================================
-const IS_LOCALHOST =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const API_BASE_URL = IS_LOCALHOST
-  ? "http://localhost:5000/api"
-  : "https://upuniversestorege.onrender.com/api";
-const PRODUCTS_PER_PAGE = 9;
-
 console.log("🚀 Catálogo iniciado");
-console.log("🌐 API Base URL:", API_BASE_URL);
+console.log("🌐 API Base URL:", API_CONFIG?.BASE_URL);
+
+const PRODUCTS_PER_PAGE = 9;
 
 // ============================================
 // ===== VARIÁVEIS GLOBAIS =====
@@ -36,7 +30,7 @@ let currentFilters = {
 async function fetchProducts() {
   try {
     console.log("📥 Buscando produtos da API...");
-    const response = await fetch(`${API_BASE_URL}/products`);
+    const response = await fetch(`${API_CONFIG.BASE_URL}/products`);
 
     if (!response.ok) {
       throw new Error(`Erro ${response.status}`);
@@ -54,7 +48,7 @@ async function fetchProducts() {
 async function fetchCategories() {
   try {
     console.log("🏷️ Buscando categorias da API...");
-    const response = await fetch(`${API_BASE_URL}/categories`);
+    const response = await fetch(`${API_CONFIG.BASE_URL}/categories`);
 
     if (!response.ok) {
       throw new Error(`Erro ${response.status}`);
@@ -74,7 +68,7 @@ async function fetchCategories() {
 // ============================================
 function getImageUrl(imagePath) {
   if (!imagePath)
-    return "https://via.placeholder.com/400x400/7C3AED/FFFFFF?text=Sem+Imagem";
+    return "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
   if (imagePath.startsWith("http")) return imagePath;
   if (imagePath.startsWith("/"))
     return `https://upuniversestorege.onrender.com${imagePath}`;
@@ -102,15 +96,14 @@ function createProductCard(product) {
   article.className = "product-card";
   article.dataset.productId = product.id;
 
-  /*
-  // Badge de destaque
+  // Badge de destaque (descomentado)
   if (product.featured) {
     const badge = document.createElement("span");
     badge.className = "badge featured";
     badge.innerHTML = '<i class="fas fa-star"></i> Destaque';
     article.appendChild(badge);
   }
-*/
+
   // Imagem
   const figure = document.createElement("figure");
   figure.className = "product-image";
@@ -120,7 +113,7 @@ function createProductCard(product) {
   img.loading = "lazy";
   img.onerror = function () {
     this.src =
-      "https://via.placeholder.com/400x400/7C3AED/FFFFFF?text=Imagem+Indisponível";
+      "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
   };
   figure.appendChild(img);
   article.appendChild(figure);
@@ -193,7 +186,7 @@ function createProductCard(product) {
     : '<i class="fas fa-times-circle"></i> Esgotado';
   buyBtn.onclick = (e) => {
     e.stopPropagation();
-    if (inStock) addToCart(product);
+    if (inStock) addToCart(product.id);
   };
 
   const detailsBtn = document.createElement("button");
@@ -352,7 +345,7 @@ function renderQuickFilters() {
   quickFilters.innerHTML =
     '<button class="quick-filter active" data-category="all">Todos</button>';
 
-  // 🔴🔴🔴 ADICIONAR O EVENTO DO BOTÃO "TODOS" AQUI 🔴🔴🔴
+  // ADICIONAR O EVENTO DO BOTÃO "TODOS" AQUI
   const allButton = quickFilters.querySelector('[data-category="all"]');
   if (allButton) {
     allButton.addEventListener("click", loadAllProducts);
@@ -476,99 +469,23 @@ async function addToCart(productId) {
 
     if (result.success) {
       showNotification("✅ Produto adicionado ao carrinho!", "success");
-
-      // Se tiver modal de confirmação
-      if (typeof showAddToCartModal === "function") {
-        showAddToCartModal();
-      }
+      cartManager.updateCartCount();
+      showAddToCartModal();
     } else {
-      showNotification("❌ Erro ao adicionar produto", "error");
+      showNotification(
+        "❌ Erro ao adicionar produto: " + result.message,
+        "error",
+      );
     }
   } catch (error) {
     console.error("Erro ao adicionar ao carrinho:", error);
     showNotification("❌ Erro ao adicionar produto", "error");
   }
 }
-/*
-function addToCart(product) {
-  // USAR A MESMA CHAVE DO CART MANAGER
-  const CART_KEY = "universo_paralelo_cart";
 
-  let cart = JSON.parse(
-    localStorage.getItem(CART_KEY) || '{"items":[],"total":0,"count":0}',
-  );
-
-  // Se o carrinho estiver no formato antigo (array simples), converter
-  if (Array.isArray(cart)) {
-    const items = cart;
-    cart = { items: [], total: 0, count: 0 };
-
-    items.forEach((item) => {
-      cart.items.push(item);
-      cart.count += item.quantity || 1;
-      cart.total += (item.price || 0) * (item.quantity || 1);
-    });
-  }
-
-  const existingItemIndex = cart.items.findIndex(
-    (item) => item.id === product.id,
-  );
-
-  if (existingItemIndex > -1) {
-    cart.items[existingItemIndex].quantity =
-      (cart.items[existingItemIndex].quantity || 1) + 1;
-  } else {
-    cart.items.push({
-      id: product.id,
-      name: product.name,
-      price: product.promotional_price || product.price,
-      image_url: product.image_url,
-      category: getCategoryName(product.category_id),
-      quantity: 1,
-    });
-  }
-
-  // Recalcular totais
-  cart.total = cart.items.reduce((sum, item) => {
-    return sum + item.price * (item.quantity || 1);
-  }, 0);
-
-  cart.count = cart.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
-
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-
-  // Usar o cartManager se disponível
-  if (window.cartManager) {
-    window.cartManager.updateCartCount();
-  } else {
-    updateCartCount();
-  }
-
-  showNotification("✅ Produto adicionado ao carrinho!", "success");
-}
-*/
 function updateCartCount() {
-  const CART_KEY = "universo_paralelo_cart";
-  const cartData = localStorage.getItem(CART_KEY);
-
-  let count = 0;
-
-  if (cartData) {
-    try {
-      const cart = JSON.parse(cartData);
-      if (Array.isArray(cart)) {
-        count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
-      } else if (cart.items) {
-        count =
-          cart.count ||
-          cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
-      }
-    } catch (e) {
-      console.error("Erro ao ler carrinho:", e);
-    }
-  }
-
-  document.getElementById("cartCount").textContent = count;
+  const cart = cartManager.getCart();
+  document.getElementById("cartCount").textContent = cart.count;
 }
 
 function resetFilters() {
@@ -632,6 +549,21 @@ function showNotification(message, type = "info") {
   }, 3000);
 }
 
+function showAddToCartModal() {
+  const modal = document.getElementById("cart-confirmation-modal");
+  if (modal) modal.style.display = "flex";
+}
+
+window.closeAddToCartModal = function () {
+  const modal = document.getElementById("cart-confirmation-modal");
+  if (modal) modal.style.display = "none";
+};
+
+document.addEventListener("click", (e) => {
+  const modal = document.getElementById("cart-confirmation-modal");
+  if (modal && e.target === modal) closeAddToCartModal();
+});
+
 function showLoading() {
   document.getElementById("productsGrid").innerHTML = `
         <div class="loading-products" style="grid-column: 1/-1; text-align: center; padding: 60px;">
@@ -688,7 +620,9 @@ async function initializeCatalog() {
     setupFiltersModal();
 
     // Atualizar contador do carrinho
-    updateCartCount();
+    if (cartManager) {
+      cartManager.updateCartCount();
+    }
 
     console.log(`✅ Catálogo inicializado com ${allProducts.length} produtos`);
   } catch (error) {
@@ -1237,8 +1171,6 @@ function renderCategoriesWithImages() {
 }
 
 // Substituir a função renderCategories original pela nova
-// ou simplesmente chamar a nova função no lugar da original
-const originalRenderCategories = renderCategories;
 renderCategories = renderCategoriesWithImages;
 
 // ============================================
