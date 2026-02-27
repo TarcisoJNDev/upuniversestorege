@@ -5,13 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalhes do Produto - Universo Paralelo Store</title>
-  <link rel="stylesheet" href="./public/css/style(OFC).css">
-  <link rel="stylesheet" href="./detalhes-produto.css">
+  <link rel="stylesheet" href="./public/css/style(OFC).css?v=20250226-4">
+  <link rel="stylesheet" href="./detalhes-produto.css?v=20250226-4">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="./public/js/config.js"></script>
-  <script src="./public/js/cart.js"></script>
-  <script src="./detalhes-produto.js"></script>
- 
+  <script src="./public/js/config.js?v=20250226-4"></script>
+  <script src="./public/js/cart.js?v=20250226-4"></script>
+  <script src="./detalhes-produto.js?v=20250226-4"></script>
 </head>
 
 <body>
@@ -148,6 +147,29 @@
       <p>Universo Paralelo Store © 2025 - Todos os direitos reservados</p>
     </div>
   </footer>
+
+  <!-- Modal de confirmação do carrinho -->
+  <div class="modal-overlay" id="cart-confirmation-modal" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeAddToCartModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2 class="modal-title">Produto Adicionado!</h2>
+      <p class="modal-message" id="modal-message">O produto foi adicionado ao seu carrinho com sucesso.</p>
+      <div class="modal-actions">
+        <button class="btn-continue-modal" onclick="closeAddToCartModal()">
+          Continuar Comprando
+        </button>
+        <a href="carrinho.html" class="btn-view-cart">
+          Ver Carrinho
+        </a>
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>
