@@ -3,7 +3,10 @@
 // ============================================
 // No início do home.js
 console.log("🔍 TESTE - window.API_CONFIG existe?", !!window.API_CONFIG);
-console.log("🔍 TESTE - window.API_CONFIG.BASE_URL:", window.API_CONFIG?.BASE_URL);
+console.log(
+  "🔍 TESTE - window.API_CONFIG.BASE_URL:",
+  window.API_CONFIG?.BASE_URL,
+);
 function getImageUrl(imagePath) {
   if (!imagePath) {
     return "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
@@ -485,13 +488,317 @@ function initNewsletter() {
     });
   }
 }
+// ============================================
+// ===== MENU HAMBÚRGUER (ESTILO AMAZON) =====
+// ============================================
+
+// Elementos do menu
+const hamburgerBtn = document.querySelector(".hamburger-menu");
+const sidebarMenu = document.querySelector(".sidebar-menu");
+const menuOverlay = document.querySelector(".menu-overlay");
+const closeMenuBtn = document.querySelector(".close-menu-btn");
+
+// Criar elementos do menu se não existirem
+function createMenuElements() {
+  // Verificar se já existe
+  if (document.querySelector(".hamburger-menu")) return;
+
+  // Criar botão hambúrguer
+  const header = document.querySelector(".header-actions");
+  const hamburger = document.createElement("button");
+  hamburger.className = "hamburger-menu";
+  hamburger.innerHTML = '<i class="fas fa-bars"></i>';
+  header.insertBefore(hamburger, header.firstChild);
+
+  // Criar overlay
+  const overlay = document.createElement("div");
+  overlay.className = "menu-overlay";
+  document.body.appendChild(overlay);
+
+  // Criar sidebar
+  const sidebar = document.createElement("div");
+  sidebar.className = "sidebar-menu";
+  sidebar.innerHTML = `
+    <div class="sidebar-header">
+      <i class="fas fa-user-circle"></i>
+      <h2>Olá, Visitante</h2>
+    </div>
+    
+    <div class="sidebar-section">
+      <h3><i class="fas fa-fire"></i> Destaques</h3>
+      <ul class="sidebar-items">
+        <li><a href="#"><i class="fas fa-star"></i> Mais Vendidos</a></li>
+        <li><a href="#"><i class="fas fa-chart-line"></i> Mais Procurados</a></li>
+        <li><a href="#"><i class="fas fa-clock"></i> Novos Produtos</a></li>
+      </ul>
+    </div>
+    
+    <div class="sidebar-section">
+      <h3><i class="fas fa-tags"></i> Categorias</h3>
+      <div class="sidebar-categories" id="sidebarCategories">
+        <!-- Categorias serão carregadas dinamicamente -->
+        <div class="loading-categories" style="padding: 10px; text-align: center;">
+          <i class="fas fa-spinner fa-spin"></i> Carregando...
+        </div>
+      </div>
+    </div>
+    
+    <div class="sidebar-section">
+      <h3><i class="fas fa-info-circle"></i> Informações</h3>
+      <ul class="sidebar-items">
+        <li><a href="sobre.html"><i class="fas fa-store"></i> Sobre a Loja</a></li>
+        <li><a href="servicos.html"><i class="fas fa-cog"></i> Serviços</a></li>
+        <li><a href="#footer"><i class="fas fa-envelope"></i> Contato</a></li>
+        <li><a href="#"><i class="fas fa-question-circle"></i> Ajuda</a></li>
+      </ul>
+    </div>
+  `;
+  document.body.appendChild(sidebar);
+
+  return { hamburger, overlay, sidebar };
+}
+
+// Carregar categorias para o menu lateral
+async function loadSidebarCategories() {
+  const sidebarCategories = document.getElementById("sidebarCategories");
+  if (!sidebarCategories) return;
+
+  try {
+    // Usar as categorias já carregadas
+    if (categoriesCache && categoriesCache.length > 0) {
+      renderSidebarCategories(categoriesCache);
+    } else {
+      // Buscar categorias se não tiver
+      const response = await fetch(
+        `${API_CONFIG.BASE_URL}/categories/with-count`,
+      );
+      const data = await response.json();
+      const categories = data.categories || [];
+
+      // Filtrar apenas ativas e ordenar por número de produtos
+      const activeCategories = categories
+        .filter((c) => c.status === "active")
+        .sort((a, b) => (b.product_count || 0) - (a.product_count || 0))
+        .slice(0, 8); // Mostrar até 8 categorias no menu
+
+      renderSidebarCategories(activeCategories);
+    }
+  } catch (error) {
+    console.error("Erro ao carregar categorias do menu:", error);
+    sidebarCategories.innerHTML = `
+      <div style="padding: 15px; text-align: center; color: #aaa;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Erro ao carregar categorias</p>
+      </div>
+    `;
+  }
+}
+
+// Renderizar categorias no menu lateral
+function renderSidebarCategories(categories) {
+  const sidebarCategories = document.getElementById("sidebarCategories");
+  if (!sidebarCategories) return;
+
+  if (!categories || categories.length === 0) {
+    sidebarCategories.innerHTML = `
+      <div style="padding: 15px; text-align: center; color: #aaa;">
+        <p>Nenhuma categoria disponível</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = "";
+  categories.forEach((category) => {
+    const icon = category.icon
+      ? category.icon.includes("fa-")
+        ? `<i class="fas ${category.icon}"></i>`
+        : category.icon
+      : "🏷️";
+
+    html += `
+      <div class="sidebar-category" onclick="filterByCategory(${category.id}, '${category.name}')">
+        <div class="category-icon">${icon}</div>
+        <div class="category-info">
+          <h4>${category.name}</h4>
+          <span>${category.product_count || 0} produtos</span>
+        </div>
+      </div>
+    `;
+  });
+
+  sidebarCategories.innerHTML = html;
+}
+
+// Funções do menu
+function openMenu() {
+  sidebarMenu.classList.add("active");
+  menuOverlay.classList.add("active");
+  document.body.style.overflow = "hidden"; // Previne scroll
+}
+
+function closeMenu() {
+  sidebarMenu.classList.remove("active");
+  menuOverlay.classList.remove("active");
+  document.body.style.overflow = ""; // Restaura scroll
+}
+
+// Configurar event listeners do menu
+function setupMenuListeners() {
+  // Criar elementos se necessário
+  const elements = createMenuElements();
+
+  // Pegar referências atualizadas
+  const hamburger = document.querySelector(".hamburger-menu");
+  const sidebar = document.querySelector(".sidebar-menu");
+  const overlay = document.querySelector(".menu-overlay");
+
+  if (!hamburger || !sidebar || !overlay) return;
+
+  // Abrir menu
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openMenu();
+    loadSidebarCategories(); // Carregar categorias ao abrir
+  });
+
+  // Fechar ao clicar no overlay
+  overlay.addEventListener("click", closeMenu);
+
+  // Fechar ao pressionar ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebar.classList.contains("active")) {
+      closeMenu();
+    }
+  });
+
+  // Prevenir que clique dentro do sidebar feche o menu
+  sidebar.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  // Adicionar botão de fechar no sidebar (opcional)
+  const sidebarHeader = sidebar.querySelector(".sidebar-header");
+  if (sidebarHeader && !sidebar.querySelector(".close-menu-btn")) {
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "close-menu-btn";
+    closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closeBtn.style.cssText = `
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      color: #C084FC;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    `;
+    closeBtn.addEventListener("click", closeMenu);
+    sidebar.appendChild(closeBtn);
+  }
+}
 
 // ============================================
-// ===== START =====
+// ===== CARROSSEL DE NAVEGAÇÃO MOBILE =====
 // ============================================
-document.addEventListener("DOMContentLoaded", () => {
+
+// Criar carrossel de navegação mobile
+function createMobileNavCarousel() {
+  // Verificar se já existe
+  if (document.querySelector(".mobile-nav-carousel")) return;
+
+  const header = document.querySelector(".main-header");
+  const navCarousel = document.createElement("div");
+  navCarousel.className = "mobile-nav-carousel";
+  navCarousel.innerHTML = `
+    <div class="mobile-nav-items">
+      <a href="/" class="mobile-nav-item active">Início</a>
+      <a href="/catalogo" class="mobile-nav-item">Catálogo 3D</a>
+      <a href="/servicos" class="mobile-nav-item">Serviços</a>
+      <a href="#footer" class="mobile-nav-item">Contato</a>
+    </div>
+  `;
+  header.appendChild(navCarousel);
+
+  // Scroll suave para os itens
+  const items = navCarousel.querySelectorAll(".mobile-nav-item");
+  items.forEach((item) => {
+    item.addEventListener("click", (e) => {
+      items.forEach((i) => i.classList.remove("active"));
+      item.classList.add("active");
+    });
+  });
+}
+
+// ============================================
+// ===== ATUALIZAR CATEGORIAS NO MENU =====
+// ============================================
+
+// Função para atualizar categorias quando carregadas
+function updateMenuCategories() {
+  if (categoriesCache && categoriesCache.length > 0) {
+    renderSidebarCategories(categoriesCache);
+  }
+}
+
+// Modificar a função initializeHome para atualizar o menu
+const originalInitializeHome = initializeHome;
+initializeHome = async function () {
+  await originalInitializeHome();
+  updateMenuCategories();
+};
+
+// ============================================
+// ===== INICIALIZAÇÃO DO MENU =====
+// ============================================
+
+// Função para verificar se é mobile e ativar recursos
+function initMobileFeatures() {
+  if (window.innerWidth <= 768) {
+    createMobileNavCarousel();
+    setupMenuListeners();
+  }
+}
+
+// Detectar mudanças de tamanho da tela
+window.addEventListener("resize", () => {
+  if (window.innerWidth <= 768) {
+    if (!document.querySelector(".mobile-nav-carousel")) {
+      createMobileNavCarousel();
+    }
+    if (!document.querySelector(".hamburger-menu")) {
+      setupMenuListeners();
+    }
+  } else {
+    // Remover elementos mobile se existirem
+    const mobileNav = document.querySelector(".mobile-nav-carousel");
+    if (mobileNav) mobileNav.remove();
+
+    // Fechar menu se estiver aberto
+    const sidebar = document.querySelector(".sidebar-menu");
+    const overlay = document.querySelector(".menu-overlay");
+    if (sidebar) sidebar.classList.remove("active");
+    if (overlay) overlay.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+});
+
+// ============================================
+// ===== MODIFICAR O DOMContentLoaded =====
+// ============================================
+
+// Preservar o DOMContentLoaded original
+const originalDOMContentLoaded = document.addEventListener;
+
+// Substituir para adicionar nossas funcionalidades
+document.addEventListener("DOMContentLoaded", function () {
+  // Chamar funções originais
   initCarousel();
   initScrollReveal();
   initNewsletter();
   initializeHome();
+
+  // Inicializar recursos mobile
+  initMobileFeatures();
 });
